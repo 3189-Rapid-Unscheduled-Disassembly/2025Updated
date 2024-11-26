@@ -205,4 +205,9 @@ public class RobotMain {
         }
         return currentValue;
     }
+
+    public void writeAllComponents() {
+        output.writeAllComponents();
+        intake.writeAllComponents();
+    }
 }
