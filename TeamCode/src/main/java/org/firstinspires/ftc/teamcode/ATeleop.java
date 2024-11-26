@@ -45,7 +45,7 @@ public class ATeleop extends LinearOpMode {
     final double xP = 0.05;
     final double yP = 0.05;
     final double thetaP = 0.05;
-    final double angularP = 0;
+    final double angularP = 4;
 
     double inputtedY = 12;
 
@@ -160,6 +160,9 @@ public class ATeleop extends LinearOpMode {
             telemetry.addData("Max Loop Time", maxLoopTime);
             telemetry.addData("Min Loop Time", minLoopTime);
             telemetry.addData("Avg Loop Time", avgLoopTime);
+            telemetry.addData("Angle", Math.toDegrees(bart.mecanaDruve.pose.heading.toDouble()));
+            telemetry.addData("Target Drive Angle", targetAngle);
+            telemetry.addData("Turn Speed", automatedAngularVel);
             telemetry.update();
 
         }
@@ -178,14 +181,18 @@ public class ATeleop extends LinearOpMode {
 
 
                 //EVENTS
-                if (playerOne.isDown(GamepadKeys.Button.LEFT_BUMPER)) {
+                if (playerOne.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) {
                     thogLockToNextCounterClockwise();
                 }
-                if (playerOne.isDown(GamepadKeys.Button.RIGHT_BUMPER)) {
+                if (playerOne.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) {
                     thogLockToNextClockwise();
                 }
                 if (playerOne.isDown(GamepadKeys.Button.DPAD_RIGHT)) {
                     currentState = State.GO_TO_INPUTTED_Y;
+                }
+                if (playerOne.wasJustPressed(GamepadKeys.Button.DPAD_UP)) {
+                    bart.resetGyro();
+                    targetAngle = 0;
                 }
 
                 break;
@@ -270,31 +277,41 @@ public class ATeleop extends LinearOpMode {
 
 
     public void thogLockToNextClockwise() {
-        if (Math.toDegrees(bart.mecanaDruve.pose.heading.toDouble()) < -90) {
-            targetAngle = -90;
-        } else if (Math.toDegrees(bart.mecanaDruve.pose.heading.toDouble()) < 0) {
-            targetAngle = 0;
-        } else if (Math.toDegrees(bart.mecanaDruve.pose.heading.toDouble()) < 90) {
+        if (targetAngle > 90) {
             targetAngle = 90;
-        } else if (Math.toRadians(bart.mecanaDruve.pose.heading.toDouble()) < 180) {
-            targetAngle = 180;
+        } else if (targetAngle > 0) {
+            targetAngle = 0;
+        } else if (targetAngle > -90) {
+            targetAngle = -90;
+        } else if (targetAngle > -180) {
+            targetAngle = -180;
+        } else {
+            targetAngle = 90;
         }
     }
 
     public void thogLockToNextCounterClockwise() {
-        if (Math.toDegrees(bart.mecanaDruve.pose.heading.toDouble()) > 90) {
-            targetAngle = 90;
-        } else if (Math.toDegrees(bart.mecanaDruve.pose.heading.toDouble()) > 0) {
-            targetAngle = 0;
-        } else if (Math.toDegrees(bart.mecanaDruve.pose.heading.toDouble()) > -90) {
+        if (targetAngle < -90) {
             targetAngle = -90;
-        } else if (Math.toRadians(bart.mecanaDruve.pose.heading.toDouble()) > -180) {
-            targetAngle = -180;
+        } else if (targetAngle < 0) {
+            targetAngle = 0;
+        } else if (targetAngle < 90) {
+            targetAngle = 90;
+        } else if (targetAngle < 180) {
+            targetAngle = 180;
+        } else {
+            targetAngle = -90;
         }
     }
 
     public void goToTargetAngle() {
-        automatedAngularVel = (angularP * targetAngle) / 180;
+        double angleError = targetAngle - Math.toDegrees(bart.mecanaDruve.pose.heading.toDouble());
+        if (angleError > 180) {
+            angleError = angleError - 360;
+        } else if (angleError < -180) {
+            angleError = angleError + 360;
+        }
+        automatedAngularVel = angularP * (angleError / 180);
     }
 
 
@@ -326,24 +343,23 @@ public class ATeleop extends LinearOpMode {
 
     public void manualControl() {
         //bart.driveRobotRelative(playerOne.getLeftY(), playerOne.getLeftX(), playerOne.getRightX());
-        if (playerOne.getRightX() == 0) {
-            bart.mecanaDruve.setDrivePowers(new PoseVelocity2d(
-                    new Vector2d(
-                            -gamepad1.left_stick_y*0.7,
-                            -gamepad1.left_stick_x*0.7
-                    ),
-                    targetAngle*0.7
-            ));
+        goToTargetAngle();
+        //if (playerOne.getRightX() != 0) targetAngle -= gamepad1.right_stick_x*5;
+        double turnSpeed;
+        if (playerOne.getRightX() != 0) {
+            turnSpeed = -playerOne.getRightX() * 0.7;
+            targetAngle = Math.toDegrees(bart.mecanaDruve.pose.heading.toDouble());
         } else {
-            targetAngle -= gamepad1.right_stick_x*0.7;
-            bart.mecanaDruve.setDrivePowers(new PoseVelocity2d(
-                    new Vector2d(
-                            -gamepad1.left_stick_y*0.7,
-                            -gamepad1.left_stick_x*0.7
-                    ),
-                    automatedAngularVel*0.7
-            ));
+            turnSpeed = automatedAngularVel;
         }
+        bart.mecanaDruve.setDrivePowers(new PoseVelocity2d(
+                new Vector2d(
+                        -gamepad1.left_stick_y*0.7,
+                        -gamepad1.left_stick_x*0.7
+                ),
+                turnSpeed
+            ));
+
 
 
 
@@ -392,7 +408,8 @@ public class ATeleop extends LinearOpMode {
         }
 
         if (playerTwo.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) {
-            bart.output.gripper.flipFlop();
+            //bart.output.gripper.flipFlop();
+            bart.output.setComponentPositionsFromSavedPosition("grab2");
         }
 
         /*if (playerTwo.wasJustPressed(GamepadKeys.Button.LEFT_STICK_BUTTON)) {
@@ -400,10 +417,7 @@ public class ATeleop extends LinearOpMode {
                     new OutputEndPoint(new Point2d(7.7, 18.4), 0, 0, false)
             );
         }*/
-        //reset gyro
-        if (playerOne.wasJustPressed(GamepadKeys.Button.DPAD_UP)) {
-            //bart.resetIMU();
-        }
+
         //switch drive mode (robot-oriented default, switch to field-oriented)
         if (playerOne.wasJustPressed(GamepadKeys.Button.Y)) {
             bart.switchDriveMode();

@@ -176,6 +176,10 @@ public class RobotMain {
         intake.readAllComponents();
     }
 
+    public void resetGyro() {
+        mecanaDruve.setPosFromOutside(new Pose2d(new Vector2d(mecanaDruve.pose.position.x, mecanaDruve.pose.position.y), 0));
+    }
+
     public static double dpadInputToChangeValueUpIsPositive(double currentValue, GamepadEx gamepadEx) {
         if (gamepadEx.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) {
             return currentValue - 6;

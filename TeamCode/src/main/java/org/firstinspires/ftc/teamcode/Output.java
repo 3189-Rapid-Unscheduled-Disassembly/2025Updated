@@ -66,8 +66,10 @@ public class Output {
                 new OutputEndPoint(new Point2d(7.1, 9.2), 45, 0, false)
         );
         savedPositions.put("grab",
-                //new OutputEndPoint(new Point2d(9.8, 9.75), 0, theNew90, true)
-                new OutputEndPoint(0, -3, -55, theNew90, true)
+                new OutputEndPoint(0, -3, -60, theNew90, true)
+        );
+        savedPositions.put("grab2",
+                new OutputEndPoint(0, -3, 60, theNew90, true)
         );
         savedPositions.put("highBarFront",
                 //new OutputEndPoint(new Point2d(10,25), 40, theNew90, false)
