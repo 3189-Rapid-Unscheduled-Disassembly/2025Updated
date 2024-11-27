@@ -46,6 +46,7 @@ public class ATeleop extends LinearOpMode {
     final double yP = 0.05;
     final double thetaP = 0.05;
     final double angularP = 4;
+    final double MAX_DRIVE_VELOCITY_MULTIPLIER = 0.7;
 
     double inputtedY = 12;
 
@@ -335,15 +336,15 @@ public class ATeleop extends LinearOpMode {
         //if (playerOne.getRightX() != 0) targetAngle -= gamepad1.right_stick_x*5;
         double turnSpeed;
         if (playerOne.getRightX() != 0) {
-            turnSpeed = -playerOne.getRightX() * 0.7;
+            turnSpeed = -playerOne.getRightX() * MAX_DRIVE_VELOCITY_MULTIPLIER;
             targetAngle = Math.toDegrees(bart.mecanaDruve.pose.heading.toDouble());
         } else {
             turnSpeed = automatedAngularVel;
         }
         bart.mecanaDruve.setDrivePowers(new PoseVelocity2d(
                 new Vector2d(
-                        -gamepad1.left_stick_y*0.7,
-                        -gamepad1.left_stick_x*0.7
+                        -gamepad1.left_stick_y*MAX_DRIVE_VELOCITY_MULTIPLIER,
+                        -gamepad1.left_stick_x*MAX_DRIVE_VELOCITY_MULTIPLIER
                 ),
                 turnSpeed
             ));
