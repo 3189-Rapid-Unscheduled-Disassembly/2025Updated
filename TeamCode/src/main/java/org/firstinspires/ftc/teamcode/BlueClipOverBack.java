@@ -196,6 +196,45 @@ public class BlueClipOverBack extends LinearOpMode {
             }
         }
 
+        class IntakeBackwards implements Action {
+
+            boolean actionIsRunning = false;
+
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+
+                //ACTION
+                bart.intake.setIntakeMotorPower(-1);
+
+                return actionIsRunning;
+            }
+
+        }
+        class IntakeStop implements Action {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                bart.intake.setIntakeMotorPower(0);
+                return false;
+            }
+        }
+
+        class ReadComponents implements Action {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                bart.readHubs();
+                return !endProgram;
+            }
+        }
+
+        class WriteComponents implements Action {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                bart.writeAllComponents();
+                return !endProgram;
+            }
+        }
+
         public Action endProgram() {
             return new EndProgram();
         }
@@ -206,6 +245,14 @@ public class BlueClipOverBack extends LinearOpMode {
 
         public Action lowerToGrabOnceXPastNegative24() {
             return new LowerToGrabOnceXPastNegative24();
+        }
+
+        public Action readComponents() {
+            return  new ReadComponents();
+        }
+
+        public Action writeComponents() {
+            return new WriteComponents();
         }
 
         public Action sendComponentsToPositions() {
@@ -224,6 +271,8 @@ public class BlueClipOverBack extends LinearOpMode {
             return new CloseGripper();
         }
 
+        public Action intakeBackwards(){return new IntakeBackwards();}
+        public Action intakeStop(){return new IntakeStop();}
 
         public Action raiseToHighBarFront() {
             return new RaiseToHighBarFront();
@@ -246,7 +295,7 @@ public class BlueClipOverBack extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         //create robot 6 5/16 from wall   x = 32 from wall
-        Pose2d beginPose = new Pose2d(-5.5, 64.25, Math.toRadians(90));
+        Pose2d beginPose = new Pose2d(-5.5, 63.75, Math.toRadians(90));
         //SCORE POSES
         Vector2d scoreVector = new Vector2d(beginPose.position.x, 36.5);
         double scoreAngleRad = Math.toRadians(90);
@@ -259,7 +308,7 @@ public class BlueClipOverBack extends LinearOpMode {
         Pose2d score3Pose = new Pose2d(score3Vector, scoreAngleRad);
 
         //GRAB POSE
-        Vector2d grabVector = new Vector2d(-35, 60.5);//61.5ish for strafe
+        Vector2d grabVector = new Vector2d(-35, 60.25);//61.5ish for strafe
         double grabAngleRad = Math.toRadians(90);
         Pose2d grabPose = new Pose2d(grabVector, grabAngleRad);
 
@@ -282,34 +331,35 @@ public class BlueClipOverBack extends LinearOpMode {
                 .splineToConstantHeading(scoreVector, Math.toRadians(270));
 
         TrajectoryActionBuilder fromScoreToGrab = drive.actionBuilder(scorePose)
-                .splineToConstantHeading(new Vector2d(grabVector.x, grabVector.y-7), Math.toRadians(90))
+                .splineToConstantHeading(new Vector2d(grabVector.x+7, grabVector.y-7), Math.toRadians(90))
                 .splineToConstantHeading(grabVector, Math.toRadians(90));
 
         TrajectoryActionBuilder fromGrabToScore = drive.actionBuilder(grabPose)
                 .splineToConstantHeading(new Vector2d(grabVector.x, grabVector.y-2), Math.toRadians(270))
                 .splineToConstantHeading(new Vector2d(scoreVector.x-8, scoreVector.y+12), Math.toRadians(-45))
-                .splineToConstantHeading(new Vector2d(scoreVector.x, scoreVector.y+2), Math.toRadians(-70));
+                .splineToConstantHeading(new Vector2d(scoreVector.x, scoreVector.y), Math.toRadians(-90));
 
         TrajectoryActionBuilder fromScoreToPushAndGrab = drive.actionBuilder(scorePose)
                 //spike 1
                 .splineToConstantHeading(new Vector2d(scoreVector.x, 34), Math.toRadians(90))
                 .splineToConstantHeading(new Vector2d(-33, 38), Math.toRadians(180))
                 .splineToConstantHeading(new Vector2d(-39, 24), Math.toRadians(270))
-                .splineToConstantHeading(new Vector2d(-41, 14), Math.toRadians(180))
-                .splineToConstantHeading(new Vector2d(-48, 54), Math.toRadians(90))
+                .splineToConstantHeading(new Vector2d(-47, 14), Math.toRadians(180))
+                .splineToConstantHeading(new Vector2d(-54, 54), Math.toRadians(90))
                 //spike 2
-                /*.splineToConstantHeading(new Vector2d(-48, 36), Math.toRadians(270))
+                .splineToConstantHeading(new Vector2d(-48, 36), Math.toRadians(270))
                 .splineToConstantHeading(new Vector2d(-50, 8), Math.toRadians(180))
-                .splineToConstantHeading(new Vector2d(-58, 60), Math.toRadians(90))
+                .splineToConstantHeading(new Vector2d(-60, 60), Math.toRadians(90))
                 //spike 3
-                .splineToConstantHeading(new Vector2d(-58, 48), Math.toRadians(270))
+                /*.splineToConstantHeading(new Vector2d(-58, 48), Math.toRadians(270))
                 .splineToConstantHeading(new Vector2d(-58, 36), Math.toRadians(270))
                 .splineToConstantHeading(new Vector2d(-59, 8), Math.toRadians(180))
                 .splineToConstantHeading(new Vector2d(-60, 60), Math.toRadians(90))
                 //.splineToConstantHeading(new Vector2d(-60, 52), Math.toRadians(270));*/
                 //GRAB FROM WALL
-                .splineToLinearHeading(new Pose2d(grabVector.x, grabVector.y-18, Math.toRadians(90)), Math.toRadians(90))
-                .splineToConstantHeading(grabVector, grabAngleRad);
+                .splineToConstantHeading(new Vector2d(grabVector.x, grabVector.y-7), Math.toRadians(90))
+                .splineToConstantHeading(grabVector, Math.toRadians(90));
+
 
         /*TrajectoryActionBuilder fromPushToGrab = drive.actionBuilder(new Pose2d(-60, 56,  Math.toRadians(270)))
                         .splineToLinearHeading(new Pose2d(grabVector.x, grabVector.y-4, Math.toRadians(90)), Math.toRadians(90))
@@ -342,9 +392,11 @@ public class BlueClipOverBack extends LinearOpMode {
 
 
         //bart.output.setComponentPositionsFromSavedPosition("rest");
+        bart.readHubs();
         bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, -40, 90, 0, false));
         bart.intake.closeGate();
-        bart.output.sendVerticalSlidesToTarget();
+        bart.writeAllComponents();
+        //bart.output.sendVerticalSlidesToTarget();
 
         waitForStart();
 
@@ -353,12 +405,14 @@ public class BlueClipOverBack extends LinearOpMode {
         Actions.runBlocking(
 
                 new ParallelAction(
+
+                        outputs.readComponents(),
+
                         new SequentialAction(
                                 //SCORE PRELOAD
                                 outputs.raiseToHighBarBack(),
                                 fromStartToScore.build(),
                                 outputs.openGripper(),
-                                sleeper.sleep(100),
 
                                 //PUSH AND GRAB
                                 //outputs.lowerOutOfWay(),
@@ -367,7 +421,20 @@ public class BlueClipOverBack extends LinearOpMode {
                                         //fromScoreToPushAndGrab.build(),
                                   //      outputs.lowerToGrabOnceXPastNegative24()
                                 //),
-                                fromScoreToGrab.build(),
+
+
+                                outputs.intakeBackwards(),
+                                fromScoreToPushAndGrab.build(),
+                                outputs.intakeStop(),
+
+
+
+
+
+
+
+                                //THE THREE CYCLE THING
+                                /*fromScoreToGrab.build(),
                                 //GRAB CLIP 2 FROM WALL
                                 outputs.closeGripper(),
                                 sleeper.sleep(500),
@@ -433,7 +500,7 @@ public class BlueClipOverBack extends LinearOpMode {
                                 outputs.endProgram()
                         ),
                         //SEND COMPONENTS TO POSITION EVERY FRAME
-                        outputs.sendComponentsToPositions()
+                        outputs.writeComponents()
 
                 )
         );

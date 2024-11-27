@@ -17,15 +17,15 @@ public class Intake {
 
     private double intakePower;
     private double previousIntakePower;
-    final double INTAKE_POWER_SIGNIFICANT_DIFFERENCE = 0.01;
+    final double INTAKE_POWER_SIGNIFICANT_DIFFERENCE = 0.0001;
 
     private double horizontalSlidePower;
     private double previousHorizontalSlidePower;
-    final double HORIZ_POWER_SIGNIFICANT_DIFFERENCE = 0.01;
+    final double HORIZ_POWER_SIGNIFICANT_DIFFERENCE = 0.0001;
 
     private double gatePosition;
     private double previousGatePosition;
-    final double GATE_POSITION_SIGNIFICANT_DIFFERENCE = 0.01;
+    final double GATE_POSITION_SIGNIFICANT_DIFFERENCE = 0.0001;
 
 
     final double gateOpen = 0.5;

@@ -12,10 +12,10 @@ public class VerticalSlides {
     double targetTicks;
     double slidePower;
     double previousSlidePower;
-    final double SLIDE_POWER_SIGNIFICANT_DIFFERENCE = 0.01;
+    final double SLIDE_POWER_SIGNIFICANT_DIFFERENCE = 0;
 
     final double ALLOWED_ERROR_INCHES = 0.1;
-    final double p = 0.01;
+    final double p = 0.006;
 
     final double TICKS_PER_INCH = 153.829;
     public VerticalSlides(HardwareMap hardwareMap) {

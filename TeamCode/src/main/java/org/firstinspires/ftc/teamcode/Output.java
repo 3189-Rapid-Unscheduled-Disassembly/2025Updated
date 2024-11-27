@@ -66,7 +66,7 @@ public class Output {
                 new OutputEndPoint(new Point2d(7.1, 9.2), 45, 0, false)
         );
         savedPositions.put("grab",
-                new OutputEndPoint(0, -3, -60, theNew90, true)
+                new OutputEndPoint(0, -2.5, -60, theNew90, true)
         );
         savedPositions.put("grab2",
                 new OutputEndPoint(0, -3, 60, theNew90, true)
@@ -168,11 +168,6 @@ public class Output {
         //arm.goToAngle(armTargetPitchDegrees);
         //wrist
         //wrist.setWristToTarget(wristTargetPitchRelativeToGroundDegrees, wristTargetRollDegrees, armTargetPitchDegrees);
-    }
-
-    //idk, need to find a better way to do this
-    public void goToPosition() {
-        verticalSlides.goToTargetAsync();
     }
 
     public boolean isAtPosition() {

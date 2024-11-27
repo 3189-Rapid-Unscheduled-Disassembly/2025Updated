@@ -10,8 +10,8 @@ public class Gripper {
     private double position;
     private double currentPosition;
     private double previousServoPosition;
-    final double SERVO_POSITION_SIGNIFICANT_DIFFERENCE = 0.01;
-    final double openPos = 0.05;
+    final double SERVO_POSITION_SIGNIFICANT_DIFFERENCE = 0.0001;
+    final double openPos = 0.2;
     final double closePos = 0.5;
 
     public Gripper(HardwareMap hardwareMap) {

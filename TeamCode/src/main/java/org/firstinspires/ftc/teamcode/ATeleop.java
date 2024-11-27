@@ -396,8 +396,8 @@ public class ATeleop extends LinearOpMode {
         }
 
         if (playerTwo.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) {
-            //bart.output.gripper.flipFlop();
-            bart.output.setComponentPositionsFromSavedPosition("grab2");
+            bart.output.gripper.flipFlop();
+            //bart.output.setComponentPositionsFromSavedPosition("grab2");
         }
 
         /*if (playerTwo.wasJustPressed(GamepadKeys.Button.LEFT_STICK_BUTTON)) {
