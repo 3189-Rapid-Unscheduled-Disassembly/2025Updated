@@ -100,7 +100,6 @@ public class ATeleop extends LinearOpMode {
 
         //Bulk Cache Read
         List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
-
         for (LynxModule hub : allHubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
