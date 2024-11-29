@@ -295,6 +295,7 @@ public class BlueClipAuto extends LinearOpMode {
         bart.intake.closeGate();
         bart.output.sendVerticalSlidesToTarget();
 
+
         waitForStart();
 
         if (isStopRequested()) return;
