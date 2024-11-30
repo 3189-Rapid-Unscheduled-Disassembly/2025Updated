@@ -7,8 +7,27 @@ import com.noahbres.meepmeep.roadrunner.DefaultBotBuilder;
 import com.noahbres.meepmeep.roadrunner.entity.RoadRunnerBotEntity;
 
 public class MeepMeepTesting {
+
     public static void main(String[] args) {
-        MeepMeep meepMeep = new MeepMeep(800);
+        Pose2d beginPose = new Pose2d(-5.5, 63.75, Math.toRadians(90));
+
+
+        Vector2d scoreVector = new Vector2d(beginPose.position.x, 36.5);
+        double scoreAngleRad = Math.toRadians(90);
+        Pose2d scorePose = new Pose2d(scoreVector, scoreAngleRad);
+
+        Vector2d score2Vector = new Vector2d(scoreVector.x+3, scoreVector.y);
+        Pose2d score2Pose = new Pose2d(score2Vector, scoreAngleRad);
+
+        Vector2d score3Vector = new Vector2d(score2Vector.x+3, scoreVector.y);
+        Pose2d score3Pose = new Pose2d(score3Vector, scoreAngleRad);
+
+        //GRAB POSE
+        Vector2d grabVector = new Vector2d(-35, 60.75);//61.5ish for strafe//-32 x sometimes
+        double grabAngleRad = Math.toRadians(90);
+        Pose2d grabPose = new Pose2d(grabVector, grabAngleRad);
+
+        MeepMeep meepMeep = new MeepMeep(600);
         System.setProperty("sun.java2d.opengl", "true");
 
         RoadRunnerBotEntity myBot = new DefaultBotBuilder(meepMeep)
@@ -43,8 +62,10 @@ public class MeepMeepTesting {
                         .waitSeconds(0.25)
 
                         //score specimen
-                        .splineToConstantHeading(new Vector2d(-5.4, 36.5), Math.toRadians(90))
-
+                        //.splineToConstantHeading(new Vector2d(-5.4, 36.5), Math.toRadians(-90))
+                .splineToConstantHeading(new Vector2d(grabVector.x, grabVector.y-2), Math.toRadians(270))
+                //.splineToConstantHeading(new Vector2d(scoreVector.x-8, scoreVector.y+6), Math.toRadians(-45))
+                .splineToConstantHeading(new Vector2d(scoreVector.x, scoreVector.y), Math.toRadians(-90))
                         //pick up specimen 2
                         .splineToLinearHeading(new Pose2d(-35, 60.25, Math.toRadians(90)), Math.toRadians(90))
                         .waitSeconds(0.25)
