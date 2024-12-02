@@ -354,7 +354,7 @@ public class BlueClipOverBack extends LinearOpMode {
                 .splineToConstantHeading(new Vector2d(scoreVector.x, scoreVector.y), Math.toRadians(-90));
 
         TrajectoryActionBuilder fromScoreToPushAndGrab = drive.actionBuilder(scorePose)
-                //spike 1
+                //spike 2
                 .splineToConstantHeading(new Vector2d(scoreVector.x, 34), Math.toRadians(90))
                 .splineToConstantHeading(new Vector2d(-33, 38), Math.toRadians(180))
                 .splineToConstantHeading(new Vector2d(-39, 24), Math.toRadians(270))
