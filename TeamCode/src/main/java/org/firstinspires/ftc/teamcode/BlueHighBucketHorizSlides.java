@@ -156,8 +156,8 @@ public class BlueHighBucketHorizSlides extends LinearOpMode {
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
 
                 //ACTION
-                bart.intake.intakeMotor.setPower(1);
-                bart.intake.closeGate();
+                //bart.intake.intakeMotor.setPower(1);
+                //bart.intake.closeGate();
                 //bart.output.sendVerticalSlidesToTarget();
                 return actionIsRunning;
             }
@@ -173,7 +173,7 @@ public class BlueHighBucketHorizSlides extends LinearOpMode {
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
 
                 //ACTION
-                bart.intake.intakeMotor.setPower(-0.5);
+                //bart.intake.intakeMotor.setPower(-0.5);
 
                 return actionIsRunning;
             }
@@ -184,7 +184,7 @@ public class BlueHighBucketHorizSlides extends LinearOpMode {
         class IntakeStop implements Action {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                bart.intake.intakeMotor.setPower(0);
+                //bart.intake.intakeMotor.setPower(0);
                 return false;
             }
         }
@@ -378,7 +378,7 @@ public class BlueHighBucketHorizSlides extends LinearOpMode {
 
 
         bart.output.setComponentPositionsFromSavedPosition("rest");
-        bart.intake.closeGate();
+        //bart.intake.closeGate();
         bart.output.sendVerticalSlidesToTarget();
 
         waitForStart();

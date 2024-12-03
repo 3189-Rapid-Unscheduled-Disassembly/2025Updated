@@ -30,13 +30,11 @@ public class Arm {
     }
 
     public double servoToDeg(double inputServoPosition) {
-        inputServoPosition = RobotMath.maxAndMin(inputServoPosition, 1, 0);
-        return (inputServoPosition-ANGLE_IS_ZERO_AT_THIS_SERVO_POS) * DEGREES_FROM_ZERO_TO_ONE;
+        return RobotMath.servoToDeg(inputServoPosition, ANGLE_IS_ZERO_AT_THIS_SERVO_POS, DEGREES_FROM_ZERO_TO_ONE);
     }
 
     public double degToServo(double degrees) {
-        degrees = RobotMath.maxAndMin(degrees, 135, -45);
-        return (degrees/DEGREES_FROM_ZERO_TO_ONE) + ANGLE_IS_ZERO_AT_THIS_SERVO_POS;
+        return RobotMath.degToServo(degrees, ANGLE_IS_ZERO_AT_THIS_SERVO_POS, DEGREES_FROM_ZERO_TO_ONE, 135, -45);
     }
 
     public void setPosition(double position) {

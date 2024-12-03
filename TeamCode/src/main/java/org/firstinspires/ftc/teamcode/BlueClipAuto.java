@@ -292,7 +292,7 @@ public class BlueClipAuto extends LinearOpMode {
 
 
         bart.output.setComponentPositionsFromSavedPosition("rest");
-        bart.intake.closeGate();
+        //bart.intake.closeGate();
         bart.output.sendVerticalSlidesToTarget();
 
 

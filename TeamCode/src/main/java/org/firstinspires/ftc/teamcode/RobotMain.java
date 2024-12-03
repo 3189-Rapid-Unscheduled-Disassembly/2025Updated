@@ -10,21 +10,22 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-/*ports
-2024-11-19
+/*
+ports
+2024-12-02
 CONTROL
 MOTORS
 0 fl
 1 fr
 2 slideFront
-3 intake
+3 steve (this is for the roadrunner encoder)
 SERVOS
 0 gate
-1 wristLeft
-2 wristRight
+1 intakeRoll
+2 intakePitchLeft
 3 armLeft
-4 armRight
-5 gripperFront
+4 intakePitchRight
+5
 
 EXPANSION
 MOTORS
@@ -34,12 +35,13 @@ MOTORS
 3 slideBack
 SERVOS
 0 gripperBack
-1
-2
-3
+1 wristRight
+2 armRight
+3 gripperFront
 4
-5
- */
+5 wristLeft
+*/
+
 public class RobotMain {
 
     Telemetry telemetry = null;

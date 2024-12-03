@@ -54,25 +54,17 @@ public class Wrist {
 
 
     public double leftDegrees() {
-        return servoToDeg(leftServoPosition, DEGREES_FROM_ZERO_TO_ONE, ANGLE_IS_ZERO_AT_THIS_SERVO_POS_LEFT);
+        return RobotMath.servoToDeg(leftServoPosition, ANGLE_IS_ZERO_AT_THIS_SERVO_POS_LEFT, DEGREES_FROM_ZERO_TO_ONE);
     }
     public double rightDegrees() {
-        return servoToDeg(rightServoPosition, DEGREES_FROM_ZERO_TO_ONE, ANGLE_IS_ZERO_AT_THIS_SERVO_POS_RIGHT);
-    }
-    private double servoToDeg(double servoPos, double degreesFromZeroToOne, double angleIsZeroAtThisServoPos) {
-        servoPos = RobotMath.maxAndMin(servoPos, 1, 0);
-        return (servoPos-angleIsZeroAtThisServoPos) * degreesFromZeroToOne;
+        return RobotMath.servoToDeg(rightServoPosition, ANGLE_IS_ZERO_AT_THIS_SERVO_POS_RIGHT, DEGREES_FROM_ZERO_TO_ONE);
     }
 
     public double degToServoLeft(double degrees) {
-        return degToServo(degrees, DEGREES_FROM_ZERO_TO_ONE, ANGLE_IS_ZERO_AT_THIS_SERVO_POS_LEFT);
+        return RobotMath.degToServo(degrees, ANGLE_IS_ZERO_AT_THIS_SERVO_POS_LEFT, DEGREES_FROM_ZERO_TO_ONE, 180, -135);
     }
     public double degToServoRight(double degrees) {
-        return degToServo(degrees, DEGREES_FROM_ZERO_TO_ONE, ANGLE_IS_ZERO_AT_THIS_SERVO_POS_RIGHT);
-    }
-    private double degToServo(double degrees, double degreesFromZeroToOne, double angleIsZeroAtThisServoPos) {
-        degrees = RobotMath.maxAndMin(degrees, 180, -135);
-        return (degrees/degreesFromZeroToOne) + angleIsZeroAtThisServoPos;
+        return RobotMath.degToServo(degrees, ANGLE_IS_ZERO_AT_THIS_SERVO_POS_RIGHT, DEGREES_FROM_ZERO_TO_ONE, 180, -135);
     }
 
     public void writeServoPositions() {

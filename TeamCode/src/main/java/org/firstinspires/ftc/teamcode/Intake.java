@@ -12,24 +12,12 @@ public class Intake {
 
     HashMap<String, Double> savedPositions = new HashMap<String, Double>();
 
-    DcMotorEx horizontalSlide, intakeMotor;
-    Servo gate;
-
-    private double intakePower;
-    private double previousIntakePower;
-    final double INTAKE_POWER_SIGNIFICANT_DIFFERENCE = 0.0001;
+    DcMotorEx horizontalSlide;
+    IntakeArm intakeArm;
 
     private double horizontalSlidePower;
     private double previousHorizontalSlidePower;
     final double HORIZ_POWER_SIGNIFICANT_DIFFERENCE = 0.0001;
-
-    private double gatePosition;
-    private double previousGatePosition;
-    final double GATE_POSITION_SIGNIFICANT_DIFFERENCE = 0.0001;
-
-
-    final double gateOpen = 0.5;
-    final double gateClose = 0.1;
 
 
     //-14 0
@@ -44,12 +32,6 @@ public class Intake {
 
     public Intake(HardwareMap hardwareMap) {
         horizontalSlide = hardwareMap.get(DcMotorEx.class, "slideHoriz");
-        intakeMotor = hardwareMap.get(DcMotorEx.class, "intake");
-        gate = hardwareMap.get(Servo.class, "gate");
-
-        horizontalSlide.setDirection(DcMotorSimple.Direction.REVERSE);
-        intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        gate.setDirection(Servo.Direction.FORWARD);
 
         horizontalSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         horizontalSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -58,6 +40,8 @@ public class Intake {
         savedPositions.put("max", MAX_POINT);
 
         horizontalSlidePosition = 0;
+
+        intakeArm = new IntakeArm(hardwareMap);
     }
 
     public void readAllComponents() {
@@ -67,13 +51,12 @@ public class Intake {
     public void transfer() {
         setHorizontalSlideToSavedPosition("transfer");
         if (isAtSavedPosition("transfer", 1.5)) {
-            intakePower = 0.6;
-            openGate();
+
         } else {
-            intakePower = 1;
-            closeGate();
         }
     }
+
+
     public void setHorizontalSlideToSavedPosition(String key) {
         setHorizontalSlidePositionInches(savedPositions.get(key));
     }
@@ -114,9 +97,6 @@ public class Intake {
     public void setHorizontalSlidePower(double power) {
         horizontalSlidePower = power;
     }
-    public void setIntakeMotorPower(double power) {
-        intakePower = power;
-    }
 
     public void resetEncoder() {
         horizontalSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -124,21 +104,11 @@ public class Intake {
     }
 
     //GATE
-    public void openGate() {
-        gatePosition = gateOpen;
-    }
-    public void closeGate() {
-        gatePosition = gateClose;
-    }
-    public boolean isGateOpen() {
-        return RobotMath.isAbsDiffWithinRange(gateOpen, gatePosition, 0.001);
-    }
 
     //WRITE
     public void writeAllComponents() {
-        writeGate();
-        writeIntakeMotor();
         writeHorizontalSlide();
+        intakeArm.writeServoPositions();
     }
 
     public void writeHorizontalSlide() {
@@ -148,17 +118,6 @@ public class Intake {
         previousHorizontalSlidePower = horizontalSlidePower;
     }
 
-    public void writeIntakeMotor() {
-        if (!RobotMath.isAbsDiffWithinRange(previousIntakePower, intakePower, INTAKE_POWER_SIGNIFICANT_DIFFERENCE)) {
-            intakeMotor.setPower(intakePower);
-        }
-        previousIntakePower = intakePower;
-    }
 
-    public void writeGate() {
-        if (Math.abs(previousGatePosition - gatePosition) > GATE_POSITION_SIGNIFICANT_DIFFERENCE) {
-            gate.setPosition(gatePosition);
-        }
-        previousGatePosition = gatePosition;
-    }
+
 }

@@ -354,7 +354,7 @@ public class ATeleop extends LinearOpMode {
 
         if (playerTwo.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) {
             bart.output.setComponentPositionsFromSavedPosition("aboveTransferOpen");
-            bart.intake.closeGate();
+            //bart.intake.closeGate();
         }
         if (playerTwo.isDown(GamepadKeys.Button.A)) {
             /*if (bart.intake.isGateOpen()) {
@@ -364,13 +364,13 @@ public class ATeleop extends LinearOpMode {
             bart.transfer();
         }
         if (playerTwo.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) {
-            bart.intake.openGate();
+            ///bart.intake.openGate();
         }
 
         //OUTPUT CONTROL
         //manual output control
-        if (playerTwo.getRightY() != 0) {
-            bart.output.verticalSlides.setSlidePower(0.5 * playerTwo.getRightY());
+        if (playerTwo.getLeftY() != 0) {
+            bart.output.verticalSlides.setSlidePower(0.5 * playerTwo.getLeftY());
             bart.output.setTargetToCurrentPosition();
         } else {
             //DONE AUTO
@@ -432,22 +432,15 @@ public class ATeleop extends LinearOpMode {
 
 
 
-        //intake
+        //horizontal slide
         if (playerTwo.isDown(GamepadKeys.Button.DPAD_DOWN)) {
             bart.intake.setHorizontalSlideToSavedPosition("transfer");
         } else if (playerTwo.isDown(GamepadKeys.Button.DPAD_UP)) {
             bart.intake.setHorizontalSlideToSavedPosition("max");
         } else if (!playerTwo.isDown(GamepadKeys.Button.A)){
-            bart.intake.setHorizontalSlidePower(playerTwo.getLeftY() * 1);
+            bart.intake.setHorizontalSlidePower(playerTwo.getRightY() * 1);
         }
 
-        if (playerTwo.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0) {
-            bart.intake.setIntakeMotorPower(playerTwo.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER));
-        } else if (playerTwo.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0) {
-            bart.intake.setIntakeMotorPower(playerTwo.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) * (-1));
-        } else if (!playerTwo.isDown(GamepadKeys.Button.A)){
-            bart.intake.setIntakeMotorPower(0);
-        }
 
     }
 

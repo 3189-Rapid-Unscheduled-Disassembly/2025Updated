@@ -212,7 +212,7 @@ public class BlueClipOverBack extends LinearOpMode {
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
 
                 //ACTION
-                bart.intake.setIntakeMotorPower(-1);
+                //bart.intake.setIntakeMotorPower(-1);
 
                 return actionIsRunning;
             }
@@ -221,7 +221,7 @@ public class BlueClipOverBack extends LinearOpMode {
         class IntakeStop implements Action {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                bart.intake.setIntakeMotorPower(0);
+                //bart.intake.setIntakeMotorPower(0);
                 return false;
             }
         }
@@ -408,7 +408,7 @@ public class BlueClipOverBack extends LinearOpMode {
         //bart.output.setComponentPositionsFromSavedPosition("rest");
         bart.readHubs();
         bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, -40, 90, 0, false));
-        bart.intake.closeGate();
+        //bart.intake.closeGate();
         bart.writeAllComponents();
         //bart.output.sendVerticalSlidesToTarget();
 
