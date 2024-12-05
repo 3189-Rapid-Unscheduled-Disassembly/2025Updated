@@ -20,23 +20,25 @@ public class IntakeArm {
     final double DEGREES_FROM_ZERO_TO_ONE_ROLL = 270;
     final double ANGLE_IS_ZERO_AT_THIS_SERVO_POS_ROLL = 0.5;
 
-    private double pitchPosDeg = 100;
-    private double previousPitchPosDeg;
+    private double pitchPosDeg;
+    private double previousPitchPosDeg = 200;
     final double PITCH_POS_SIGNIFICANT_DIFFERENCE = 0.0001;
 
 
     private double rollPosDeg;
-    private double previousRollPosDeg = 100;
+    private double previousRollPosDeg = 200;
     final double ROLL_POS_SIGNIFICANT_DIFFERENCE = 0.0001;
 
     private double gripperPosServo;
-    private double previousGripperPosServo;
+    private double previousGripperPosServo = 2;
     final double GRIPPER_POS_SIGNIFICANT_DIFFERENCE = 0.0001;
 
 
 
     double gripperOpenPos = 0.2;
     double gripperClosePos = 0.5;
+
+    double theNew90Pitch = 100;
 
 
     public IntakeArm(HardwareMap hardwareMap) {
@@ -45,14 +47,14 @@ public class IntakeArm {
         intakeRoll = hardwareMap.get(Servo.class, "intakeRoll");
         intakeGripper = hardwareMap.get(Servo.class, "intakeGripper");
 
-        intakePitchLeft.setDirection(Servo.Direction.FORWARD);
+        intakePitchLeft.setDirection(Servo.Direction.REVERSE);
         intakePitchRight.setDirection(Servo.Direction.FORWARD);
         intakeRoll.setDirection(Servo.Direction.FORWARD);
         intakeGripper.setDirection(Servo.Direction.FORWARD);
 
-        savedPositions.put("transfer", new IntakeArmPosition(90, 0, false));
-        savedPositions.put("preGrab", new IntakeArmPosition(0, 0, true));
-        savedPositions.put("grab", new IntakeArmPosition(-90, 0, true));
+        savedPositions.put("transfer", new IntakeArmPosition(theNew90Pitch, 0, false));
+        savedPositions.put("preGrab", new IntakeArmPosition(-45, 0, false));
+        savedPositions.put("grab", new IntakeArmPosition(-theNew90Pitch, 0, true));
     }
 
 
@@ -209,13 +211,13 @@ public class IntakeArm {
     //985g
     @Override
     public String toString() {
-        return String.format("\nPITCH: %.0f°", getPitchPosDeg()) +
+        return String.format("\nPitch: %.0f°", getPitchPosDeg()) +
                 String.format("\nRoll: %.0f°", getRollPosDeg()) +
                 "\nGripper is " + (isOpen() ? "open" : "closed");
     }
 
     public String posServoTelemetry() {
-        return String.format("\nPITCH: %.2f Servos", getPitchPosServo()) +
+        return String.format("\nPitch: %.2f Servos", getPitchPosServo()) +
                 String.format("\nRoll: %.2f Servos", getRollPosServo());
     }
 }
