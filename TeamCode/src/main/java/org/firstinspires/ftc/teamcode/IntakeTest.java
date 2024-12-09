@@ -65,6 +65,9 @@ public class IntakeTest extends LinearOpMode {
 
             telemetry.addLine(bart.intake.intakeArm.toString());
             telemetry.addLine(bart.intake.intakeArm.posServoTelemetry());
+
+            telemetry.addData("ticks", bart.intake.horizontalSlide.getCurrentPosition());
+
             telemetry.update();
 
         }

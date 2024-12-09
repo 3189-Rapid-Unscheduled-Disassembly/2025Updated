@@ -212,7 +212,7 @@ public class BlueHighBucketHorizSlides extends LinearOpMode {
                 }
                 horizTarget = 6;
                 //UPDATE COMPONENTS
-                bart.transfer();
+                //bart.transfer();
 
                 //EXIT CONDITIONS
                 actionIsRunning = !bart.output.verticalSlides.isAbovePositionInches(4) || bart.output.gripper.isOpen();

@@ -33,8 +33,10 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.opencv.ColorBlobLocatorProcessor;
 import org.firstinspires.ftc.vision.opencv.ColorRange;
+import org.firstinspires.ftc.vision.opencv.ColorSpace;
 import org.firstinspires.ftc.vision.opencv.ImageRegion;
 import org.opencv.core.RotatedRect;
+import org.opencv.core.Scalar;
 
 import java.util.List;
 
@@ -116,7 +118,11 @@ public class VisionColorLocator extends LinearOpMode
                 .build();
 
         ColorBlobLocatorProcessor colorLocatorYellow = new ColorBlobLocatorProcessor.Builder()
-                .setTargetColorRange(ColorRange.YELLOW)         // use a predefined color match
+                //.setTargetColorRange(ColorRange.YELLOW)         // use a predefined color match
+                .setTargetColorRange(new ColorRange(ColorSpace.YCrCb,//luminosity, red, blue
+                                        new Scalar(0, 90, 0),//min
+                                        new Scalar(255, 160, 90)))//max 80-255r, 0-80b
+                                        //we want there to be a substantial amount of red and very little blue
                 .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
                 .setRoi(ImageRegion.asUnityCenterCoordinates(-1, 1, 1, -1))  // search central 1/4 of camera view
                 .setDrawContours(true)                        // Show contours on the Stream Preview
@@ -187,11 +193,14 @@ public class VisionColorLocator extends LinearOpMode
              *   A perfect Square has an aspect ratio of 1.  All others are > 1
              */
 
-            //this is just to make it easier to read the area
             final int k = 1000;
+            //filter by area
             ColorBlobLocatorProcessor.Util.filterByArea(100, 80*k, blobsBlue);  // filter out very small blobs.20,000
             ColorBlobLocatorProcessor.Util.filterByArea(100, 80*k, blobsYellow);  // filter out very small blobs.
             ColorBlobLocatorProcessor.Util.filterByArea(100, 80*k, blobsRed);  // filter out very small blobs.
+
+            //filter by density (yellow)
+            //ColorBlobLocatorProcessor.Util.filterByDensity(0.7, 1, blobsYellow);
 
             /*
              * The list of Blobs can be sorted using the same Blob attributes as listed above.

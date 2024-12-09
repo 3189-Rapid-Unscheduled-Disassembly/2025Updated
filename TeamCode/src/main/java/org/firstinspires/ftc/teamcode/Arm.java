@@ -22,7 +22,7 @@ public class Arm {
     }
 
     public double armAngleCurrent() {
-        return servoToDeg(readServoPosition);
+        return servoToDeg(ServoPosition);
     }
 
     public void goToAngle(double targetDeg) {

@@ -137,10 +137,21 @@ public class RobotMain {
     }*/
 
 
-    public void transfer() {
-        intake.transfer();
-        output.transfer(intake.isAtSavedPosition("transfer"));
+    public void transferSample() {
+        boolean intakeIsReady = intake.transferSample();
+        boolean outputHasGrabbed = output.transferSample(intakeIsReady);
+        if (outputHasGrabbed) {
+            intake.intakeArm.open();
+        }
     }
+    public void transferClip() {
+        intake.transferClip();
+        boolean outputHasGrabbed = output.transferClip();
+        if (outputHasGrabbed) {
+            intake.intakeArm.open();
+        }
+    }
+
     public void driveRobotRelative(double forwardSpeed, double strafeSpeed, double turnSpeed) {
         mecanaDruve.setDrivePowers(new PoseVelocity2d(
                 new Vector2d(

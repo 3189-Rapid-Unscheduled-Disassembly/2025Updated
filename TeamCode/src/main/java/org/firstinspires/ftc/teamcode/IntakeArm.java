@@ -18,7 +18,7 @@ public class IntakeArm {
 
     //left is positive
     final double DEGREES_FROM_ZERO_TO_ONE_ROLL = 270;
-    final double ANGLE_IS_ZERO_AT_THIS_SERVO_POS_ROLL = 0.5;
+    final double ANGLE_IS_ZERO_AT_THIS_SERVO_POS_ROLL = 0.52;
 
     private double pitchPosDeg;
     private double previousPitchPosDeg = 200;
@@ -34,8 +34,7 @@ public class IntakeArm {
     final double GRIPPER_POS_SIGNIFICANT_DIFFERENCE = 0.0001;
 
 
-
-    double gripperOpenPos = 0.2;
+    double gripperOpenPos = 0.15;
     double gripperClosePos = 0.5;
 
     double theNew90Pitch = 100;
@@ -52,9 +51,10 @@ public class IntakeArm {
         intakeRoll.setDirection(Servo.Direction.FORWARD);
         intakeGripper.setDirection(Servo.Direction.FORWARD);
 
-        savedPositions.put("transfer", new IntakeArmPosition(theNew90Pitch, 0, false));
-        savedPositions.put("preGrab", new IntakeArmPosition(-45, 0, false));
-        savedPositions.put("grab", new IntakeArmPosition(-theNew90Pitch, 0, true));
+        savedPositions.put("transferClip", new IntakeArmPosition(35,0, false));
+        savedPositions.put("transferSample", new IntakeArmPosition(100, 90, false));
+        savedPositions.put("preGrab", new IntakeArmPosition(-72, 0, true));
+        savedPositions.put("grab", new IntakeArmPosition(-82, 0, true));
     }
 
 
@@ -89,12 +89,12 @@ public class IntakeArm {
     //this cycles between transfer, preGrab, grab, and then back to transfer
     //this allows us to quickly cycle to the desired pitch
     public void cycle() {
-        if (isPitchEqualToSavedIntakePosition("transfer")) {
+        if (isPitchEqualToSavedIntakePosition("transferSample")) {
             setToSavedIntakeArmPosition("preGrab");
         } else if (isPitchEqualToSavedIntakePosition("preGrab")) {
             setToSavedIntakeArmPosition("grab");
         } else {
-            setToSavedIntakeArmPosition("transfer");
+            setToSavedIntakeArmPosition("transferSample");
         }
     }
 
@@ -121,7 +121,7 @@ public class IntakeArm {
         return RobotMath.servoToDeg(inputServoPosition, ANGLE_IS_ZERO_AT_THIS_SERVO_POS_PITCH, DEGREES_FROM_ZERO_TO_ONE_PITCH);
     }
     public double degToServoPitch(double degrees) {
-        return RobotMath.degToServo(degrees, ANGLE_IS_ZERO_AT_THIS_SERVO_POS_ROLL, DEGREES_FROM_ZERO_TO_ONE_ROLL, 90, -90);
+        return RobotMath.degToServo(degrees, ANGLE_IS_ZERO_AT_THIS_SERVO_POS_ROLL, DEGREES_FROM_ZERO_TO_ONE_ROLL, 135, -135);
     }
 
     public double servoToDegRoll(double inputServoPosition) {

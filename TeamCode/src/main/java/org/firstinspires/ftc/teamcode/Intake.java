@@ -5,12 +5,16 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import java.util.HashMap;
 
 public class Intake {
 
     HashMap<String, Double> savedPositions = new HashMap<String, Double>();
+
+    ElapsedTime timer;
+
 
     DcMotorEx horizontalSlide;
     IntakeArm intakeArm;
@@ -33,6 +37,8 @@ public class Intake {
     public Intake(HardwareMap hardwareMap) {
         horizontalSlide = hardwareMap.get(DcMotorEx.class, "slideHoriz");
 
+        horizontalSlide.setDirection(DcMotorSimple.Direction.REVERSE);
+
         horizontalSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         horizontalSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
@@ -42,20 +48,38 @@ public class Intake {
         horizontalSlidePosition = 0;
 
         intakeArm = new IntakeArm(hardwareMap);
+
+
+        timer = new ElapsedTime();
+        timer.reset();
     }
 
     public void readAllComponents() {
         horizontalSlidePosition = horizontalSlide.getCurrentPosition();
     }
 
-    public void transfer() {
+    //TRANSFERRING
+    public void transferClip() {
         setHorizontalSlideToSavedPosition("transfer");
-        if (isAtSavedPosition("transfer", 1.5)) {
-
-        } else {
-        }
+        intakeArm.setToSavedIntakeArmPosition("transferClip");
     }
+    public boolean transferSample() {
+        setHorizontalSlideToSavedPosition("transfer");
+        intakeArm.setToSavedIntakeArmPosition("transferSample");
 
+        //timer to lower the output once it is there
+        if (isAtSavedPosition("transfer")) {
+            if (timer.milliseconds() > 3000) {
+                timer.reset();
+            }
+            //this is what we say once we are there
+            //should be enough time to put intake arm in right spot
+            return timer.milliseconds() > 1000;
+        } else {
+            timer.reset();
+        }
+        return false;
+    }
 
     public void setHorizontalSlideToSavedPosition(String key) {
         setHorizontalSlidePositionInches(savedPositions.get(key));
@@ -83,7 +107,7 @@ public class Intake {
         double tickTarget = inchesToTicks(RobotMath.maxAndMin(inches, 24, 6));
         double error = tickTarget - horizontalSlidePosition;
 
-        horizontalSlidePower = 0.01 * error;
+        horizontalSlidePower = 0.006 * error;
     }
 
     public double inchesToTicks(double inches) {

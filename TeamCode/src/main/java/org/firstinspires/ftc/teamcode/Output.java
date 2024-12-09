@@ -53,17 +53,26 @@ public class Output {
         double theNew90 = 112;
 
         //put saved positions
-        savedPositions.put("aboveTransferOpen",
-                new OutputEndPoint(new Point2d(3.53, 7.0155), -90, 10, true)
+
+        savedPositions.put("aboveTransferSampleClosed",
+                new OutputEndPoint(0, -5, -105, 0, false)
         );
-        savedPositions.put("aboveTransferClose",
-                new OutputEndPoint(new Point2d(3.53, 7.0155), -90, 10, false)
+        savedPositions.put("aboveTransferSampleOpen",
+                new OutputEndPoint(0, -5, -105, 0, true)
         );
-        savedPositions.put("transfer",
-                new OutputEndPoint(new Point2d(4, 4.35), -90, 10, true)
+        savedPositions.put("transferSample",
+                new OutputEndPoint(0, -15, -115, 0, true)
         );
+
+        savedPositions.put("aboveTransferClip",
+                new OutputEndPoint(0, 0, -50, theNew90, false)
+        );
+        savedPositions.put("transferClip",
+                new OutputEndPoint(0, -20, -50, theNew90, true)
+        );
+
         savedPositions.put("rest",
-                new OutputEndPoint(new Point2d(7.1, 9.2), 45, 0, false)
+                new OutputEndPoint(0, -15, 90, 0, false)
         );
         savedPositions.put("grab",
                 new OutputEndPoint(0, -2.5, -60, theNew90, true)
@@ -114,37 +123,54 @@ public class Output {
         gripper.writePosition();
     }
 
-    public void transfer(boolean isIntakeAtTarget) {
-        //before intake is ready
-        if (!isIntakeAtTarget) {
-            setComponentPositionsFromSavedPosition("aboveTransferOpen");
+    //TRANSFERRING
+    public boolean transferClip() {
+        if (timer.milliseconds() > 2000) {
+            setComponentPositionsFromSavedPosition("transferClip");
+            timer.reset();
+        }
+
+        //should check to see if slides are at spot
+        if (gripper.isOpen()) {
+            if (timer.milliseconds() > 500) {
+                gripper.close();
+                timer.reset();
+                return true;
+            }
         } else {
-            //before we have grabbed the sample
+            if (timer.milliseconds() > 500) {
+                setComponentPositionsFromSavedPosition("aboveTransferClip");
+            }
+            return true;
+        }
+
+        return false;
+    }
+    public boolean transferSample(boolean intakeIsReady) {
+        if (!intakeIsReady) {
+            setComponentPositionsFromSavedPosition("aboveTransferSampleOpen");
+            timer.reset();
+        } else {
+            //if closed, we are ready to pull up, we just need to wait a sec
             if (gripper.isOpen()) {
-                setComponentPositionsFromSavedPosition("transfer");
-                //once we get there, we wanna wait for a little bit before grabbing
-                if (verticalSlides.isAtTarget()) {
-                    if (timer.milliseconds() > 250) {
-                        gripper.close();
-                        timer.reset();
-                    }
-                } else {
+                setComponentPositionsFromSavedPosition("transferSample");
+                if (timer.milliseconds() > 250) {
+                    gripper.close();
                     timer.reset();
+                    return true;
                 }
             } else {
-                if (timer.milliseconds() > 250) {
-                    setComponentPositionsFromSavedPosition("aboveTransferClose");
+                if (timer.milliseconds() > 500) {
+                    setComponentPositionsFromSavedPosition("aboveTransferSampleClosed");
                 }
-                //if the intake was in the right spot already, then it would just stay in this position
-                //this is our escape if we start calling this method and the intake is already in the transfer position
-                if (timer.milliseconds() > 2000) {
-                    setComponentPositionsFromSavedPosition("aboveTransferOpen");
-                }
+                return true;
             }
         }
-        sendVerticalSlidesToTarget();
-
+        return false;
     }
+
+
+
     public void setComponentPositionsFromSavedPosition(String key) {
         setComponentPositionsFromOutputEndPoint(savedPositions.get(key));
     }

@@ -72,7 +72,7 @@ public class ATeleop extends LinearOpMode {
     double totalLoops;
 
     double targetAngle;
-    double automatedAngularVel;
+    boolean usingAutoAngle = false;
 
     GamepadEx playerOne, playerTwo;
 
@@ -89,7 +89,6 @@ public class ATeleop extends LinearOpMode {
 
 
         targetAngle = 0;
-        automatedAngularVel = 0;
 
         //create robot
         bart = new RobotMain(hardwareMap, telemetry);
@@ -106,6 +105,7 @@ public class ATeleop extends LinearOpMode {
 
         waitForStart();
         bart.output.setComponentPositionsFromSavedPosition("rest");
+        bart.intake.intakeArm.setToSavedIntakeArmPosition("grab");
 
         currentState = State.MANUAL;
         previousState = currentState;
@@ -150,7 +150,6 @@ public class ATeleop extends LinearOpMode {
             telemetry.addData("Avg Loop Time", avgLoopTime);
             telemetry.addData("Angle", Math.toDegrees(bart.mecanaDruve.pose.heading.toDouble()));
             telemetry.addData("Target Drive Angle", targetAngle);
-            telemetry.addData("Turn Speed", automatedAngularVel);
             telemetry.update();
 
         }
@@ -265,6 +264,7 @@ public class ATeleop extends LinearOpMode {
 
 
     public void thogLockToNextClockwise() {
+        usingAutoAngle = true;
         if (targetAngle > 90) {
             targetAngle = 90;
         } else if (targetAngle > 0) {
@@ -279,6 +279,7 @@ public class ATeleop extends LinearOpMode {
     }
 
     public void thogLockToNextCounterClockwise() {
+        usingAutoAngle = true;
         if (targetAngle < -90) {
             targetAngle = -90;
         } else if (targetAngle < 0) {
@@ -292,14 +293,14 @@ public class ATeleop extends LinearOpMode {
         }
     }
 
-    public void goToTargetAngle() {
+    public double goToTargetAngle() {
         double angleError = targetAngle - Math.toDegrees(bart.mecanaDruve.pose.heading.toDouble());
         if (angleError > 180) {
             angleError = angleError - 360;
         } else if (angleError < -180) {
             angleError = angleError + 360;
         }
-        automatedAngularVel = angularP * (angleError / 180);
+        return angularP * (angleError / 180);
     }
 
 
@@ -337,8 +338,14 @@ public class ATeleop extends LinearOpMode {
         if (playerOne.getRightX() != 0) {
             turnSpeed = -playerOne.getRightX() * MAX_DRIVE_VELOCITY_MULTIPLIER;
             targetAngle = Math.toDegrees(bart.mecanaDruve.pose.heading.toDouble());
+            usingAutoAngle = false;
         } else {
-            turnSpeed = automatedAngularVel;
+            if (usingAutoAngle) {
+                turnSpeed = goToTargetAngle();
+            } else {
+                turnSpeed = 0;
+            }
+
         }
         bart.mecanaDruve.setDrivePowers(new PoseVelocity2d(
                 new Vector2d(
@@ -352,19 +359,20 @@ public class ATeleop extends LinearOpMode {
 
 
 
-        if (playerTwo.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) {
-            bart.output.setComponentPositionsFromSavedPosition("aboveTransferOpen");
-            //bart.intake.closeGate();
-        }
+        //transfer when a is held, the left trigger tells it to do a clip transfer
         if (playerTwo.isDown(GamepadKeys.Button.A)) {
-            /*if (bart.intake.isGateOpen()) {
-                bart.output.calculateComponentPositionsFromSavedEndPoint("transfer");
+            if (playerTwo.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.5) {
+                bart.transferClip();
+            } else {
+                bart.transferSample();
             }
-            bart.intake.openGate();*/
-            bart.transfer();
         }
-        if (playerTwo.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) {
-            ///bart.intake.openGate();
+
+        if (playerTwo.wasJustPressed(GamepadKeys.Button.DPAD_UP)) {
+            bart.intake.intakeArm.cycle();
+        }
+        if (playerTwo.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) {
+            bart.intake.intakeArm.flipFlop();
         }
 
         //OUTPUT CONTROL
@@ -373,7 +381,9 @@ public class ATeleop extends LinearOpMode {
             bart.output.verticalSlides.setSlidePower(0.5 * playerTwo.getLeftY());
             bart.output.setTargetToCurrentPosition();
         } else {
-            //DONE AUTO
+            //BUTTON CONTROL OF THE OUTPUT
+
+
             if (playerTwo.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) {
                 bart.output.setComponentPositionsFromSavedPosition("grab");
             }
@@ -385,7 +395,7 @@ public class ATeleop extends LinearOpMode {
                 bart.output.setComponentPositionsFromSavedPosition("highBarFront");
             }
             if (playerTwo.wasJustPressed(GamepadKeys.Button.X)) {
-                bart.output.setComponentPositionsFromSavedPosition("highBarBack");
+                bart.output.setComponentPositionsFromSavedPosition("grab");
             }
             if (playerTwo.wasJustPressed(GamepadKeys.Button.RIGHT_STICK_BUTTON)) {
                 bart.output.setComponentPositionsFromSavedPosition("level1AscentTeleop");
@@ -397,7 +407,6 @@ public class ATeleop extends LinearOpMode {
 
         if (playerTwo.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) {
             bart.output.gripper.flipFlop();
-            //bart.output.setComponentPositionsFromSavedPosition("grab2");
         }
 
         /*if (playerTwo.wasJustPressed(GamepadKeys.Button.LEFT_STICK_BUTTON)) {
@@ -435,10 +444,8 @@ public class ATeleop extends LinearOpMode {
         //horizontal slide
         if (playerTwo.isDown(GamepadKeys.Button.DPAD_DOWN)) {
             bart.intake.setHorizontalSlideToSavedPosition("transfer");
-        } else if (playerTwo.isDown(GamepadKeys.Button.DPAD_UP)) {
-            bart.intake.setHorizontalSlideToSavedPosition("max");
         } else if (!playerTwo.isDown(GamepadKeys.Button.A)){
-            bart.intake.setHorizontalSlidePower(playerTwo.getRightY() * 1);
+            bart.intake.setHorizontalSlidePower(-playerTwo.getRightY() * 1);
         }
 
 

@@ -43,7 +43,7 @@ public class Wrist {
      */
     public void setWristToTarget(double pitchTarget, double rollTarget, double armPitch) {
         pitchTarget -= armPitch;
-        pitchTarget = RobotMath.maxAndMin(pitchTarget, 130, -90);
+        pitchTarget = RobotMath.maxAndMin(pitchTarget, 130, -140);
         rollTarget = RobotMath.maxAndMin(rollTarget, 112, 0);
         double leftDeg = pitchTarget + (rollTarget / 2);
         double rightDeg = pitchTarget - (rollTarget / 2);
