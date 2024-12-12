@@ -344,21 +344,6 @@ public class BlueClipsNewIntake extends LinearOpMode {
 
         }
 
-        class TransferClip implements Action {
-
-            @Override
-            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                bart.transferClip();
-                isTransferingNow = true;
-
-                //this is the position of aboveTransfer. That means the transfer is complete
-                if (bart.output.arm.armAngleCurrent() == 0) {
-                    isTransferingNow = false;
-                    return false;
-                }
-                return true;
-            }
-        }
 
 
         class ReadComponents implements Action {
@@ -393,7 +378,6 @@ public class BlueClipsNewIntake extends LinearOpMode {
             return new LowerToGrabOnceXPastNegative24();
         }
 
-        public Action transferClip() {return new TransferClip();}
 
         public Action setIntakeGripperClosed(boolean open) {return new SetIntakeGripperClosed(open);}
         public Action setIntakeGripperOpen(boolean open) {return new SetIntakeGripperOpen(open);}
@@ -478,7 +462,7 @@ public class BlueClipsNewIntake extends LinearOpMode {
         Pose2d grabSpark2Pose= new Pose2d(grabSpark2Vector, grabSpark2Rad);
 
         Vector2d grabSpark3Vector = new Vector2d(-45.75, 37.5);
-        double grabSpark3Rad = Math.toRadians(197);
+        double grabSpark3Rad = Math.toRadians(190);
         Pose2d grabSpark3Pose= new Pose2d(grabSpark2Vector, grabSpark3Rad);
 
         double dropRad1 = Math.toRadians(135);
@@ -565,10 +549,9 @@ public class BlueClipsNewIntake extends LinearOpMode {
         //bart.output.sendVerticalSlidesToTarget();
 
         int timeToGrabSpikeMilliseconds = 320;
-        int timeToDropSpikeMilliseconds = 80;
+        int timeToDropSpikeMilliseconds = 100;
 
-        int timeToGrabClipMilliseconds = 150;
-        int timeToDropClipMilliseconds = 25;
+        int timeToGrabClipMilliseconds = 50;
 
         waitForStart();
 
@@ -676,8 +659,6 @@ public class BlueClipsNewIntake extends LinearOpMode {
                                     outputs.raiseToHighBarBackOnceAwayFromWall(),
                                     fromGrabToScoreCycle.build()
                                 ),
-                                outputs.openGripper(),
-                                sleeper.sleep(timeToDropClipMilliseconds),
 
                                 //CYCLE CLIP 3
                                 //grab
@@ -690,8 +671,6 @@ public class BlueClipsNewIntake extends LinearOpMode {
                                         outputs.raiseToHighBarBackOnceAwayFromWall(),
                                         fromGrabToScoreCycle.build()
                                 ),
-                                outputs.openGripper(),
-                                sleeper.sleep(timeToDropClipMilliseconds),
 
                                 //CYCLE CLIP 4
                                 //grab
@@ -704,8 +683,6 @@ public class BlueClipsNewIntake extends LinearOpMode {
                                         outputs.raiseToHighBarBackOnceAwayFromWall(),
                                         fromGrabToScoreCycle.build()
                                 ),
-                                outputs.openGripper(),
-                                sleeper.sleep(timeToDropClipMilliseconds),
 
                                 //CYCLE CLIP 5
                                 //grab
@@ -718,10 +695,8 @@ public class BlueClipsNewIntake extends LinearOpMode {
                                         outputs.raiseToHighBarBackOnceAwayFromWall(),
                                         fromGrabToScoreCycle.build()
                                 ),
-                                outputs.openGripper(),
-                                sleeper.sleep(timeToDropClipMilliseconds),
 
-                                outputs.lowerToPark(),
+                                outputs.lowerToGrab(),
                                 //fromScoreCycleToPark.build(),
                                 sleeper.sleep(350),
 

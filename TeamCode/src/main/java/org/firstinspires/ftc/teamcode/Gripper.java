@@ -7,12 +7,17 @@ import javax.annotation.Nonnull;
 
 public class Gripper {
     Servo front, back;
-    private double position;
+    private double positionBack;
+    private double positionFront;
+
     private double currentPosition;
     private double previousServoPosition;
     final double SERVO_POSITION_SIGNIFICANT_DIFFERENCE = 0.0001;
-    final double openPos = 0.1;
-    final double closePos = 0.5;
+    final double openPosBack = 0.1;
+    final double closePosBack = 0.5;
+    final double openPosFront = 0.1;
+    final double closePosFront = 0.475;
+
 
     public Gripper(HardwareMap hardwareMap) {
         front = hardwareMap.get(Servo.class, "gripperFront");
@@ -30,10 +35,12 @@ public class Gripper {
         }
     }
     public void open() {
-      setPosition(openPos);
+        setPositionBack(openPosBack);
+        setPositionFront(openPosFront);
     }
     public void close() {
-        setPosition(closePos);
+        setPositionBack(closePosBack);
+        setPositionFront(closePosFront);
     }
 
     public void flipFlop() {
@@ -44,21 +51,25 @@ public class Gripper {
         }
     }
     public boolean isOpen() {
-        return RobotMath.isAbsDiffWithinRange(position, openPos, 0.001);
+        return RobotMath.isAbsDiffWithinRange(positionBack, openPosBack, 0.001);
     }
     public void readPosition() {
         currentPosition = front.getPosition();
     }
     public void writePosition() {
-        if (Math.abs(previousServoPosition - position) > SERVO_POSITION_SIGNIFICANT_DIFFERENCE) {
-            front.setPosition(position);
-            back.setPosition(position);
+        if (Math.abs(previousServoPosition - positionBack) > SERVO_POSITION_SIGNIFICANT_DIFFERENCE) {
+            front.setPosition(positionFront);
+            back.setPosition(positionBack);
         }
-        previousServoPosition = position;
+        previousServoPosition = positionBack;
     }
-    public void setPosition(double pos) {
-        position = pos;
+    public void setPositionBack(double pos) {
+        positionBack = pos;
     }
+    public void setPositionFront(double pos) {
+        positionFront = pos;
+    }
+
 
     @Nonnull
     public String toString() {

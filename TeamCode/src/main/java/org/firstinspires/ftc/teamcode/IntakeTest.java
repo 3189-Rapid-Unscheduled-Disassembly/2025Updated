@@ -20,7 +20,7 @@ public class IntakeTest extends LinearOpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         bart = new RobotMain(hardwareMap, telemetry);
-        bart.intake.intakeArm.setToSavedIntakeArmPosition("preGrab");
+        bart.intake.intakeArm.setToSavedIntakeArmPosition("grab");
         GamepadEx playerOne;
 
         playerOne = new GamepadEx(gamepad1);

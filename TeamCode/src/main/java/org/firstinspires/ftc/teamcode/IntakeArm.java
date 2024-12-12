@@ -34,8 +34,8 @@ public class IntakeArm {
     final double GRIPPER_POS_SIGNIFICANT_DIFFERENCE = 0.0001;
 
 
-    double gripperOpenPos = 0.15;
-    double gripperClosePos = 0.5;
+    double gripperOpenPos = 0.65;
+    double gripperClosePos = 0.15;
 
     double theNew90Pitch = 100;
 
@@ -49,12 +49,10 @@ public class IntakeArm {
         intakePitchLeft.setDirection(Servo.Direction.REVERSE);
         intakePitchRight.setDirection(Servo.Direction.FORWARD);
         intakeRoll.setDirection(Servo.Direction.FORWARD);
-        intakeGripper.setDirection(Servo.Direction.FORWARD);
+        intakeGripper.setDirection(Servo.Direction.REVERSE);
 
-        savedPositions.put("transferClip", new IntakeArmPosition(35,0, false));
-        savedPositions.put("transferSample", new IntakeArmPosition(100, 90, false));
-        savedPositions.put("preGrab", new IntakeArmPosition(-72, 0, true));
-        savedPositions.put("grab", new IntakeArmPosition(-82, 0, true));
+        savedPositions.put("transfer", new IntakeArmPosition(35,0, false));
+        savedPositions.put("grab", new IntakeArmPosition(-75, 0, true));
     }
 
 
@@ -89,12 +87,10 @@ public class IntakeArm {
     //this cycles between transfer, preGrab, grab, and then back to transfer
     //this allows us to quickly cycle to the desired pitch
     public void cycle() {
-        if (isPitchEqualToSavedIntakePosition("transferSample")) {
-            setToSavedIntakeArmPosition("preGrab");
-        } else if (isPitchEqualToSavedIntakePosition("preGrab")) {
+        if (isPitchEqualToSavedIntakePosition("transfer")) {
             setToSavedIntakeArmPosition("grab");
         } else {
-            setToSavedIntakeArmPosition("transferSample");
+            setToSavedIntakeArmPosition("transfer");
         }
     }
 
@@ -188,7 +184,7 @@ public class IntakeArm {
 
     public void writePitch() {
         if (!RobotMath.isAbsDiffWithinRange(previousPitchPosDeg, pitchPosDeg, PITCH_POS_SIGNIFICANT_DIFFERENCE)) {
-            intakePitchLeft.setPosition(degToServoPitch(pitchPosDeg));
+            //intakePitchLeft.setPosition(degToServoPitch(pitchPosDeg));
             intakePitchRight.setPosition(degToServoPitch(pitchPosDeg));
         }
         previousPitchPosDeg = pitchPosDeg;

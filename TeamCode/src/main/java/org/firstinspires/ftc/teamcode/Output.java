@@ -54,20 +54,11 @@ public class Output {
 
         //put saved positions
 
-        savedPositions.put("aboveTransferSampleClosed",
-                new OutputEndPoint(0, -5, -105, 0, false)
-        );
-        savedPositions.put("aboveTransferSampleOpen",
-                new OutputEndPoint(0, -5, -105, 0, true)
-        );
-        savedPositions.put("transferSample",
-                new OutputEndPoint(0, -15, -115, 0, true)
-        );
 
-        savedPositions.put("aboveTransferClip",
-                new OutputEndPoint(0, 0, -50, theNew90, false)
+        savedPositions.put("aboveTransfer",
+                new OutputEndPoint(0, 0, -20, theNew90, false)
         );
-        savedPositions.put("transferClip",
+        savedPositions.put("transfer",
                 new OutputEndPoint(0, -20, -50, theNew90, true)
         );
 
@@ -76,6 +67,9 @@ public class Output {
         );
         savedPositions.put("grab",
                 new OutputEndPoint(0, -2.5, -60, theNew90, true)
+        );
+        savedPositions.put("aboveGrab",
+                new OutputEndPoint(0, 5, -60, theNew90, false)
         );
         savedPositions.put("grab2",
                 new OutputEndPoint(0, -3, 60, theNew90, true)
@@ -124,48 +118,26 @@ public class Output {
     }
 
     //TRANSFERRING
-    public boolean transferClip() {
-        if (timer.milliseconds() > 2000) {
-            setComponentPositionsFromSavedPosition("transferClip");
+    public boolean transfer() {
+        if (timer.milliseconds() > 3000) {
+            setComponentPositionsFromSavedPosition("transfer");
             timer.reset();
         }
 
         //should check to see if slides are at spot
         if (gripper.isOpen()) {
-            if (timer.milliseconds() > 500) {
+            if (timer.milliseconds() > 1500) {
                 gripper.close();
                 timer.reset();
-                return true;
             }
         } else {
-            if (timer.milliseconds() > 500) {
-                setComponentPositionsFromSavedPosition("aboveTransferClip");
+            if (timer.milliseconds() > 1000) {
+                setComponentPositionsFromSavedPosition("aboveTransfer");
             }
-            return true;
+
+            return timer.milliseconds() > 500;
         }
 
-        return false;
-    }
-    public boolean transferSample(boolean intakeIsReady) {
-        if (!intakeIsReady) {
-            setComponentPositionsFromSavedPosition("aboveTransferSampleOpen");
-            timer.reset();
-        } else {
-            //if closed, we are ready to pull up, we just need to wait a sec
-            if (gripper.isOpen()) {
-                setComponentPositionsFromSavedPosition("transferSample");
-                if (timer.milliseconds() > 250) {
-                    gripper.close();
-                    timer.reset();
-                    return true;
-                }
-            } else {
-                if (timer.milliseconds() > 500) {
-                    setComponentPositionsFromSavedPosition("aboveTransferSampleClosed");
-                }
-                return true;
-            }
-        }
         return false;
     }
 

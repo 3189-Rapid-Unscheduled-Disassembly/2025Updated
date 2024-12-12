@@ -137,16 +137,9 @@ public class RobotMain {
     }*/
 
 
-    public void transferSample() {
-        boolean intakeIsReady = intake.transferSample();
-        boolean outputHasGrabbed = output.transferSample(intakeIsReady);
-        if (outputHasGrabbed) {
-            intake.intakeArm.open();
-        }
-    }
-    public void transferClip() {
-        intake.transferClip();
-        boolean outputHasGrabbed = output.transferClip();
+    public void transfer() {
+        intake.transfer();
+        boolean outputHasGrabbed = output.transfer();
         if (outputHasGrabbed) {
             intake.intakeArm.open();
         }
@@ -165,8 +158,8 @@ public class RobotMain {
         double cos = Math.cos(mecanaDruve.pose.heading.toDouble());
         double sin = Math.sin(mecanaDruve.pose.heading.toDouble());
 
-        double robotForwardSpeed = xSpeed*cos - ySpeed*sin;
-        double robotStrafeSpeed = xSpeed*sin + ySpeed*cos;
+        double robotForwardSpeed = xSpeed*cos + ySpeed*sin;
+        double robotStrafeSpeed = -xSpeed*sin + ySpeed*cos;
 
         driveRobotRelative(robotForwardSpeed, robotStrafeSpeed, turnSpeed);
     }

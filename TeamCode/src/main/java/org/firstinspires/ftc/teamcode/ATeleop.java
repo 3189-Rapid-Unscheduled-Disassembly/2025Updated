@@ -41,12 +41,23 @@ public class ATeleop extends LinearOpMode {
     private VisionPortal visionPortal;
 
     private boolean cameraIsOn;
+    boolean isFieldRelative;
 
     final double xP = 0.05;
     final double yP = 0.05;
     final double thetaP = 0.05;
     final double angularP = 4;
     final double MAX_DRIVE_VELOCITY_MULTIPLIER = 0.7;
+
+    double p1PreviousRightTrigger = 0;
+    double p1PreviousLeftTrigger = 0;
+
+    double p2PreviousRightY = 0;
+    double horizTargetInches = 6;
+    boolean usingHorizManualControl = false;
+
+    boolean alternateControl = false;
+
 
     double inputtedY = 12;
 
@@ -74,6 +85,9 @@ public class ATeleop extends LinearOpMode {
     double targetAngle;
     boolean usingAutoAngle = false;
 
+    boolean isTransferring = false;
+
+
     GamepadEx playerOne, playerTwo;
 
     @Override
@@ -89,6 +103,9 @@ public class ATeleop extends LinearOpMode {
 
 
         targetAngle = 0;
+
+        isFieldRelative = false;
+
 
         //create robot
         bart = new RobotMain(hardwareMap, telemetry);
@@ -132,24 +149,37 @@ public class ATeleop extends LinearOpMode {
 
             /** TELEMETRY **/
 
-            telemetry.addLine(bart.output.currentPosition().pointTelemetry());
+            //telemetry.addLine(bart.output.currentPosition().pointTelemetry());
             telemetry.addData("\n", bart.output.currentPosition().componentValuesIrl());
             telemetry.addLine(bart.output.wrist.toString());
-            telemetry.addData("wristServosLeft", bart.output.wrist.getCurrentLeftServoPosition());
-            telemetry.addData("wristServosRight", bart.output.wrist.getCurrentRightServoPosition());
-            telemetry.addData("armServos", bart.output.arm.getCurrentServoPosition());
+            //telemetry.addData("wristServosLeft", bart.output.wrist.getCurrentLeftServoPosition());
+            //telemetry.addData("wristServosRight", bart.output.wrist.getCurrentRightServoPosition());
+            //telemetry.addData("armServos", bart.output.arm.getCurrentServoPosition());
+
+
+            //LOOP TIMER THINGY. MAYBE WANT LATER
             loopTime = elapsedTime.milliseconds() - totalTime;
             if (loopTime > maxLoopTime) maxLoopTime = loopTime;
             if (loopTime < minLoopTime) minLoopTime = loopTime;
             totalLoops++;
             totalTime = elapsedTime.milliseconds();
             avgLoopTime = totalTime/totalLoops;
-            telemetry.addData("Loop Time", loopTime);
+            /*telemetry.addData("Loop Time", loopTime);
             telemetry.addData("Max Loop Time", maxLoopTime);
             telemetry.addData("Min Loop Time", minLoopTime);
-            telemetry.addData("Avg Loop Time", avgLoopTime);
+            telemetry.addData("Avg Loop Time", avgLoopTime);*/
+
+
             telemetry.addData("Angle", Math.toDegrees(bart.mecanaDruve.pose.heading.toDouble()));
-            telemetry.addData("Target Drive Angle", targetAngle);
+            telemetry.addData("p1ly", playerOne.getLeftY());
+            telemetry.addData("p1lx", -playerOne.getLeftX());
+            telemetry.addData("p1rx", -playerOne.getRightX());
+
+            //telemetry.addData("Target Drive Angle", targetAngle);
+
+            telemetry.addData("horizInches", bart.intake.currentInches());
+
+
             telemetry.update();
 
         }
@@ -331,46 +361,63 @@ public class ATeleop extends LinearOpMode {
 
 
     public void manualControl() {
-        //bart.driveRobotRelative(playerOne.getLeftY(), playerOne.getLeftX(), playerOne.getRightX());
-        goToTargetAngle();
-        //if (playerOne.getRightX() != 0) targetAngle -= gamepad1.right_stick_x*5;
-        double turnSpeed;
-        if (playerOne.getRightX() != 0) {
-            turnSpeed = -playerOne.getRightX() * MAX_DRIVE_VELOCITY_MULTIPLIER;
-            targetAngle = Math.toDegrees(bart.mecanaDruve.pose.heading.toDouble());
-            usingAutoAngle = false;
-        } else {
-            if (usingAutoAngle) {
-                turnSpeed = goToTargetAngle();
-            } else {
-                turnSpeed = 0;
-            }
 
+        if (playerOne.wasJustPressed(GamepadKeys.Button.Y)) {
+            isFieldRelative = !isFieldRelative;
         }
-        bart.mecanaDruve.setDrivePowers(new PoseVelocity2d(
-                new Vector2d(
-                        -gamepad1.left_stick_y*MAX_DRIVE_VELOCITY_MULTIPLIER,
-                        -gamepad1.left_stick_x*MAX_DRIVE_VELOCITY_MULTIPLIER
-                ),
-                turnSpeed
+        if (!isFieldRelative) {
+            //bart.driveRobotRelative(playerOne.getLeftY(), playerOne.getLeftX(), playerOne.getRightX());
+            goToTargetAngle();
+            //if (playerOne.getRightX() != 0) targetAngle -= gamepad1.right_stick_x*5;
+            double turnSpeed;
+            if (playerOne.getRightX() != 0) {
+                turnSpeed = -playerOne.getRightX() * MAX_DRIVE_VELOCITY_MULTIPLIER;
+                targetAngle = Math.toDegrees(bart.mecanaDruve.pose.heading.toDouble());
+                usingAutoAngle = false;
+            } else {
+                if (usingAutoAngle) {
+                    turnSpeed = goToTargetAngle();
+                } else {
+                    turnSpeed = 0;
+                }
+
+            }
+            bart.mecanaDruve.setDrivePowers(new PoseVelocity2d(
+                    new Vector2d(
+                            -gamepad1.left_stick_y*MAX_DRIVE_VELOCITY_MULTIPLIER,
+                            -gamepad1.left_stick_x*MAX_DRIVE_VELOCITY_MULTIPLIER
+                    ),
+                    turnSpeed
             ));
+        } else {
+            bart.driveFieldRelative(playerOne.getLeftY()*MAX_DRIVE_VELOCITY_MULTIPLIER,
+                    -playerOne.getLeftX()*MAX_DRIVE_VELOCITY_MULTIPLIER,
+                    -playerOne.getRightX()*MAX_DRIVE_VELOCITY_MULTIPLIER);
+        }
 
 
 
-
+        alternateControl = playerTwo.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) == 1;
 
         //transfer when a is held, the left trigger tells it to do a clip transfer
-        if (playerTwo.isDown(GamepadKeys.Button.A)) {
-            if (playerTwo.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.5) {
-                bart.transferClip();
-            } else {
-                bart.transferSample();
-            }
+        if (playerTwo.isDown(GamepadKeys.Button.A) || playerOne.isDown(GamepadKeys.Button.RIGHT_STICK_BUTTON)) {
+            bart.transfer();
+            isTransferring = true;
+        } else {
+            isTransferring = false;
         }
 
+        //INTAKE CONTROL
         if (playerTwo.wasJustPressed(GamepadKeys.Button.DPAD_UP)) {
             bart.intake.intakeArm.cycle();
         }
+        if (playerTwo.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) {
+            bart.intake.intakeArm.moveRollPositive45();
+        }
+        if (playerTwo.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) {
+            bart.intake.intakeArm.moveRollNegative45();
+        }
+
         if (playerTwo.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) {
             bart.intake.intakeArm.flipFlop();
         }
@@ -384,18 +431,31 @@ public class ATeleop extends LinearOpMode {
             //BUTTON CONTROL OF THE OUTPUT
 
 
-            if (playerTwo.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) {
+            /*if (playerTwo.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) {
                 bart.output.setComponentPositionsFromSavedPosition("grab");
-            }
+            }*/
             if (playerTwo.wasJustPressed(GamepadKeys.Button.Y)) {
-                bart.output.setComponentPositionsFromSavedPosition("highBucket");
+                //we can use the left trigger to get an alternate position
+                if (!alternateControl) {
+                    bart.output.setComponentPositionsFromSavedPosition("highBucket");
+                } else {
+                    bart.output.setComponentPositionsFromSavedPosition("lowBucket");
+                }
             }
             if (playerTwo.wasJustPressed(GamepadKeys.Button.B)) {
-                //bart.output.setComponentPositionsFromSavedPosition("lowBucket");
-                bart.output.setComponentPositionsFromSavedPosition("highBarFront");
+                //we can use the left trigger to get an alternate position
+                if (!alternateControl) {
+                    bart.output.setComponentPositionsFromSavedPosition("highBarFront");
+                } else {
+                    bart.output.setComponentPositionsFromSavedPosition("highBarBack");
+                }
             }
             if (playerTwo.wasJustPressed(GamepadKeys.Button.X)) {
-                bart.output.setComponentPositionsFromSavedPosition("grab");
+                if (!alternateControl) {
+                    bart.output.setComponentPositionsFromSavedPosition("grab");
+                } else {
+                    bart.output.setComponentPositionsFromSavedPosition("aboveGrab");
+                }
             }
             if (playerTwo.wasJustPressed(GamepadKeys.Button.RIGHT_STICK_BUTTON)) {
                 bart.output.setComponentPositionsFromSavedPosition("level1AscentTeleop");
@@ -408,12 +468,6 @@ public class ATeleop extends LinearOpMode {
         if (playerTwo.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) {
             bart.output.gripper.flipFlop();
         }
-
-        /*if (playerTwo.wasJustPressed(GamepadKeys.Button.LEFT_STICK_BUTTON)) {
-            bart.output.calculateComponentPositions(
-                    new OutputEndPoint(new Point2d(7.7, 18.4), 0, 0, false)
-            );
-        }*/
 
         //switch drive mode (robot-oriented default, switch to field-oriented)
         if (playerOne.wasJustPressed(GamepadKeys.Button.Y)) {
@@ -429,25 +483,100 @@ public class ATeleop extends LinearOpMode {
             }
         }
 
-        //this is what we will almost always do, only don't when manually going down to reset encoder
-        /*if (!playerTwo.isDown(GamepadKeys.Button.LEFT_STICK_BUTTON)) {
-            bart.output.sendVerticalSlidesToTarget();
-        } else {
-            bart.output.verticalSlides.setSlidePower(0.5*playerTwo.getRightY());
-        }
+        //reset the encoders for the two slide systems
         if (playerTwo.wasJustReleased(GamepadKeys.Button.LEFT_STICK_BUTTON)) {
             bart.resetEncoders();
-        }*/
+        }
+
+
+        //stupid trigger control
+        //right trigger forward
+        if (playerOne.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) == 1 && p1PreviousRightTrigger != 1) {
+            if (!bart.intake.isAtPosition(17, 7)) {
+                horizTargetInches = 17;
+                usingHorizManualControl = true;
+                bart.intake.intakeArm.setToSavedIntakeArmPosition("transfer");
+            } else {
+                if (bart.intake.intakeArm.isPitchEqualToSavedIntakePosition("transfer")) {
+                    bart.intake.intakeArm.setToSavedIntakeArmPosition("grab");
+                } else {
+                    if (bart.intake.intakeArm.isOpen()) {
+                        bart.intake.intakeArm.close();
+                    } else {
+                        horizTargetInches = 6;
+                        usingHorizManualControl = true;
+                        bart.intake.intakeArm.setToSavedIntakeArmPosition("transfer");
+                    }
+                }
+            }
+        }
+        //left trigger backward
+        if (playerOne.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) == 1 && p1PreviousLeftTrigger != 1) {
+            if (bart.intake.isAtPosition(17, 7)) {
+                if (bart.intake.intakeArm.isPitchEqualToSavedIntakePosition("transfer")) {
+                    horizTargetInches = 6;
+                    usingHorizManualControl = true;
+                } else {
+                    if (!bart.intake.intakeArm.isOpen()) {
+                        bart.intake.intakeArm.open();
+                    } else {
+                        bart.intake.intakeArm.setToSavedIntakeArmPosition("transfer");
+                    }
+                }
+            } else {
+                horizTargetInches = 17;
+                usingHorizManualControl = true;
+                bart.intake.intakeArm.setToSavedIntakeArmPosition("transfer");
+            }
+        }
+
+        p1PreviousRightTrigger = playerOne.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER);
+        p1PreviousLeftTrigger = playerOne.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER);
 
 
 
         //horizontal slide
         if (playerTwo.isDown(GamepadKeys.Button.DPAD_DOWN)) {
             bart.intake.setHorizontalSlideToSavedPosition("transfer");
-        } else if (!playerTwo.isDown(GamepadKeys.Button.A)){
-            bart.intake.setHorizontalSlidePower(-playerTwo.getRightY() * 1);
+            usingHorizManualControl = false;
+        } else if (!isTransferring) {
+            double stickInput = -playerTwo.getRightY();
+
+            if (alternateControl) {
+                //this is where i can flick the stick forward to move an inch at a time
+                //easier for fine control
+                if (stickInput == 1 && p2PreviousRightY != 1) {
+                    usingHorizManualControl = true;
+                    horizTargetInches = bart.intake.currentInches() + 1;
+                } else if (stickInput == -1 && p2PreviousRightY != -1) {
+                    usingHorizManualControl = true;
+                    horizTargetInches = bart.intake.currentInches() - 1;
+                }
+            }
+
+            if (usingHorizManualControl) {
+                bart.intake.setHorizontalSlidePositionInches(horizTargetInches);
+            } else {
+                //stick control
+                if (!alternateControl) {
+                    bart.intake.setHorizontalSlidePower(stickInput);
+                    if (playerTwo.getRightY() != 0) {
+                        usingHorizManualControl = false;
+                    }
+                }
+            }
+
+        } else {
+            usingHorizManualControl = false;
         }
 
+        //this is kinda jank, wanna find a better way
+        //honestly really shocked this even works at all
+        if (!alternateControl &&  playerTwo.getRightY() != 0) {
+            usingHorizManualControl = false;
+        }
+
+        p2PreviousRightY = -playerTwo.getRightY();
 
     }
 

@@ -59,26 +59,9 @@ public class Intake {
     }
 
     //TRANSFERRING
-    public void transferClip() {
+    public void transfer() {
         setHorizontalSlideToSavedPosition("transfer");
-        intakeArm.setToSavedIntakeArmPosition("transferClip");
-    }
-    public boolean transferSample() {
-        setHorizontalSlideToSavedPosition("transfer");
-        intakeArm.setToSavedIntakeArmPosition("transferSample");
-
-        //timer to lower the output once it is there
-        if (isAtSavedPosition("transfer")) {
-            if (timer.milliseconds() > 3000) {
-                timer.reset();
-            }
-            //this is what we say once we are there
-            //should be enough time to put intake arm in right spot
-            return timer.milliseconds() > 1000;
-        } else {
-            timer.reset();
-        }
-        return false;
+        intakeArm.setToSavedIntakeArmPosition("transfer");
     }
 
     public void setHorizontalSlideToSavedPosition(String key) {

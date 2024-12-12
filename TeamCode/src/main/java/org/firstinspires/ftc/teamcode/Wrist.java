@@ -11,8 +11,8 @@ public class Wrist {
     private double rightServoPosition;
     final double DEGREES_FROM_ZERO_TO_ONE = 355;
     //final double ANGLE_IS_ZERO_AT_THIS_SERVO_POS_LEFT = 0.5;//.5154//.4883
-    final double ANGLE_IS_ZERO_AT_THIS_SERVO_POS_LEFT = 0.5154;//.5154//.4883
-    final double ANGLE_IS_ZERO_AT_THIS_SERVO_POS_RIGHT= 0.4883;//.5154//.4883
+    final double ANGLE_IS_ZERO_AT_THIS_SERVO_POS_LEFT = 0.5441;//.5154//.4883//.5441
+    final double ANGLE_IS_ZERO_AT_THIS_SERVO_POS_RIGHT = 0.517;//.5154//.4883//.517
     final double SERVO_POSITION_SIGNIFICANT_DIFFERENCE = 0.0001;
 
 
@@ -44,7 +44,7 @@ public class Wrist {
     public void setWristToTarget(double pitchTarget, double rollTarget, double armPitch) {
         pitchTarget -= armPitch;
         pitchTarget = RobotMath.maxAndMin(pitchTarget, 130, -140);
-        rollTarget = RobotMath.maxAndMin(rollTarget, 112, 0);
+        rollTarget = RobotMath.maxAndMin(rollTarget, 112, -90);
         double leftDeg = pitchTarget + (rollTarget / 2);
         double rightDeg = pitchTarget - (rollTarget / 2);
 
