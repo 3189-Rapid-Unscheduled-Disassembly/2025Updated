@@ -7,14 +7,15 @@ import java.util.HashMap;
 
 //this holds the pitches, roll, and gripper for the intake
 public class IntakeArm {
-    Servo intakeGripper, intakePitchLeft, intakePitchRight, intakeRoll;
+    Servo intakePitchLeft, intakePitchRight, intakeRoll;
 
+    Gripper intakeGripper;
     HashMap<String, IntakeArmPosition> savedPositions = new HashMap<String, IntakeArmPosition>();
 
 
 
-    final double DEGREES_FROM_ZERO_TO_ONE_PITCH = 270;
-    final double ANGLE_IS_ZERO_AT_THIS_SERVO_POS_PITCH = 0.5;
+    final double DEGREES_FROM_ZERO_TO_ONE_PITCH = 180;
+    final double ANGLE_IS_ZERO_AT_THIS_SERVO_POS_PITCH = 0.7;
 
     //left is positive
     final double DEGREES_FROM_ZERO_TO_ONE_ROLL = 270;
@@ -29,13 +30,7 @@ public class IntakeArm {
     private double previousRollPosDeg = 200;
     final double ROLL_POS_SIGNIFICANT_DIFFERENCE = 0.0001;
 
-    private double gripperPosServo;
-    private double previousGripperPosServo = 2;
-    final double GRIPPER_POS_SIGNIFICANT_DIFFERENCE = 0.0001;
 
-
-    double gripperOpenPos = 0.65;
-    double gripperClosePos = 0.15;
 
     double theNew90Pitch = 100;
 
@@ -44,12 +39,14 @@ public class IntakeArm {
         intakePitchLeft = hardwareMap.get(Servo.class, "intakePitchLeft");
         intakePitchRight = hardwareMap.get(Servo.class, "intakePitchRight");
         intakeRoll = hardwareMap.get(Servo.class, "intakeRoll");
-        intakeGripper = hardwareMap.get(Servo.class, "intakeGripper");
 
         intakePitchLeft.setDirection(Servo.Direction.REVERSE);
-        intakePitchRight.setDirection(Servo.Direction.FORWARD);
+        intakePitchRight.setDirection(Servo.Direction.REVERSE);
         intakeRoll.setDirection(Servo.Direction.FORWARD);
-        intakeGripper.setDirection(Servo.Direction.REVERSE);
+
+        Servo gripperServo = hardwareMap.get(Servo.class, "intakeGripper");
+        gripperServo.setDirection(Servo.Direction.REVERSE);
+        intakeGripper = new Gripper(gripperServo, 0.65, 0.15);
 
         savedPositions.put("transfer", new IntakeArmPosition(35,0, false));
         savedPositions.put("grab", new IntakeArmPosition(-75, 0, true));
@@ -109,7 +106,7 @@ public class IntakeArm {
     public void setToIntakeArmPosition(IntakeArmPosition intakeArmPosition) {
         setPitchDeg(intakeArmPosition.pitchDeg);
         setRollDeg(intakeArmPosition.rollDeg);
-        setGripperPosition(intakeArmPosition.open);
+        intakeGripper.setPosition(intakeArmPosition.open);
     }
 
 
@@ -135,30 +132,6 @@ public class IntakeArm {
         rollPosDeg = rollDeg;
     }
 
-    //GRIPPER STUFF
-    public void flipFlop() {
-        if (isOpen()) {
-            close();
-        } else {
-            open();
-        }
-    }
-    public void setGripperPosition(boolean open) {
-        if (open) {
-            open();
-        } else {
-            close();
-        }
-    }
-    public void open() {
-        gripperPosServo = gripperOpenPos;
-    }
-    public void close() {
-        gripperPosServo = gripperClosePos;
-    }
-    public boolean isOpen() {
-        return RobotMath.isAbsDiffWithinRange(gripperPosServo, gripperOpenPos, 0.001);
-    }
 
 
 
@@ -198,10 +171,7 @@ public class IntakeArm {
     }
 
     public void writeGripper() {
-        if (!RobotMath.isAbsDiffWithinRange(previousGripperPosServo, gripperPosServo, GRIPPER_POS_SIGNIFICANT_DIFFERENCE)) {
-            intakeGripper.setPosition(gripperPosServo);
-        }
-        previousGripperPosServo = gripperPosServo;
+        intakeGripper.writePosition();
     }
 
     //985g
@@ -209,7 +179,7 @@ public class IntakeArm {
     public String toString() {
         return String.format("\nPitch: %.0f°", getPitchPosDeg()) +
                 String.format("\nRoll: %.0f°", getRollPosDeg()) +
-                "\nGripper is " + (isOpen() ? "open" : "closed");
+                "\nGripper is " + (intakeGripper.isOpen() ? "open" : "closed");
     }
 
     public String posServoTelemetry() {

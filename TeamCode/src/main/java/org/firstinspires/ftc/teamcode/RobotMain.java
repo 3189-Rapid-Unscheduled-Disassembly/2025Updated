@@ -12,7 +12,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 /*
 ports
-2024-12-02
+2024-12-13
 CONTROL
 MOTORS
 0 fl
@@ -20,12 +20,12 @@ MOTORS
 2 slideFront
 3 steve (this is for the roadrunner encoder)
 SERVOS
-0 gate
+0 intakeGripper
 1 intakeRoll
-2 intakePitchLeft
-3 armLeft
-4 intakePitchRight
-5
+2 intakePitchRight
+3 (armLeft was in here, but it didn't work, maybe it's the port's problem)
+4 intakePitchLeft
+5 wristLeft
 
 EXPANSION
 MOTORS
@@ -34,12 +34,12 @@ MOTORS
 2 slideHoriz
 3 slideBack
 SERVOS
-0 gripperBack
+0 outputGripper
 1 wristRight
 2 armRight
-3 gripperFront
+3 armLeft
 4
-5 wristLeft
+5
 */
 
 public class RobotMain {
@@ -141,7 +141,7 @@ public class RobotMain {
         intake.transfer();
         boolean outputHasGrabbed = output.transfer();
         if (outputHasGrabbed) {
-            intake.intakeArm.open();
+            intake.intakeArm.intakeGripper.open();
         }
     }
 
@@ -182,8 +182,8 @@ public class RobotMain {
         intake.readAllComponents();
     }
 
-    public void resetGyro() {
-        mecanaDruve.setPosFromOutside(new Pose2d(new Vector2d(mecanaDruve.pose.position.x, mecanaDruve.pose.position.y), 0));
+    public void resetGyro(double angleRobotIsAtDeg) {
+        mecanaDruve.setPosFromOutside(new Pose2d(new Vector2d(mecanaDruve.pose.position.x, mecanaDruve.pose.position.y), Math.toRadians(angleRobotIsAtDeg)));
     }
 
     public static double dpadInputToChangeValueUpIsPositive(double currentValue, GamepadEx gamepadEx) {

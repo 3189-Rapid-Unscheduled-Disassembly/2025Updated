@@ -60,15 +60,15 @@ public final class MecanumDrive {
         // IMU orientation
         // TODO: fill in these values based on
         //   see https://ftc-docs.firstinspires.org/en/latest/programming_resources/imu/imu.html?highlight=imu#physical-hub-mounting
-        /*public RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection =
+        public RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection =
                 RevHubOrientationOnRobot.LogoFacingDirection.UP;
         public RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection =
-                RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;*/
+                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
 
-        public IMU.Parameters myIMUparameters = new IMU.Parameters(
+        /*public IMU.Parameters myIMUparameters = new IMU.Parameters(
                 new RevHubOrientationOnRobot(
           new Orientation(
-                        AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES, 0, 0, 100,0)));
+                        AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES, 0, 0, 100,0)));*/
 
         // drive model parameters
         public double inPerTick = 0.000526625297323865;
@@ -244,9 +244,9 @@ public final class MecanumDrive {
 
         // TODO: make sure your config has an IMU with this name (can be BNO or BHI)
         //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
-        lazyImu = new LazyImu(hardwareMap, "imu", PARAMS.myIMUparameters.imuOrientationOnRobot);
-                // new RevHubOrientationOnRobot(
-                //PARAMS.));
+        lazyImu = new LazyImu(hardwareMap, "imu",
+                new RevHubOrientationOnRobot(PARAMS.logoFacingDirection, PARAMS.usbFacingDirection)
+        );
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 

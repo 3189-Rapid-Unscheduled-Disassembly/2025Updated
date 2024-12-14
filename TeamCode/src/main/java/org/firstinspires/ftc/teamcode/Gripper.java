@@ -6,25 +6,21 @@ import com.qualcomm.robotcore.hardware.Servo;
 import javax.annotation.Nonnull;
 
 public class Gripper {
-    Servo front, back;
-    private double positionBack;
-    private double positionFront;
-
-    private double currentPosition;
+    Servo gripper;
     private double previousServoPosition;
     final double SERVO_POSITION_SIGNIFICANT_DIFFERENCE = 0.0001;
-    final double openPosBack = 0.1;
-    final double closePosBack = 0.5;
-    final double openPosFront = 0.1;
-    final double closePosFront = 0.475;
+    double position;
+
+    final double openPos;
+    final double closePos;
+
+    String name;
 
 
-    public Gripper(HardwareMap hardwareMap) {
-        front = hardwareMap.get(Servo.class, "gripperFront");
-        back = hardwareMap.get(Servo.class, "gripperBack");
-
-        front.setDirection(Servo.Direction.REVERSE);
-        back.setDirection(Servo.Direction.FORWARD);
+    public Gripper(Servo gripper, double openPos, double closePos) {
+       this.gripper = gripper;
+        this.openPos = openPos;
+        this.closePos = closePos;
     }
 
     public void setPosition(boolean open) {
@@ -35,12 +31,10 @@ public class Gripper {
         }
     }
     public void open() {
-        setPositionBack(openPosBack);
-        setPositionFront(openPosFront);
+        setPosition(openPos);
     }
     public void close() {
-        setPositionBack(closePosBack);
-        setPositionFront(closePosFront);
+        setPosition(closePos);
     }
 
     public void flipFlop() {
@@ -50,24 +44,21 @@ public class Gripper {
             open();
         }
     }
+
     public boolean isOpen() {
-        return RobotMath.isAbsDiffWithinRange(positionBack, openPosBack, 0.001);
+        return RobotMath.isAbsDiffWithinRange(position, openPos, 0.001);
     }
     public void readPosition() {
-        currentPosition = front.getPosition();
+        position = gripper.getPosition();
     }
     public void writePosition() {
-        if (Math.abs(previousServoPosition - positionBack) > SERVO_POSITION_SIGNIFICANT_DIFFERENCE) {
-            front.setPosition(positionFront);
-            back.setPosition(positionBack);
+        if (Math.abs(previousServoPosition - position) > SERVO_POSITION_SIGNIFICANT_DIFFERENCE) {
+            gripper.setPosition(position);
         }
-        previousServoPosition = positionBack;
+        previousServoPosition = position;
     }
-    public void setPositionBack(double pos) {
-        positionBack = pos;
-    }
-    public void setPositionFront(double pos) {
-        positionFront = pos;
+    public void setPosition(double pos) {
+        position = pos;
     }
 
 

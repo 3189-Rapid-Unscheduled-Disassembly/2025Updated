@@ -39,7 +39,7 @@ public class IntakeTest extends LinearOpMode {
             }
 
             if (playerOne.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) {
-                bart.intake.intakeArm.flipFlop();
+                bart.intake.intakeArm.intakeGripper.flipFlop();
             }
 
             //pitchTarget = -playerOne.getRightY()*90;

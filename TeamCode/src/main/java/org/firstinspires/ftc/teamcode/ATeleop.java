@@ -204,12 +204,25 @@ public class ATeleop extends LinearOpMode {
                 if (playerOne.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) {
                     thogLockToNextClockwise();
                 }
-                if (playerOne.isDown(GamepadKeys.Button.DPAD_RIGHT)) {
-                    currentState = State.GO_TO_INPUTTED_Y;
-                }
+
+
+                //RESET THE GYRO
+                //USE THE DPAD DIRECTION CORRESPONDING TO ROBOT'S DIRECTION
                 if (playerOne.wasJustPressed(GamepadKeys.Button.DPAD_UP)) {
-                    bart.resetGyro();
+                    bart.resetGyro(0);
                     targetAngle = 0;
+                }
+                if (playerOne.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) {
+                    bart.resetGyro(90);
+                    targetAngle = 90;
+                }
+                if (playerOne.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) {
+                    bart.resetGyro(-90);
+                    targetAngle = -90;
+                }
+                if (playerOne.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) {
+                    bart.resetGyro(180);
+                    targetAngle = 180;
                 }
 
                 break;
@@ -419,7 +432,7 @@ public class ATeleop extends LinearOpMode {
         }
 
         if (playerTwo.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) {
-            bart.intake.intakeArm.flipFlop();
+            bart.intake.intakeArm.intakeGripper.flipFlop();
         }
 
         //OUTPUT CONTROL
@@ -500,8 +513,8 @@ public class ATeleop extends LinearOpMode {
                 if (bart.intake.intakeArm.isPitchEqualToSavedIntakePosition("transfer")) {
                     bart.intake.intakeArm.setToSavedIntakeArmPosition("grab");
                 } else {
-                    if (bart.intake.intakeArm.isOpen()) {
-                        bart.intake.intakeArm.close();
+                    if (bart.intake.intakeArm.intakeGripper.isOpen()) {
+                        bart.intake.intakeArm.intakeGripper.close();
                     } else {
                         horizTargetInches = 6;
                         usingHorizManualControl = true;
@@ -517,8 +530,8 @@ public class ATeleop extends LinearOpMode {
                     horizTargetInches = 6;
                     usingHorizManualControl = true;
                 } else {
-                    if (!bart.intake.intakeArm.isOpen()) {
-                        bart.intake.intakeArm.open();
+                    if (!bart.intake.intakeArm.intakeGripper.isOpen()) {
+                        bart.intake.intakeArm.intakeGripper.open();
                     } else {
                         bart.intake.intakeArm.setToSavedIntakeArmPosition("transfer");
                     }

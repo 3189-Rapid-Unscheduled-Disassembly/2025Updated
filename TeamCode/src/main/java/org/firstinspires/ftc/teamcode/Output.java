@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import java.util.HashMap;
@@ -47,8 +48,10 @@ public class Output {
         verticalSlides = new VerticalSlides(hardwareMap);
         arm = new Arm(hardwareMap);
         wrist = new Wrist(hardwareMap);
-        gripper = new Gripper(hardwareMap);
 
+        Servo gripperServo = hardwareMap.get(Servo.class, "outputGripper");
+        gripperServo.setDirection(Servo.Direction.REVERSE);
+        gripper = new Gripper(gripperServo, 0.5, 0.1);
 
         double theNew90 = 112;
 
@@ -66,10 +69,10 @@ public class Output {
                 new OutputEndPoint(0, -15, 90, 0, false)
         );
         savedPositions.put("grab",
-                new OutputEndPoint(0, -2.5, -60, theNew90, true)
+                new OutputEndPoint(0, -5, -60, theNew90, true)
         );
         savedPositions.put("aboveGrab",
-                new OutputEndPoint(0, 5, -60, theNew90, false)
+                new OutputEndPoint(0, 10, -60, theNew90, false)
         );
         savedPositions.put("grab2",
                 new OutputEndPoint(0, -3, 60, theNew90, true)

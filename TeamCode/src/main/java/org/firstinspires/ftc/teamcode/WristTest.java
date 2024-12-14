@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp
 public class WristTest extends LinearOpMode {
@@ -17,14 +18,32 @@ public class WristTest extends LinearOpMode {
         wrist = new Wrist(hardwareMap);
         wrist.setWristToTarget(0,0, 0);
 
-        gripper = new Gripper(hardwareMap);
+        Servo gripperServo = hardwareMap.get(Servo.class, "outputGripper");
+        gripperServo.setDirection(Servo.Direction.REVERSE);
+        gripper = new Gripper(gripperServo, 0.5, 0.1);
 
         double wristPitchTarget;
         double wristRollTarget;
+        double armAngleTarget = 0;
+        boolean previousDpadUp = false;
+        boolean previousDpadDown = false;
+
         waitForStart();
         while (opModeIsActive()) {
 
-            double armAngleTarget = -gamepad2.right_stick_y * 180;
+            //double armAngleTarget = -gamepad2.right_stick_y * 180;
+
+            if (gamepad2.dpad_up && !previousDpadUp) {
+                armAngleTarget += 2;
+            }
+
+            if (gamepad2.dpad_down && !previousDpadDown) {
+                armAngleTarget -= 2;
+            }
+
+            previousDpadUp = gamepad2.dpad_up;
+            previousDpadDown = gamepad2.dpad_down;
+
             arm.goToAngle(armAngleTarget);
             wristPitchTarget = -gamepad1.left_stick_y * 90;
             wristRollTarget = gamepad1.right_stick_x * 112;
@@ -45,7 +64,7 @@ public class WristTest extends LinearOpMode {
 
             telemetry.addData("ARM ANGLE", arm.armAngleCurrent());
             telemetry.addLine(gripper.toString());
-            telemetry.addData("gripperPos", gripper.front.getPosition());
+            telemetry.addLine(gripper.toString());
 
 
             telemetry.update();

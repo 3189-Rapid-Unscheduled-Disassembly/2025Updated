@@ -100,7 +100,7 @@ public class BlueClipsNewIntake extends LinearOpMode {
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
 
                 //ACTION
-                if (drive.pose.position.y < 57.7) {
+                if (drive.pose.position.y < 56.9) {
                     bart.output.setComponentPositionsFromSavedPosition("highBarBack");
                     actionIsRunning = false;
                 }
@@ -117,6 +117,15 @@ public class BlueClipsNewIntake extends LinearOpMode {
                 return false;
             }
         }
+
+        class AboveGrab implements Action {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                bart.output.setComponentPositionsFromSavedPosition("aboveGrab");
+                return false;
+            }
+        }
+
 
         class LowerOutOfWay implements Action {
             @Override
@@ -245,7 +254,7 @@ public class BlueClipsNewIntake extends LinearOpMode {
                 //bart.intake.intakeArm.setGripperPosition(open);
                 //bart.intake.intakeArm.setToIntakeArmPosition(new IntakeArmPosition(-85, 0, false));
                 //bart.intake.intakeArm.setToSavedIntakeArmPosition("grab");
-                bart.intake.intakeArm.setGripperPosition(false);
+                bart.intake.intakeArm.intakeGripper.setPosition(false);
                 //bart.intake.intakeArm.setRollDeg(45);
                 return false;
             }
@@ -262,7 +271,7 @@ public class BlueClipsNewIntake extends LinearOpMode {
                 //bart.intake.intakeArm.setToIntakeArmPosition(new IntakeArmPosition(-85, 0, true));
                 //bart.intake.intakeArm.setToSavedIntakeArmPosition("grab");
                 //bart.intake.intakeArm.setRollDeg(45);
-                bart.intake.intakeArm.setGripperPosition(true);
+                bart.intake.intakeArm.intakeGripper.setPosition(true);
                 return false;
             }
         }
@@ -377,6 +386,9 @@ public class BlueClipsNewIntake extends LinearOpMode {
         public Action lowerToGrabOnceXPastNegative24() {
             return new LowerToGrabOnceXPastNegative24();
         }
+        public Action aboveGrab() {
+            return new AboveGrab();
+        }
 
 
         public Action setIntakeGripperClosed(boolean open) {return new SetIntakeGripperClosed(open);}
@@ -453,15 +465,15 @@ public class BlueClipsNewIntake extends LinearOpMode {
         //Pose2d dropPose = new Pose2d(-60, 48, Math.toRadians(90));
 
         double grabY = 42;
-        Vector2d grabSpark1Vector = new Vector2d(-29.5, grabY+1);
+        Vector2d grabSpark1Vector = new Vector2d(-28, grabY+1);
         double grabSpark1Rad = Math.toRadians(225);
         Pose2d grabSpark1Pose= new Pose2d(grabSpark1Vector, grabSpark1Rad);
 
-        Vector2d grabSpark2Vector = new Vector2d(-40.5, grabY);
+        Vector2d grabSpark2Vector = new Vector2d(-40, grabY);
         double grabSpark2Rad = Math.toRadians(225);
         Pose2d grabSpark2Pose= new Pose2d(grabSpark2Vector, grabSpark2Rad);
 
-        Vector2d grabSpark3Vector = new Vector2d(-45.75, 37.5);
+        Vector2d grabSpark3Vector = new Vector2d(-45, 37.25);
         double grabSpark3Rad = Math.toRadians(190);
         Pose2d grabSpark3Pose= new Pose2d(grabSpark2Vector, grabSpark3Rad);
 
@@ -548,7 +560,7 @@ public class BlueClipsNewIntake extends LinearOpMode {
         bart.writeAllComponents();
         //bart.output.sendVerticalSlidesToTarget();
 
-        int timeToGrabSpikeMilliseconds = 320;
+        int timeToGrabSpikeMilliseconds = 350;
         int timeToDropSpikeMilliseconds = 100;
 
         int timeToGrabClipMilliseconds = 50;
@@ -652,6 +664,7 @@ public class BlueClipsNewIntake extends LinearOpMode {
                                 sleeper.sleep(50),
                                 outputs.closeGripper(),
                                 sleeper.sleep(timeToGrabClipMilliseconds),
+                                //outputs.aboveGrab(),
 
                                 //SCORE THE CLIP
                                 outputs.setIntakeRoll(0),
@@ -698,7 +711,7 @@ public class BlueClipsNewIntake extends LinearOpMode {
 
                                 outputs.lowerToGrab(),
                                 //fromScoreCycleToPark.build(),
-                                sleeper.sleep(350),
+                                sleeper.sleep(500),
 
 
                                 outputs.endProgram()

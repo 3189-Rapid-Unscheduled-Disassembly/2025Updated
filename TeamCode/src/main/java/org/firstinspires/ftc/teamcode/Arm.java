@@ -11,7 +11,7 @@ public class Arm {
     private double readServoPosition;
     final double SERVO_POSITION_SIGNIFICANT_DIFFERENCE = 0.0001;
     final double DEGREES_FROM_ZERO_TO_ONE = 180;//[-45,135]
-    final double ANGLE_IS_ZERO_AT_THIS_SERVO_POS = 0.25;//0.3828;
+    final double ANGLE_IS_ZERO_AT_THIS_SERVO_POS = 0.286;//0.3239;//0.25
 
     public Arm(HardwareMap hardwareMap) {
         left = hardwareMap.get(Servo.class, "armLeft");
