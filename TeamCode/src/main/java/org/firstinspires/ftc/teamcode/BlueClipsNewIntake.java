@@ -130,7 +130,7 @@ public class BlueClipsNewIntake extends LinearOpMode {
         class LowerOutOfWay implements Action {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, 0, 0, 112,true));
+                bart.output.setComponentPositionsFromSavedPosition("straightOut");
                 return false;
             }
         }
@@ -238,7 +238,7 @@ public class BlueClipsNewIntake extends LinearOpMode {
 
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                bart.intake.intakeArm.setRollDeg(roll);
+                bart.intake.intakeArm.intakeRoll.setAngleDegrees(roll);
                 return false;
             }
         }
@@ -553,7 +553,7 @@ public class BlueClipsNewIntake extends LinearOpMode {
 
         //bart.output.setComponentPositionsFromSavedPosition("rest");
         bart.readHubs();
-        bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, -40, 90, 0, false));
+        bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, -40, 90, false));
         bart.intake.intakeArm.setToSavedIntakeArmPosition("grab");
         //bart.intake.intakeArm.setRollDeg(45);
         //bart.intake.closeGate();

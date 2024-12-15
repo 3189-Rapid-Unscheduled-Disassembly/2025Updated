@@ -14,7 +14,7 @@ public class ArmMaintenance extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         bart = new RobotMain(hardwareMap, telemetry);
         waitForStart();
-        bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(new Point2d(11, 15.3), 0, 0, true));
+        bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, 100, 100, true));
         while(opModeIsActive()) {
             bart.output.sendVerticalSlidesToTarget();
             telemetry.addLine(bart.output.currentPosition().componentValuesIrl());

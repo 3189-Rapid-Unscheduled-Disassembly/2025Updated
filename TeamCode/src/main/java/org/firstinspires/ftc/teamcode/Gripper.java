@@ -14,13 +14,14 @@ public class Gripper {
     final double openPos;
     final double closePos;
 
-    String name;
+    String labelTelemetry;
 
 
-    public Gripper(Servo gripper, double openPos, double closePos) {
+    public Gripper(Servo gripper, double openPos, double closePos, String labelTelemetry) {
        this.gripper = gripper;
         this.openPos = openPos;
         this.closePos = closePos;
+        this.labelTelemetry = labelTelemetry;
     }
 
     public void setPosition(boolean open) {
@@ -64,6 +65,12 @@ public class Gripper {
 
     @Nonnull
     public String toString() {
-        return "Gripper is " + (isOpen() ? "Open" : "Closed");
+        return labelTelemetry + " is " + (isOpen() ? "Open" : "Closed");
     }
+
+    @Nonnull
+    public String toStringServoPos() {
+        return labelTelemetry + String.format(": %.2f Servos", position);
+    }
+
 }

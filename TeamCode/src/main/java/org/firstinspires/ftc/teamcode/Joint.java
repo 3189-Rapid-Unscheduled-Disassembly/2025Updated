@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import androidx.annotation.NonNull;
+
 import com.qualcomm.robotcore.hardware.Servo;
 
 import java.util.ArrayList;
@@ -25,12 +27,12 @@ public class Joint {
 
     String labelTelemetry;
 
-    double currentPositionAngleDegrees;
-    double previousPositionAngleDegrees;
+    private double currentPositionAngleDegrees;
+    private double previousPositionAngleDegrees;
 
-    final double DEGREES_SIGNIFICANT_DIFFERENCE = 0.0001;
-    final double DEGREES_FROM_ZERO_TO_ONE;//[-45,135]
-    final double ANGLE_IS_ZERO_AT_THIS_SERVO_POS;
+    private final double DEGREES_SIGNIFICANT_DIFFERENCE = 0.0001;
+    private final double DEGREES_FROM_ZERO_TO_ONE;//[-45,135]
+    private final double ANGLE_IS_ZERO_AT_THIS_SERVO_POS;
 
 
     public Joint(List<Servo> servos,
@@ -92,7 +94,13 @@ public class Joint {
         previousPositionAngleDegrees = currentPositionAngleDegrees;
     }
 
+    @NonNull
     public String toString() {
         return labelTelemetry + String.format(": %.0f°", currentPositionAngleDegrees);
+    }
+
+    @NonNull
+    public String toStringServoPos() {
+        return labelTelemetry + String.format(": %.2f Servos", degToServo(currentPositionAngleDegrees));
     }
 }

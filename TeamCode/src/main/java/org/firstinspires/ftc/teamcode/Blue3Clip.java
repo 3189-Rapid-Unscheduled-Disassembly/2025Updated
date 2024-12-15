@@ -20,11 +20,13 @@ import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import java.util.Arrays;
 
+@Disabled
 @Autonomous
 public class Blue3Clip extends LinearOpMode {
     RobotMain bart;
@@ -131,7 +133,7 @@ public class Blue3Clip extends LinearOpMode {
         class LowerOutOfWay implements Action {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, 0, 0, 112,true));
+                bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, 0, 0, true));
                 return false;
             }
         }
@@ -355,7 +357,7 @@ public class Blue3Clip extends LinearOpMode {
 
         //bart.output.setComponentPositionsFromSavedPosition("rest");
         bart.readHubs();
-        bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, -40, 90, 0, false));
+        bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, -40, 90, false));
         bart.intake.intakeArm.setToSavedIntakeArmPosition("grab");
         //bart.intake.intakeArm.setRollDeg(45);
         //bart.intake.closeGate();

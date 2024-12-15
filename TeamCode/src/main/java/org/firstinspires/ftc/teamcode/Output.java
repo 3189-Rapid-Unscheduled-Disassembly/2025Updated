@@ -4,7 +4,9 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /*PLAN
 1. Points
@@ -20,8 +22,8 @@ import java.util.HashMap;
 
 public class Output {
     VerticalSlides verticalSlides;
-    Arm arm;
-    Wrist wrist;
+    Joint arm;
+    Joint wrist;
     Gripper gripper;
 
     ElapsedTime timer;
@@ -32,7 +34,6 @@ public class Output {
     double slideTargetInches;
     double armTargetPitchDegrees;
     double wristTargetPitchRelativeToGroundDegrees;
-    double wristTargetRollDegrees;
     boolean open;
 
 
@@ -46,58 +47,68 @@ public class Output {
 
     public Output(HardwareMap hardwareMap) {
         verticalSlides = new VerticalSlides(hardwareMap);
-        arm = new Arm(hardwareMap);
-        wrist = new Wrist(hardwareMap);
+
+        Servo armLeft = hardwareMap.get(Servo.class, "armLeft");
+        Servo armRight = hardwareMap.get(Servo.class, "armRight");
+        armLeft.setDirection(Servo.Direction.REVERSE);
+        armRight.setDirection(Servo.Direction.FORWARD);
+        List<Servo> armServos = new ArrayList<>();
+        armServos.add(armLeft);
+        armServos.add(armRight);
+        arm = new Joint(armServos, 180, 0.286, "Arm Angle");
+
+        Servo wristServo = hardwareMap.get(Servo.class, "wrist");
+        wristServo.setDirection(Servo.Direction.FORWARD);
+        wrist = new Joint(wristServo, 355, 0.5, "Wrist Pitch Relative to Arm");
 
         Servo gripperServo = hardwareMap.get(Servo.class, "outputGripper");
         gripperServo.setDirection(Servo.Direction.REVERSE);
-        gripper = new Gripper(gripperServo, 0.5, 0.1);
+        gripper = new Gripper(gripperServo, 0.5, 0.1, "Output Gripper");
 
-        double theNew90 = 112;
 
         //put saved positions
-
-
         savedPositions.put("aboveTransfer",
-                new OutputEndPoint(0, 0, -20, theNew90, false)
+                new OutputEndPoint(0, 0, -20, false)
         );
         savedPositions.put("transfer",
-                new OutputEndPoint(0, -20, -50, theNew90, true)
+                new OutputEndPoint(0, -20, -50, true)
         );
-
         savedPositions.put("rest",
-                new OutputEndPoint(0, -15, 90, 0, false)
+                new OutputEndPoint(0, -15, 90,false)
+        );
+        savedPositions.put("straightOut",
+                new OutputEndPoint(0, 0, 0,true)
         );
         savedPositions.put("grab",
-                new OutputEndPoint(0, -5, -60, theNew90, true)
+                new OutputEndPoint(0, -5, -60, true)
         );
         savedPositions.put("aboveGrab",
-                new OutputEndPoint(0, 10, -60, theNew90, false)
+                new OutputEndPoint(0, 10, -60, false)
         );
         savedPositions.put("grab2",
-                new OutputEndPoint(0, -3, 60, theNew90, true)
+                new OutputEndPoint(0, -3, 60, true)
         );
         savedPositions.put("highBarFront",
                 //new OutputEndPoint(new Point2d(10,25), 40, theNew90, false)
-                new OutputEndPoint(0, 35, 40, theNew90, false)
+                new OutputEndPoint(0, 35, 40, false)
         );
         savedPositions.put("highBarBack",
-                new OutputEndPoint(0, 130, 215, theNew90, false)
+                new OutputEndPoint(0, 130, 215, false)
         );
         savedPositions.put("highBar",
-                new OutputEndPoint(new Point2d(8.8, 25.5), 45, theNew90, false)
+                new OutputEndPoint(new Point2d(8.8, 25.5), 45, false)
         );
         savedPositions.put("level1AscentAuto",
-                new OutputEndPoint(new Point2d(8.83, 22.5), 0, theNew90, false)
+                new OutputEndPoint(new Point2d(8.83, 22.5), 0, false)
         );
         savedPositions.put("level1AscentTeleop",
-                new OutputEndPoint(new Point2d(10.11, 20), 0, 0, false)
+                new OutputEndPoint(new Point2d(10.11, 20),  0, false)
         );
         savedPositions.put("lowBucket",
-                new OutputEndPoint(new Point2d(-12.4, 28), 180, 0, false)
+                new OutputEndPoint(new Point2d(-12.4, 28),  0, false)
         );
         savedPositions.put("highBucket",
-                new OutputEndPoint(new Point2d(-14, 46), 180, 0, false)
+                new OutputEndPoint(new Point2d(-14, 46), 0, false)
         );
 
 
@@ -115,8 +126,8 @@ public class Output {
 
     public void writeAllComponents() {
         verticalSlides.writeSlidePower();
-        arm.writeServoPositions();
-        wrist.writeServoPositions();
+        arm.write();
+        wrist.write();
         gripper.writePosition();
     }
 
@@ -153,11 +164,11 @@ public class Output {
         slideTargetInches = outputEndPoint.slideInches;
         armTargetPitchDegrees = outputEndPoint.armDegrees;
         wristTargetPitchRelativeToGroundDegrees = outputEndPoint.wristPitchRelativeToGroundDegrees;
-        wristTargetRollDegrees = outputEndPoint.roll;
+
         open = outputEndPoint.open;
         //set servo positions
-        arm.goToAngle(armTargetPitchDegrees);
-        wrist.setWristToTarget(wristTargetPitchRelativeToGroundDegrees, wristTargetRollDegrees, armTargetPitchDegrees);
+        arm.setAngleDegrees(armTargetPitchDegrees);
+        wrist.setAngleDegreesMinusOtherAngle(wristTargetPitchRelativeToGroundDegrees, armTargetPitchDegrees);
         gripper.setPosition(open);
         //vertical slides
         verticalSlides.setTargetInches(slideTargetInches);
@@ -178,9 +189,8 @@ public class Output {
     public OutputEndPoint currentPosition() {
         return new OutputEndPoint(
                 verticalSlides.currentInches(),
-                arm.armAngleCurrent(),
-                arm.armAngleCurrent() + wrist.wristPitchCurrent(),//gives us the pitch relative to ground
-                wrist.wristRollCurrent(),
+                arm.currentAngleDegrees(),
+                arm.currentAngleDegrees() + wrist.currentAngleDegrees(),//gives us the pitch relative to ground
                 gripper.isOpen());
     }
 

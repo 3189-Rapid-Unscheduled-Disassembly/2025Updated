@@ -1,13 +1,13 @@
 package org.firstinspires.ftc.teamcode;
 
 
-//this recives the 2d point jand wrist pitch, roll, and is gripper open
+//this recives the 2d point jand wrist pitch, and is gripper open
 //from, there, we calculate the compenont positions at init
 //we have those vales saved, so we don't have to do the math each frame, instead only once at the start
 public class OutputEndPoint {
     //input values
     public Point2d wristPoint;
-    public double wristPitchRelativeToGroundDegrees, roll;
+    public double wristPitchRelativeToGroundDegrees;
     public boolean open;
 
     //output values
@@ -35,27 +35,25 @@ public class OutputEndPoint {
     //horizontal values [-17, 12]ish
     //vertical values [5.5, 48]ish
     //pitch values [0, 360] (this is weird because it depends on where the arm is) (i don't think this is quite right yet)
-    //roll values [0, 90]
     //open values [true, false]
     //THIS CONSTRUCTOR RECEIVES THE POINTS AND CALCULATES THE HARDWARE POSITIONS
     public OutputEndPoint(Point2d wristPoint,
-                           double wristPitchRelativeToGroundDegrees, double roll,
+                           double wristPitchRelativeToGroundDegrees,
                            boolean open) {
         this.wristPoint = wristPoint;
         this.wristPitchRelativeToGroundDegrees = wristPitchRelativeToGroundDegrees;
-        this.roll =  roll;
+
         this.open =  open;
         calculateComponentPositions();
     }
     //THIS CONSTRUCTOR RODES THE OPPOSITE. it RECEIVES THE HARDWARE POSITIONS AND FINDS THE POINTS
     public OutputEndPoint(double slideInches,
                           double armDegrees,
-                          double wristPitchRelativeToGroundDegrees, double roll,
+                          double wristPitchRelativeToGroundDegrees,
                           boolean open) {
         this.slideInches = slideInches;
         this.armDegrees = armDegrees;
         this.wristPitchRelativeToGroundDegrees = wristPitchRelativeToGroundDegrees;
-        this.roll = roll;
         this.open = open;
 
         calculatePoints();
