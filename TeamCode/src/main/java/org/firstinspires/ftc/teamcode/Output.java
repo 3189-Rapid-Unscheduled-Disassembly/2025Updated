@@ -55,11 +55,11 @@ public class Output {
         List<Servo> armServos = new ArrayList<>();
         armServos.add(armLeft);
         armServos.add(armRight);
-        arm = new Joint(armServos, 180, 0.286, "Arm Angle");
+        arm = new Joint(armServos, 180, 0.286, "Arm");
 
         Servo wristServo = hardwareMap.get(Servo.class, "wrist");
-        wristServo.setDirection(Servo.Direction.FORWARD);
-        wrist = new Joint(wristServo, 355, 0.5, "Wrist Pitch Relative to Arm");
+        wristServo.setDirection(Servo.Direction.REVERSE);
+        wrist = new Joint(wristServo, 300, 0.55, "Wrist Relative to Arm");
 
         Servo gripperServo = hardwareMap.get(Servo.class, "outputGripper");
         gripperServo.setDirection(Servo.Direction.REVERSE);
@@ -74,29 +74,22 @@ public class Output {
                 new OutputEndPoint(0, -20, -50, true)
         );
         savedPositions.put("rest",
-                new OutputEndPoint(0, -15, 90,false)
+                new OutputEndPoint(0, -15, -90,false)
         );
         savedPositions.put("straightOut",
                 new OutputEndPoint(0, 0, 0,true)
         );
         savedPositions.put("grab",
-                new OutputEndPoint(0, -5, -60, true)
+                new OutputEndPoint(0, -13, -90, true)
         );
         savedPositions.put("aboveGrab",
-                new OutputEndPoint(0, 10, -60, false)
-        );
-        savedPositions.put("grab2",
-                new OutputEndPoint(0, -3, 60, true)
+                new OutputEndPoint(0, -3, -90, false)
         );
         savedPositions.put("highBarFront",
-                //new OutputEndPoint(new Point2d(10,25), 40, theNew90, false)
-                new OutputEndPoint(0, 35, 40, false)
+                new OutputEndPoint(7, 10, -20, false)
         );
         savedPositions.put("highBarBack",
-                new OutputEndPoint(0, 130, 215, false)
-        );
-        savedPositions.put("highBar",
-                new OutputEndPoint(new Point2d(8.8, 25.5), 45, false)
+                new OutputEndPoint(0, 130, 170, false)
         );
         savedPositions.put("level1AscentAuto",
                 new OutputEndPoint(new Point2d(8.83, 22.5), 0, false)
@@ -105,10 +98,10 @@ public class Output {
                 new OutputEndPoint(new Point2d(10.11, 20),  0, false)
         );
         savedPositions.put("lowBucket",
-                new OutputEndPoint(new Point2d(-12.4, 28),  0, false)
+                new OutputEndPoint(new Point2d(-12.4, 28),  150, false)
         );
         savedPositions.put("highBucket",
-                new OutputEndPoint(new Point2d(-14, 46), 0, false)
+                new OutputEndPoint(new Point2d(-14, 46), 150, false)
         );
 
 

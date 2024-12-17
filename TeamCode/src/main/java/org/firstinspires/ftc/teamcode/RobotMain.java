@@ -54,11 +54,6 @@ public class RobotMain {
 
     boolean robotCentric = true;
 
-    //RevIMU imu = null;
-
-
-
-
     //FIELD POINTS AND LINES
     final static FieldPoint2d BUCKET_POINT = new FieldPoint2d(new Point2d(66, 66));
     final static FieldPoint2d CLIP_PLACE_POINT = new FieldPoint2d(new Point2d(-37, 70));

@@ -21,42 +21,36 @@ public class IntakeTest extends LinearOpMode {
 
         bart = new RobotMain(hardwareMap, telemetry);
         bart.intake.intakeArm.setToSavedIntakeArmPosition("grab");
-        GamepadEx playerOne;
+        GamepadEx playerTwo;
 
-        playerOne = new GamepadEx(gamepad1);
+        playerTwo = new GamepadEx(gamepad2);
         waitForStart();
 
         while(opModeIsActive()) {
-            playerOne.readButtons();
+            playerTwo.readButtons();
 
             //bart.intake.setHorizontalSlidePower(-gamepad1.right_stick_y*0.5);
-            if (playerOne.wasJustPressed(GamepadKeys.Button.A)) {
+            if (playerTwo.isDown(GamepadKeys.Button.A)) {
                 bart.intake.setHorizontalSlideToSavedPosition("transfer");
-            } else if (playerOne.wasJustPressed(GamepadKeys.Button.B)) {
+            } else if (playerTwo.isDown(GamepadKeys.Button.B)) {
                 bart.intake.setHorizontalSlideToSavedPosition("max");
             } else {
                 bart.intake.setHorizontalSlidePower(-gamepad1.left_stick_y*0.5);
             }
 
-            if (playerOne.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) {
+            if (playerTwo.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) {
                 bart.intake.intakeArm.intakeGripper.flipFlop();
             }
 
-            //pitchTarget = -playerOne.getRightY()*90;
-            //rollTarget = -playerOne.getRightX()*90;//left is positive
 
-
-
-            //bart.intake.intakeArm.setIntakeArmPosition(pitchTarget, rollTarget);
-
-            if (playerOne.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) {
+            if (playerTwo.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) {
                 bart.intake.intakeArm.moveRollPositive45();
             }
-            if (playerOne.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) {
+            if (playerTwo.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) {
                 bart.intake.intakeArm.moveRollNegative45();
             }
 
-            if (playerOne.wasJustPressed(GamepadKeys.Button.DPAD_UP)) {
+            if (playerTwo.wasJustPressed(GamepadKeys.Button.DPAD_UP)) {
                 bart.intake.intakeArm.cycle();
             }
 

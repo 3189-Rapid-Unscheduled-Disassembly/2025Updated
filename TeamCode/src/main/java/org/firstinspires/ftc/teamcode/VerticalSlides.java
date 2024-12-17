@@ -4,18 +4,27 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 public class VerticalSlides {
 
     DcMotorEx front, back;
     int currentTicks;
+    double currentError;
+    double previousError;
     double targetTicks;
     double slidePower;
     double previousSlidePower;
+    double currentTime;
+    double previousTime;
+    double deltaTime;
+    double derivative;
     final double SLIDE_POWER_SIGNIFICANT_DIFFERENCE = 0;
+    ElapsedTime time;
 
-    final double ALLOWED_ERROR_INCHES = 0.1;
-    final double p = 0.006;
+    final double ALLOWED_ERROR_INCHES = 0.25;
+    final double p = 0.0033;
+    final double d = 0.0015;
 
     final double TICKS_PER_INCH = 153.829;
     public VerticalSlides(HardwareMap hardwareMap) {
@@ -32,6 +41,11 @@ public class VerticalSlides {
         back.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         previousSlidePower = 0;
+        previousError = 0;
+        currentTime = 0;
+        previousTime = 0;
+
+        time = new ElapsedTime();
 
     }
 
@@ -59,10 +73,21 @@ public class VerticalSlides {
 
     //currently just a p controller
     public void goToTargetAsync() {
-        if (!isAtTarget()) {
-            slidePower = (targetTicks - currentTicks()) * p;
+        currentError = targetTicks - currentTicks();
+        currentTime = time.milliseconds();
+        deltaTime = currentTime - previousTime;
+        derivative = (currentError - previousError) / deltaTime;
+        previousError = currentError;
+        previousTime = currentTime;
+        //we don't need to power when the slides are at zero
+        if (targetTicks > 10 || currentTicks > 10) {
+            //if (!isAtTarget()) {
+                slidePower = (currentError * p) + 0;//(derivative * d);
+            //} else {
+                //setSlidePower(currentTicks() * 0.000003);//maybe need back drive in the future
+                //slidePower = 0;
+            //}
         } else {
-            //setSlidePower(currentTicks() * 0.000003);//maybe need back drive in the future
             slidePower = 0;
         }
 

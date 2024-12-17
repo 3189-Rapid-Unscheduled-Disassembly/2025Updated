@@ -28,7 +28,7 @@ public class Joint {
     String labelTelemetry;
 
     private double currentPositionAngleDegrees;
-    private double previousPositionAngleDegrees;
+    private double previousPositionAngleDegrees = -3600;
 
     private final double DEGREES_SIGNIFICANT_DIFFERENCE = 0.0001;
     private final double DEGREES_FROM_ZERO_TO_ONE;//[-45,135]
@@ -87,6 +87,10 @@ public class Joint {
         }
     }
 
+
+    public boolean isAngleEqualToGivenAngle(double givenAngle) {
+        return RobotMath.isAbsDiffWithinRange(currentPositionAngleDegrees, givenAngle, 0.0001);
+    }
     public void write() {
         if (Math.abs(previousPositionAngleDegrees - currentPositionAngleDegrees) > DEGREES_SIGNIFICANT_DIFFERENCE) {
             setPosition();
@@ -101,6 +105,6 @@ public class Joint {
 
     @NonNull
     public String toStringServoPos() {
-        return labelTelemetry + String.format(": %.2f Servos", degToServo(currentPositionAngleDegrees));
+        return labelTelemetry + String.format(": %.3f Servos", degToServo(currentPositionAngleDegrees));
     }
 }

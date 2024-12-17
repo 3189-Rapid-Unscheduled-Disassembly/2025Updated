@@ -24,7 +24,7 @@ public class IntakeArm {
         List<Servo> pitchServos = new ArrayList<>();
         pitchServos.add(intakePitchLeft);
         pitchServos.add(intakePitchRight);
-        intakePitch = new Joint(pitchServos, 180, 0.7, "Intake Pitch");
+        intakePitch = new Joint(pitchServos, 180, 0.65, "Intake Pitch");
 
         Servo intakeRollServo = hardwareMap.get(Servo.class, "intakeRoll");
         intakeRollServo.setDirection(Servo.Direction.FORWARD);
@@ -34,7 +34,7 @@ public class IntakeArm {
         gripperServo.setDirection(Servo.Direction.REVERSE);
         intakeGripper = new Gripper(gripperServo, 0.65, 0.15, "Intake Gripper");
 
-        savedPositions.put("transfer", new IntakeArmPosition(35,0, false));
+        savedPositions.put("transfer", new IntakeArmPosition(0,0, false));
         savedPositions.put("grab", new IntakeArmPosition(-75, 0, true));
     }
 
@@ -86,10 +86,7 @@ public class IntakeArm {
     //this is just for checking if we are at a certain pitch
     //we ignore roll/gripper so that way we can roll and then we still know what saved pos we're at
     public boolean isPitchEqualToSavedIntakePosition(String key) {
-        return isPitchEqualToIntakeArmPosition(savedPositions.get(key));
-    }
-    public boolean isPitchEqualToIntakeArmPosition(IntakeArmPosition intakeArmPosition) {
-        return RobotMath.isAbsDiffWithinRange(intakePitch.currentAngleDegrees(), intakeArmPosition.pitchDeg, 0.0001);
+        return intakePitch.isAngleEqualToGivenAngle(savedPositions.get(key).pitchDeg);
     }
 
     public void setToSavedIntakeArmPosition(String key) {

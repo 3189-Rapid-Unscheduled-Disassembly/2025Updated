@@ -149,9 +149,12 @@ public class ATeleop extends LinearOpMode {
 
             /** TELEMETRY **/
 
+            telemetry.addData("vertInches", bart.output.verticalSlides.currentInches());
+            telemetry.addData("vertTicks", bart.output.verticalSlides.currentTicks);
+
             //telemetry.addLine(bart.output.currentPosition().pointTelemetry());
-            telemetry.addData("\n", bart.output.currentPosition().componentValuesIrl());
-            telemetry.addLine(bart.output.wrist.toString());
+            //telemetry.addData("\n", bart.output.currentPosition().componentValuesIrl());
+            //telemetry.addLine(bart.output.wrist.toString());
             //telemetry.addData("wristServosLeft", bart.output.wrist.getCurrentLeftServoPosition());
             //telemetry.addData("wristServosRight", bart.output.wrist.getCurrentRightServoPosition());
             //telemetry.addData("armServos", bart.output.arm.getCurrentServoPosition());
@@ -170,10 +173,10 @@ public class ATeleop extends LinearOpMode {
             telemetry.addData("Avg Loop Time", avgLoopTime);*/
 
 
-            telemetry.addData("Angle", Math.toDegrees(bart.mecanaDruve.pose.heading.toDouble()));
+            /*telemetry.addData("Angle", Math.toDegrees(bart.mecanaDruve.pose.heading.toDouble()));
             telemetry.addData("p1ly", playerOne.getLeftY());
             telemetry.addData("p1lx", -playerOne.getLeftX());
-            telemetry.addData("p1rx", -playerOne.getRightX());
+            telemetry.addData("p1rx", -playerOne.getRightX());*/
 
             //telemetry.addData("Target Drive Angle", targetAngle);
 

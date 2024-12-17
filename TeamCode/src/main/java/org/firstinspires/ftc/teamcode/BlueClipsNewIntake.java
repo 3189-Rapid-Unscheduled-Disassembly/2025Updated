@@ -74,7 +74,7 @@ public class BlueClipsNewIntake extends LinearOpMode {
                 if (!actionIsRunning) {
                     initialized = false;
                 }
-                return actionIsRunning;
+                return false;//actionIsRunning;
             }
 
         }
@@ -298,7 +298,7 @@ public class BlueClipsNewIntake extends LinearOpMode {
             }
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                if (drive.pose.position.x < -20) {
+                if (drive.pose.position.x < -16) {
                     horizTarget = target;
                     return !bart.intake.isAtPosition(horizTarget);
                 }
@@ -451,11 +451,11 @@ public class BlueClipsNewIntake extends LinearOpMode {
         //create robot 6 5/16 from wall   x = 32 from wall
         Pose2d beginPose = new Pose2d(-5.5, 63.75, Math.toRadians(270));
         //SCORE POSES
-        Vector2d scoreVector = new Vector2d(beginPose.position.x, 33.5);//36.5 for backwards
+        Vector2d scoreVector = new Vector2d(beginPose.position.x, 32.5);//36.5 for backwards
         double scoreAngleRad = Math.toRadians(270);
         Pose2d scorePose = new Pose2d(scoreVector, scoreAngleRad);
 
-        Vector2d scoreCycleVector = new Vector2d(-3, 32);
+        Vector2d scoreCycleVector = new Vector2d(-3, 31);
         double scoreCycleAngleRad = Math.toRadians(90);
         Pose2d scoreCyclePose = new Pose2d(scoreCycleVector, scoreCycleAngleRad);
         //GRAB POSE
@@ -464,8 +464,8 @@ public class BlueClipsNewIntake extends LinearOpMode {
         Pose2d grabPose = new Pose2d(grabVector, grabAngleRad);
         //Pose2d dropPose = new Pose2d(-60, 48, Math.toRadians(90));
 
-        double grabY = 42;
-        Vector2d grabSpark1Vector = new Vector2d(-28, grabY+1);
+        double grabY = 40.75;
+        Vector2d grabSpark1Vector = new Vector2d(-29, grabY+2.5);
         double grabSpark1Rad = Math.toRadians(225);
         Pose2d grabSpark1Pose= new Pose2d(grabSpark1Vector, grabSpark1Rad);
 
@@ -473,7 +473,7 @@ public class BlueClipsNewIntake extends LinearOpMode {
         double grabSpark2Rad = Math.toRadians(225);
         Pose2d grabSpark2Pose= new Pose2d(grabSpark2Vector, grabSpark2Rad);
 
-        Vector2d grabSpark3Vector = new Vector2d(-45, 37.25);
+        Vector2d grabSpark3Vector = new Vector2d(-45, 36.25);
         double grabSpark3Rad = Math.toRadians(190);
         Pose2d grabSpark3Pose= new Pose2d(grabSpark2Vector, grabSpark3Rad);
 
@@ -532,8 +532,8 @@ public class BlueClipsNewIntake extends LinearOpMode {
         TrajectoryActionBuilder fromSparkThreeToGrab = drive.actionBuilder(grabSpark3Pose)
                 //.splineToLinearHeading(new Pose2d(grabVector.x, grabVector.y-5, grabAngleRad), Math.toRadians(90))
                 //.splineToConstantHeading(grabVector, Math.toRadians(90));
-                .strafeToLinearHeading(new Vector2d(grabVector.x, grabVector.y-10), grabAngleRad)
-                .strafeToConstantHeading(grabVector);
+                .strafeToLinearHeading(new Vector2d(grabVector.x, grabVector.y-5), grabAngleRad)
+                .strafeToConstantHeading(new Vector2d(grabVector.x, grabVector.y+1));
 
 
 
@@ -553,7 +553,8 @@ public class BlueClipsNewIntake extends LinearOpMode {
 
         //bart.output.setComponentPositionsFromSavedPosition("rest");
         bart.readHubs();
-        bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, -40, 90, false));
+        //bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, -40, 90, false));
+        bart.output.setComponentPositionsFromSavedPosition("rest");
         bart.intake.intakeArm.setToSavedIntakeArmPosition("grab");
         //bart.intake.intakeArm.setRollDeg(45);
         //bart.intake.closeGate();
@@ -717,6 +718,7 @@ public class BlueClipsNewIntake extends LinearOpMode {
                                 outputs.endProgram()
                         ),
                         //SEND COMPONENTS TO POSITION EVERY FRAME
+                        outputs.sendComponentsToPositions(),
                         outputs.writeComponents(),
                         outputs.readComponents()
                 )

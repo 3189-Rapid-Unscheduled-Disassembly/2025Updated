@@ -12,7 +12,6 @@ public class ArmTest extends LinearOpMode {
         bart = new RobotMain(hardwareMap, telemetry);
 
         double wristPitchTarget;
-        double wristRollTarget;
         double armAngleTarget = 0;
         boolean previousDpadUp = false;
         boolean previousDpadDown = false;
@@ -23,11 +22,11 @@ public class ArmTest extends LinearOpMode {
             //double armAngleTarget = -gamepad2.right_stick_y * 180;
 
             if (gamepad2.dpad_up && !previousDpadUp) {
-                armAngleTarget += 2;
+                armAngleTarget += 1;
             }
 
             if (gamepad2.dpad_down && !previousDpadDown) {
-                armAngleTarget -= 2;
+                armAngleTarget -= 1;
             }
 
             previousDpadUp = gamepad2.dpad_up;
@@ -35,7 +34,6 @@ public class ArmTest extends LinearOpMode {
 
             bart.output.arm.setAngleDegrees(armAngleTarget);
             wristPitchTarget = -gamepad1.left_stick_y * 90;
-            wristRollTarget = gamepad1.right_stick_x * 112;
 
             bart.output.wrist.setAngleDegreesMinusOtherAngle(wristPitchTarget, bart.output.arm.currentAngleDegrees());
 
