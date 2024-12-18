@@ -24,7 +24,7 @@ public class IntakeArm {
         List<Servo> pitchServos = new ArrayList<>();
         pitchServos.add(intakePitchLeft);
         pitchServos.add(intakePitchRight);
-        intakePitch = new Joint(pitchServos, 180, 0.65, "Intake Pitch");
+        intakePitch = new Joint(pitchServos, 150, 0.778, "Intake Pitch");
 
         Servo intakeRollServo = hardwareMap.get(Servo.class, "intakeRoll");
         intakeRollServo.setDirection(Servo.Direction.FORWARD);
@@ -32,10 +32,12 @@ public class IntakeArm {
 
         Servo gripperServo = hardwareMap.get(Servo.class, "intakeGripper");
         gripperServo.setDirection(Servo.Direction.REVERSE);
-        intakeGripper = new Gripper(gripperServo, 0.65, 0.15, "Intake Gripper");
+        intakeGripper = new Gripper(gripperServo, 0.75, 0.17, "Intake Gripper");
 
+        //SAVED POSITIONS
         savedPositions.put("transfer", new IntakeArmPosition(0,0, false));
-        savedPositions.put("grab", new IntakeArmPosition(-75, 0, true));
+        savedPositions.put("drop", new IntakeArmPosition(-60,45, false));
+        savedPositions.put("grab", new IntakeArmPosition(-90, 0, true));//0.233,-75
     }
 
 
@@ -77,7 +79,7 @@ public class IntakeArm {
     //this allows us to quickly cycle to the desired pitch
     public void cycle() {
         if (isPitchEqualToSavedIntakePosition("transfer")) {
-            setToSavedIntakeArmPosition("grab");
+            setOnlySpecifiedValuesToSavedIntakeArmPosition("grab", true, false, true);
         } else {
             setToSavedIntakeArmPosition("transfer");
         }
@@ -98,6 +100,24 @@ public class IntakeArm {
         intakeGripper.setPosition(intakeArmPosition.open);
     }
 
+    //kinda wierd but we only set the values that are true in the parameters.
+    //that we we don't have to set the roll or whatever
+    public void setOnlySpecifiedValuesToIntakeArmPosition(IntakeArmPosition intakeArmPosition,
+                                                          boolean setPitch, boolean setRoll, boolean setGripper) {
+        if (setPitch) {
+            intakePitch.setAngleDegrees(intakeArmPosition.pitchDeg);
+        }
+        if (setRoll) {
+            intakeRoll.setAngleDegrees(intakeArmPosition.rollDeg);
+        }
+        if (setGripper) {
+            intakeGripper.setPosition(intakeArmPosition.open);
+        }
+    }
+    public void setOnlySpecifiedValuesToSavedIntakeArmPosition(String key,
+                                                               boolean setPitch, boolean setRoll, boolean setGripper) {
+        setOnlySpecifiedValuesToIntakeArmPosition(savedPositions.get(key), setPitch, setRoll, setGripper);
+    }
 
 
 

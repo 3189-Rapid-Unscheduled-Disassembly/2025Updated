@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.util.Size;
+
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
@@ -8,22 +10,39 @@ import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
+import org.firstinspires.ftc.vision.opencv.ColorBlobLocatorProcessor;
+import org.firstinspires.ftc.vision.opencv.ColorRange;
+import org.firstinspires.ftc.vision.opencv.ImageRegion;
+import org.opencv.core.RotatedRect;
 
 import java.util.List;
 
 @TeleOp
-public class ATeleop extends LinearOpMode {
+public class CameraInTeleopTest extends LinearOpMode {
 
     RobotMain bart;
+
+    ColorBlobLocatorProcessor colorLocatorBlue = new ColorBlobLocatorProcessor.Builder()
+            .setTargetColorRange(ColorRange.BLUE)         // use a predefined color match
+            .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
+            .setRoi(ImageRegion.asUnityCenterCoordinates(-1, 1, 1, -1))  // search central 1/4 of camera view
+            .setDrawContours(true)                        // Show contours on the Stream Preview
+            .setBlurSize(5)                               // Smooth the transitions between different colors in image
+            .build();
+
+
+    boolean hasSeenBlue = false;
+    double blueHorizTarget = 6;
+    final int k = 1000;
 
 
     /**CAMERA**/
@@ -51,7 +70,6 @@ public class ATeleop extends LinearOpMode {
     final double MAX_DRIVE_VELOCITY_MULTIPLIER = 0.7;
 
 
-
     double p1PreviousRightTrigger = 0;
     double p1PreviousLeftTrigger = 0;
 
@@ -70,7 +88,8 @@ public class ATeleop extends LinearOpMode {
         LINE_UP_INTAKE_UNTIL_USER_CONFIRMS,
         INTAKE,
         DRIVE_TO_BUCKET,
-        RELOCALIZE
+        RELOCALIZE,
+        LOOK_FOR_BLUE
     }
 
     State currentState;
@@ -95,6 +114,14 @@ public class ATeleop extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
+
+        VisionPortal portal = new VisionPortal.Builder()
+                .addProcessor(colorLocatorBlue)
+                .setCameraResolution(new Size(320, 240))
+                .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
+                .build();
+
+
         //Camera
         //initAprilTag();
         loopTime = 0;
@@ -211,6 +238,10 @@ public class ATeleop extends LinearOpMode {
                     thogLockToNextClockwise();
                 }
 
+                if (playerOne.isDown(GamepadKeys.Button.X)) {
+                    currentState = State.LOOK_FOR_BLUE;
+                    hasSeenBlue = false;
+                }
 
                 //RESET THE GYRO
                 //USE THE DPAD DIRECTION CORRESPONDING TO ROBOT'S DIRECTION
@@ -231,6 +262,61 @@ public class ATeleop extends LinearOpMode {
                     targetAngle = 180;
                 }
 
+                break;
+
+            case LOOK_FOR_BLUE:
+                bart.mecanaDruve.setDrivePowers(new PoseVelocity2d(
+                        new Vector2d(
+                                0,
+                                0
+                        ),
+                        0
+                ));
+
+                //basically, this is what we do before we see blue
+                //so, while we are still looking for it
+                if (!hasSeenBlue) {
+                    bart.intake.intakeArm.setToSavedIntakeArmPosition("grab");
+                    List<ColorBlobLocatorProcessor.Blob> blobsBlue = colorLocatorBlue.getBlobs();
+                    //filter by area
+                    ColorBlobLocatorProcessor.Util.filterByArea(100, 80 * k, blobsBlue);  // filter out very small blobs
+
+                    //we don't see a sample rn
+                    if (blobsBlue.isEmpty()) {
+                        //extend the intake if we don't see one
+                        if (bart.intake.currentInches() < 24) {
+                            bart.intake.setHorizontalSlidePower(0.35);
+                        } else {
+                            bart.intake.setHorizontalSlidePower(0);
+                        }
+                    } else {
+                        //we see one
+                        ColorBlobLocatorProcessor.Blob b = blobsBlue.get(0);
+                        RotatedRect boxFit = b.getBoxFit();
+                        //this y check makes sure that the sample is closer to the grabber
+                        if (boxFit.center.y < 110) {
+                            if (bart.intake.currentInches() < 24) {
+                                bart.intake.setHorizontalSlidePower(0.3);
+                            } else {
+                                bart.intake.setHorizontalSlidePower(0);
+                            }
+                        } else {
+                            bart.intake.setHorizontalSlidePower(0);
+                            hasSeenBlue = true;
+                            blueHorizTarget = bart.intake.currentInches() + 1.5;
+                        }
+                    }
+                } else {
+                    //we have seen a blue, so we want to go out about another inch to be over the sample
+                    bart.intake.setHorizontalSlidePositionInches(blueHorizTarget);
+                }
+
+
+
+
+                if (!playerOne.isDown(GamepadKeys.Button.X)) {
+                    currentState = State.MANUAL;
+                }
                 break;
 
             case GO_TO_INPUTTED_Y:
@@ -307,7 +393,7 @@ public class ATeleop extends LinearOpMode {
                 //just doing that, nothgin else
                 break;
 
-                //do later alan thign if we do
+            //do later alan thign if we do
         }
     }
 
@@ -361,10 +447,10 @@ public class ATeleop extends LinearOpMode {
         //double thetaDiff = desiredPos.heading.toDouble() -
 
 
-            bart.driveFieldRelative(
-                    difference.position.x*xP,
-                    difference.position.y*yP,
-                    difference.heading.toDouble()*thetaP);
+        bart.driveFieldRelative(
+                difference.position.x*xP,
+                difference.position.y*yP,
+                difference.heading.toDouble()*thetaP);
 
     }
 
@@ -493,7 +579,6 @@ public class ATeleop extends LinearOpMode {
             bart.switchDriveMode();
         }
 
-
         //toggle camera
         if (playerOne.wasJustPressed(GamepadKeys.Button.A)) {
             if (cameraIsOn) {
@@ -517,7 +602,7 @@ public class ATeleop extends LinearOpMode {
                 usingHorizManualControl = true;
                 bart.intake.intakeArm.setToSavedIntakeArmPosition("transfer");
             } else {
-                 if (bart.intake.intakeArm.isPitchEqualToSavedIntakePosition("transfer")) {
+                if (bart.intake.intakeArm.isPitchEqualToSavedIntakePosition("transfer")) {
                     bart.intake.intakeArm.setToSavedIntakeArmPosition("grab");
                 } else {
                     if (bart.intake.intakeArm.intakeGripper.isOpen()) {

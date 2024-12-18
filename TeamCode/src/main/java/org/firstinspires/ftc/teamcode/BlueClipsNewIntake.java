@@ -140,8 +140,7 @@ public class BlueClipsNewIntake extends LinearOpMode {
         class LowerToPark implements Action {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                bart.output.setComponentPositionsFromSavedPosition("rest");
-                bart.output.gripper.open();
+                bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, 80, 80, true));
                 return false;
             }
         }
@@ -155,6 +154,21 @@ public class BlueClipsNewIntake extends LinearOpMode {
 
                 //ACTION
                 bart.output.gripper.open();
+                return actionIsRunning;
+            }
+
+        }
+
+
+        class MoveWristOutOfWay implements Action {
+
+            boolean actionIsRunning = false;
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+
+                //ACTION
+                bart.output.setComponentPositionsFromSavedPosition("highBarBackMoveWrist");
                 return actionIsRunning;
             }
 
@@ -228,6 +242,41 @@ public class BlueClipsNewIntake extends LinearOpMode {
                 return false;
             }
         }
+
+        class RaiseToDropOncePast180 implements Action {
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                double robotAngleDeg = Math.toDegrees(drive.pose.heading.toDouble());
+                if (robotAngleDeg < 0) {
+                    robotAngleDeg += 360;
+                }
+
+                if (robotAngleDeg < 180) {
+                    bart.intake.intakeArm.setToSavedIntakeArmPosition("drop");
+                    return false;
+                }
+                return true;
+            }
+        }
+
+        class IntakeGrabOncePast140 implements Action {
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                double robotAngleDeg = Math.toDegrees(drive.pose.heading.toDouble());
+                if (robotAngleDeg < 0) {
+                    robotAngleDeg += 360;
+                }
+
+                if (robotAngleDeg > 140) {
+                    bart.intake.intakeArm.setOnlySpecifiedValuesToSavedIntakeArmPosition("grab", true, false, true);
+                    return false;
+                }
+                return true;
+            }
+        }
+
 
         class SetIntakeRoll implements Action {
             double roll;
@@ -403,6 +452,10 @@ public class BlueClipsNewIntake extends LinearOpMode {
         }
 
         public Action setIntakeArmPosition(String key) { return new SetIntakeArmPosition(key);}
+
+        public Action raiseToDropOncePast180() { return new RaiseToDropOncePast180();}
+        public Action intakeGrabOncePast140() { return new IntakeGrabOncePast140();}
+
         public Action setIntakeRoll(double roll) { return new SetIntakeRoll(roll);}
 
         public Action sendComponentsToPositions() {
@@ -419,6 +472,9 @@ public class BlueClipsNewIntake extends LinearOpMode {
 
         public Action openGripper() {
             return new OpenGripper();
+        }
+        public Action moveWristOutOfWay() {
+            return new MoveWristOutOfWay();
         }
 
         public Action closeGripper() {
@@ -451,11 +507,11 @@ public class BlueClipsNewIntake extends LinearOpMode {
         //create robot 6 5/16 from wall   x = 32 from wall
         Pose2d beginPose = new Pose2d(-5.5, 63.75, Math.toRadians(270));
         //SCORE POSES
-        Vector2d scoreVector = new Vector2d(beginPose.position.x, 32.5);//36.5 for backwards
+        Vector2d scoreVector = new Vector2d(beginPose.position.x+2, 32.5);//36.5 for backwards
         double scoreAngleRad = Math.toRadians(270);
         Pose2d scorePose = new Pose2d(scoreVector, scoreAngleRad);
 
-        Vector2d scoreCycleVector = new Vector2d(-3, 31);
+        Vector2d scoreCycleVector = new Vector2d(-3, 32.5);
         double scoreCycleAngleRad = Math.toRadians(90);
         Pose2d scoreCyclePose = new Pose2d(scoreCycleVector, scoreCycleAngleRad);
         //GRAB POSE
@@ -473,12 +529,12 @@ public class BlueClipsNewIntake extends LinearOpMode {
         double grabSpark2Rad = Math.toRadians(225);
         Pose2d grabSpark2Pose= new Pose2d(grabSpark2Vector, grabSpark2Rad);
 
-        Vector2d grabSpark3Vector = new Vector2d(-45, 36.25);
+        Vector2d grabSpark3Vector = new Vector2d(-45, 34.25);
         double grabSpark3Rad = Math.toRadians(190);
         Pose2d grabSpark3Pose= new Pose2d(grabSpark2Vector, grabSpark3Rad);
 
         double dropRad1 = Math.toRadians(135);
-        double dropRad2 = Math.toRadians(120);
+        double dropRad2 = Math.toRadians(130);
         double dropRad3 = Math.toRadians(120);
 
         /*Vector2d spark2DropVector = new Vector2d(-44.5, 39);
@@ -562,8 +618,8 @@ public class BlueClipsNewIntake extends LinearOpMode {
         //bart.output.sendVerticalSlidesToTarget();
 
         int timeToGrabSpikeMilliseconds = 350;
-        int timeToDropSpikeMilliseconds = 100;
-
+        int timeToDropSpikeMilliseconds = 0;
+        int timeToDropClipMilliseconds = 90;
         int timeToGrabClipMilliseconds = 50;
 
         waitForStart();
@@ -591,76 +647,45 @@ public class BlueClipsNewIntake extends LinearOpMode {
                                 outputs.setIntakeGripperClosed(true),
                                 sleeper.sleep(timeToGrabSpikeMilliseconds),
                                 //drop 1
-                                fromSparkOneToDrop.build(),
+                                new ParallelAction(
+                                    outputs.raiseToDropOncePast180(),
+                                    fromSparkOneToDrop.build()
+                                ),
                                 outputs.setIntakeGripperOpen(true),
                                 sleeper.sleep(timeToDropSpikeMilliseconds),
+
+
                                 //grab 2
-                                fromDropOneToSparkTwo.build(),
+                                new ParallelAction(
+                                    outputs.intakeGrabOncePast140(),
+                                    fromDropOneToSparkTwo.build()
+                                ),
                                 outputs.setIntakeGripperClosed(true),
                                 sleeper.sleep(timeToGrabSpikeMilliseconds),
                                 //drop 2
-                                //this is for retracting the horiz to avoid hitting the wall
-                                /*new ParallelAction(
-                                        fromSparkTwoToDrop.build(),
-                                        //determines when to retract and then extend
-                                        new SequentialAction(
-                                                outputs.extendHorizOncePastAngle(13, 200, false),
-                                                outputs.extendHorizOncePastAngle(24, 160, false)
-                                        )
-                                ),*/
-                                fromSparkTwoToDrop.build(),
+                                new ParallelAction(
+                                    outputs.raiseToDropOncePast180(),
+                                    fromSparkTwoToDrop.build()
+                                ),
                                 outputs.setIntakeGripperOpen(true),
                                 sleeper.sleep(timeToDropSpikeMilliseconds),
+                                outputs.setIntakeRoll(90),
 
                                 //grab 3
-                                //once again, miss hitting the wall
-                                /*new ParallelAction(
-                                    fromDropTwoToSparkThree.build(),
-                                    new SequentialAction(
-                                            outputs.extendHorizOncePastAngle(18, 140, true),//122, 210
-                                            outputs.extendHorizOncePastAngle(24, 190, true)
-                                    )
-                                ),*/
-                                fromDropTwoToSparkThree.build(),
+                                new ParallelAction(
+                                    outputs.intakeGrabOncePast140(),
+                                    fromDropTwoToSparkThree.build()
+                                ),
                                 outputs.setIntakeGripperClosed(true),
                                 sleeper.sleep(timeToGrabSpikeMilliseconds+100),
 
-                                //drop 3
-                                /*new ParallelAction(
-                                        fromSparkThreeToDrop.build(),
-                                        new SequentialAction(
-                                                outputs.extendHorizOncePastAngle(18, 190, false),
-                                                outputs.extendHorizOncePastAngle(18, 140, false)
-                                        )
-                                ),*/
-                                //fromSparkThreeToDrop.build(),
-                                //outputs.setIntakeGripperOpen(true),
-                                //sleeper.sleep(250),
-
-                                //grab the clip
-                                /*outputs.setIntakeArmPosition("preGrab"),
-                                outputs.extendHoriz(6),
-                                fromDropThreeToGrab.build(),
-                                outputs.setIntakeGripperClosed(true),
-                                sleeper.sleep(250),
-                                //transfer and score
-                                new ParallelAction(
-                                    fromGrabToScore.build(),
-
-                                    new SequentialAction(
-                                        outputs.transferClip(),
-                                        outputs.raiseToHighBarBack()
-                                    )
-                                ),
-                                sleeper.sleep(250),*/
-
                                 //DROP 3 AND GRAB CLIP
                                 outputs.lowerToGrab(),
-                                outputs.setIntakeRoll(45),
                                 new ParallelAction(
                                     outputs.extendHoriz(6),
                                     fromSparkThreeToGrab.build()
                                 ),
+                                outputs.setIntakeRoll(45),
                                 outputs.setIntakeGripperOpen(true),
                                 sleeper.sleep(50),
                                 outputs.closeGripper(),
@@ -675,6 +700,9 @@ public class BlueClipsNewIntake extends LinearOpMode {
                                 ),
 
                                 //CYCLE CLIP 3
+                                outputs.openGripper(),
+                                outputs.moveWristOutOfWay(),
+                                sleeper.sleep(timeToDropClipMilliseconds),
                                 //grab
                                 outputs.lowerToGrab(),
                                 fromScoreCycleToGrab.build(),
@@ -688,6 +716,9 @@ public class BlueClipsNewIntake extends LinearOpMode {
 
                                 //CYCLE CLIP 4
                                 //grab
+                                outputs.openGripper(),
+                                outputs.moveWristOutOfWay(),
+                                sleeper.sleep(timeToDropClipMilliseconds),
                                 outputs.lowerToGrab(),
                                 fromScoreCycleToGrab.build(),
                                 outputs.closeGripper(),
@@ -700,6 +731,9 @@ public class BlueClipsNewIntake extends LinearOpMode {
 
                                 //CYCLE CLIP 5
                                 //grab
+                                outputs.openGripper(),
+                                outputs.moveWristOutOfWay(),
+                                sleeper.sleep(timeToDropClipMilliseconds),
                                 outputs.lowerToGrab(),
                                 fromScoreCycleToGrab.build(),
                                 outputs.closeGripper(),
@@ -710,9 +744,12 @@ public class BlueClipsNewIntake extends LinearOpMode {
                                         fromGrabToScoreCycle.build()
                                 ),
 
-                                outputs.lowerToGrab(),
+                                outputs.openGripper(),
+                                outputs.moveWristOutOfWay(),
+                                sleeper.sleep(timeToDropClipMilliseconds),
+                                outputs.lowerToPark(),
                                 //fromScoreCycleToPark.build(),
-                                sleeper.sleep(500),
+                                sleeper.sleep(1000),
 
 
                                 outputs.endProgram()

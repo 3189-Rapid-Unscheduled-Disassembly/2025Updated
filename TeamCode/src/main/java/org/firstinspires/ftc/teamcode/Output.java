@@ -59,7 +59,7 @@ public class Output {
 
         Servo wristServo = hardwareMap.get(Servo.class, "wrist");
         wristServo.setDirection(Servo.Direction.REVERSE);
-        wrist = new Joint(wristServo, 300, 0.55, "Wrist Relative to Arm");
+        wrist = new Joint(wristServo, 300, 0.5, "Wrist Relative to Arm");
 
         Servo gripperServo = hardwareMap.get(Servo.class, "outputGripper");
         gripperServo.setDirection(Servo.Direction.REVERSE);
@@ -90,6 +90,9 @@ public class Output {
         );
         savedPositions.put("highBarBack",
                 new OutputEndPoint(0, 130, 170, false)
+        );
+        savedPositions.put("highBarBackMoveWrist",
+                new OutputEndPoint(0, 130, 100, true)
         );
         savedPositions.put("level1AscentAuto",
                 new OutputEndPoint(new Point2d(8.83, 22.5), 0, false)

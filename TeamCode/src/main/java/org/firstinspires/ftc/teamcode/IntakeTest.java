@@ -57,6 +57,15 @@ public class IntakeTest extends LinearOpMode {
 
             bart.writeAllComponents();
 
+            if (playerTwo.wasJustPressed(GamepadKeys.Button.X)) {
+                bart.intake.intakeArm.setToIntakeArmPosition(new IntakeArmPosition(0, 0, false));
+            }
+            if (playerTwo.wasJustPressed(GamepadKeys.Button.RIGHT_STICK_BUTTON)) {
+                bart.intake.intakeArm.setToIntakeArmPosition(new IntakeArmPosition(bart.intake.intakeArm.intakePitch.currentAngleDegrees()+1, 0, false));
+            }
+            if (playerTwo.wasJustPressed(GamepadKeys.Button.LEFT_STICK_BUTTON)) {
+                bart.intake.intakeArm.setToIntakeArmPosition(new IntakeArmPosition(bart.intake.intakeArm.intakePitch.currentAngleDegrees()-1, 0, false));
+            }
             telemetry.addLine(bart.intake.intakeArm.toString());
             telemetry.addLine(bart.intake.intakeArm.posServoTelemetry());
 
