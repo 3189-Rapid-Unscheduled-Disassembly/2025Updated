@@ -124,7 +124,7 @@ public class ATeleop extends LinearOpMode {
         }
 
         waitForStart();
-        bart.output.setComponentPositionsFromSavedPosition("rest");
+        bart.output.setComponentPositionsFromSavedPosition("restOpen");
         bart.intake.intakeArm.setToSavedIntakeArmPosition("grab");
 
         currentState = State.MANUAL;

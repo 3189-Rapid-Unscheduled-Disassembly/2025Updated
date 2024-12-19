@@ -12,7 +12,7 @@ public class MeepMeepTesting {
         Pose2d beginPose = new Pose2d(-5.5, 63.75, Math.toRadians(270));
 
 
-        Vector2d scoreVector = new Vector2d(beginPose.position.x, 32);//36.5 for backwards
+        Vector2d scoreVector = new Vector2d(beginPose.position.x+2, 32.5);//36.5 for backwards
         double scoreAngleRad = Math.toRadians(270);
         Pose2d scorePose = new Pose2d(scoreVector, scoreAngleRad);
 
@@ -22,7 +22,8 @@ public class MeepMeepTesting {
         Pose2d grabSpark1Pose= new Pose2d(grabSpark1Vector, grabSpark1Rad);
 
 
-        Vector2d scoreCycleVector = new Vector2d(-2, 33);
+
+        Vector2d scoreCycleVector = new Vector2d(-3, 32.5);
         double scoreCycleAngleRad = Math.toRadians(90);
         Pose2d scoreCyclePose = new Pose2d(scoreCycleVector, scoreCycleAngleRad);
         //GRAB POSE
@@ -40,14 +41,25 @@ public class MeepMeepTesting {
 
 
         myBot.runAction(myBot.getDrive().actionBuilder(scorePose)
-                        /*.strafeToConstantHeading(scoreCycleVector)
-                        .waitSeconds(0.1)
-                        .strafeToConstantHeading(new Vector2d(grabVector.x, grabVector.y-5))
-                        .strafeToConstantHeading(grabVector)*/
-
-                .splineToLinearHeading(new Pose2d(scoreVector.x-10, grabSpark1Vector.y, grabSpark1Rad), Math.toRadians(180))
-                //.splineToConstantHeading(new Vector2d(-42, 43.5), Math.toRadians(180));//-46
-                .splineToConstantHeading(grabSpark1Vector, Math.toRadians(180))
+                .splineToConstantHeading(new Vector2d(scoreVector.x-3, 35), Math.toRadians(90))
+                .splineToConstantHeading(new Vector2d(-20, 32), Math.toRadians(180))
+                .splineToConstantHeading(new Vector2d(-33, 30), Math.toRadians(270))
+                .splineToConstantHeading(new Vector2d(-40, 15), Math.toRadians(180))
+                .splineToConstantHeading(new Vector2d(-52, 18), Math.toRadians(90))
+                .splineToConstantHeading(new Vector2d(-52, 52), Math.toRadians(90))
+                //spike 2
+                .splineToConstantHeading(new Vector2d(-53, 36), Math.toRadians(270))
+                .splineToConstantHeading(new Vector2d(-57, 11), Math.toRadians(180))
+                .splineToConstantHeading(new Vector2d(-63, 18), Math.toRadians(90))
+                .splineToConstantHeading(new Vector2d(-63, 52), Math.toRadians(90))
+                //spike 3
+                .splineToConstantHeading(new Vector2d(-63, 36), Math.toRadians(270))
+                .splineToConstantHeading(new Vector2d(-65, 11), Math.toRadians(180))
+                .splineToConstantHeading(new Vector2d(-66, 18), Math.toRadians(90))
+                .splineToConstantHeading(new Vector2d(-66, 44), Math.toRadians(90))
+                .splineToConstantHeading(new Vector2d(-50, 52), Math.toRadians(0))
+                .splineToLinearHeading(new Pose2d(grabVector.x, grabVector.y-5, Math.toRadians(90)), Math.toRadians(0))
+                .strafeToConstantHeading(grabVector)
 
                 .build());
 

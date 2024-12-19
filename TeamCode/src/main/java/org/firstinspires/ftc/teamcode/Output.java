@@ -63,7 +63,7 @@ public class Output {
 
         Servo gripperServo = hardwareMap.get(Servo.class, "outputGripper");
         gripperServo.setDirection(Servo.Direction.REVERSE);
-        gripper = new Gripper(gripperServo, 0.5, 0.1, "Output Gripper");
+        gripper = new Gripper(gripperServo, 0.5, 0.12, "Output Gripper");
 
 
         //put saved positions
@@ -75,6 +75,9 @@ public class Output {
         );
         savedPositions.put("rest",
                 new OutputEndPoint(0, -15, -90,false)
+        );
+        savedPositions.put("restOpen",
+                new OutputEndPoint(0, -15, -90,true)
         );
         savedPositions.put("straightOut",
                 new OutputEndPoint(0, 0, 0,true)
