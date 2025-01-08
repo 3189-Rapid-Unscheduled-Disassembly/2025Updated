@@ -35,6 +35,8 @@ public class Joint {
     private final double ANGLE_IS_ZERO_AT_THIS_SERVO_POS;
 
 
+    double maxDegrees, minDegrees;
+
     public Joint(List<Servo> servos,
                  double DEGREES_FROM_ZERO_TO_ONE,
                  double ANGLE_IS_ZERO_AT_THIS_SERVO_POS,
@@ -55,6 +57,10 @@ public class Joint {
         this.DEGREES_FROM_ZERO_TO_ONE = DEGREES_FROM_ZERO_TO_ONE;
         this.ANGLE_IS_ZERO_AT_THIS_SERVO_POS = ANGLE_IS_ZERO_AT_THIS_SERVO_POS;
         this.labelTelemetry = labelTelemetry;
+
+        maxDegrees = RobotMath.servoToDeg(1, ANGLE_IS_ZERO_AT_THIS_SERVO_POS, DEGREES_FROM_ZERO_TO_ONE);
+        minDegrees = RobotMath.servoToDeg(0, ANGLE_IS_ZERO_AT_THIS_SERVO_POS, DEGREES_FROM_ZERO_TO_ONE);
+
     }
 
     public void setAngleDegrees(double degrees) {
@@ -75,7 +81,7 @@ public class Joint {
     }
 
     public double degToServo(double degrees) {
-        return RobotMath.degToServo(degrees, ANGLE_IS_ZERO_AT_THIS_SERVO_POS, DEGREES_FROM_ZERO_TO_ONE, 180, -180);
+        return RobotMath.degToServo(degrees, ANGLE_IS_ZERO_AT_THIS_SERVO_POS, DEGREES_FROM_ZERO_TO_ONE);//, maxDegrees, minDegrees);
     }
 
 

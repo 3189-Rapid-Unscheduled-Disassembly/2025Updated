@@ -87,9 +87,9 @@ public class RobotMath {
         return (inputServoPosition-angleIsZeroAtThisServoPos) * degreesFromZeroToOne;
     }
 
-    public static double degToServo(double degrees, double angleIsZeroAtThisServoPos, double degreesFromZeroToOne,
-                                    double max, double min) {
-        degrees = RobotMath.maxAndMin(degrees, max, min);
+    public static double degToServo(double degrees, double angleIsZeroAtThisServoPos, double degreesFromZeroToOne) {
+                                    //double max, double min) {
+        //degrees = RobotMath.maxAndMin(degrees, max, min);
         return (degrees/degreesFromZeroToOne) + angleIsZeroAtThisServoPos;
     }
 

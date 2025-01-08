@@ -20,13 +20,15 @@ public class IntakeTest extends LinearOpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         bart = new RobotMain(hardwareMap, telemetry);
-        bart.intake.intakeArm.setToSavedIntakeArmPosition("grab");
-        GamepadEx playerTwo;
+        bart.intake.intakeArm.setToSavedIntakeArmPosition("straightOut");
+        GamepadEx playerOne, playerTwo;
 
+        playerOne = new GamepadEx(gamepad1);
         playerTwo = new GamepadEx(gamepad2);
         waitForStart();
 
         while(opModeIsActive()) {
+            playerOne.readButtons();
             playerTwo.readButtons();
 
             //bart.intake.setHorizontalSlidePower(-gamepad1.right_stick_y*0.5);
@@ -58,16 +60,36 @@ public class IntakeTest extends LinearOpMode {
             bart.writeAllComponents();
 
             if (playerTwo.wasJustPressed(GamepadKeys.Button.X)) {
-                bart.intake.intakeArm.setToIntakeArmPosition(new IntakeArmPosition(0, 0, false));
+                bart.intake.intakeArm.setToSavedIntakeArmPosition("straightOut");
             }
             if (playerTwo.wasJustPressed(GamepadKeys.Button.RIGHT_STICK_BUTTON)) {
-                bart.intake.intakeArm.setToIntakeArmPosition(new IntakeArmPosition(bart.intake.intakeArm.intakePitch.currentAngleDegrees()+1, 0, false));
+                bart.intake.intakeArm.setToIntakeArmPosition(new IntakeArmPosition(0, bart.intake.intakeArm.intakeWristPitch.currentAngleDegrees()+1, 0, false));
             }
             if (playerTwo.wasJustPressed(GamepadKeys.Button.LEFT_STICK_BUTTON)) {
-                bart.intake.intakeArm.setToIntakeArmPosition(new IntakeArmPosition(bart.intake.intakeArm.intakePitch.currentAngleDegrees()-1, 0, false));
+                bart.intake.intakeArm.setToIntakeArmPosition(new IntakeArmPosition(0, bart.intake.intakeArm.intakeWristPitch.currentAngleDegrees()-1, 0, false));
             }
+
+            //arm
+            if (playerOne.wasJustPressed(GamepadKeys.Button.RIGHT_STICK_BUTTON)) {
+                bart.intake.intakeArm.setToIntakeArmPosition(new IntakeArmPosition(bart.intake.intakeArm.intakeArm.currentAngleDegrees()+1,
+                        bart.intake.intakeArm.intakeWristPitch.currentAngleDegrees(),
+                        0, false));
+            }
+            if (playerOne.wasJustPressed(GamepadKeys.Button.LEFT_STICK_BUTTON)) {
+                bart.intake.intakeArm.setToIntakeArmPosition(new IntakeArmPosition(bart.intake.intakeArm.intakeArm.currentAngleDegrees()-1,
+                        bart.intake.intakeArm.intakeWristPitch.currentAngleDegrees(),
+                        0, false));
+            }
+            if (playerOne.wasJustPressed(GamepadKeys.Button.B)) {
+                bart.intake.intakeArm.setToSavedIntakeArmPosition("transfer");
+            }
+            if (playerOne.wasJustPressed(GamepadKeys.Button.Y)) {
+                bart.intake.intakeArm.setToSavedIntakeArmPosition("grab");
+            }
+
+
             telemetry.addLine(bart.intake.intakeArm.toString());
-            telemetry.addLine(bart.intake.intakeArm.posServoTelemetry());
+            telemetry.addLine("\n" + bart.intake.intakeArm.posServoTelemetry());
 
             telemetry.addData("ticks", bart.intake.horizontalSlide.getCurrentPosition());
 

@@ -124,8 +124,8 @@ public class ATeleop extends LinearOpMode {
         }
 
         waitForStart();
-        bart.output.setComponentPositionsFromSavedPosition("restOpen");
-        bart.intake.intakeArm.setToSavedIntakeArmPosition("grab");
+        bart.output.setComponentPositionsFromSavedPosition("grab");
+        bart.intake.intakeArm.setToSavedIntakeArmPosition("preGrab");
 
         currentState = State.MANUAL;
         previousState = currentState;
@@ -204,11 +204,14 @@ public class ATeleop extends LinearOpMode {
 
 
                 //EVENTS
-                if (playerOne.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) {
+                /*if (playerOne.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) {
                     thogLockToNextCounterClockwise();
                 }
                 if (playerOne.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) {
                     thogLockToNextClockwise();
+                }*/
+                if (playerOne.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) {
+                    bart.output.gripper.flipFlop();
                 }
 
 
@@ -416,15 +419,20 @@ public class ATeleop extends LinearOpMode {
 
 
 
-        alternateControl = playerTwo.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) == 1;
+        alternateControl = playerTwo.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) >= 0.8;
 
         //transfer when a is held, the left trigger tells it to do a clip transfer
-        if (playerTwo.isDown(GamepadKeys.Button.A) || playerOne.isDown(GamepadKeys.Button.RIGHT_STICK_BUTTON)) {
+        if (playerTwo.isDown(GamepadKeys.Button.A)) { //|| playerOne.isDown(GamepadKeys.Button.RIGHT_STICK_BUTTON)) {
             bart.transfer();
             isTransferring = true;
         } else {
             isTransferring = false;
         }
+            //bart.intake.setHorizontalSlideToSavedPosition("transfer");
+            //usingHorizManualControl = false;
+            //bart.intake.intakeArm.setToSavedIntakeArmPosition("transfer");
+            //bart.output.setComponentPositionsFromSavedPosition("transfer");
+
 
         //INTAKE CONTROL
         if (playerTwo.wasJustPressed(GamepadKeys.Button.DPAD_UP)) {
@@ -460,6 +468,9 @@ public class ATeleop extends LinearOpMode {
                 } else {
                     bart.output.setComponentPositionsFromSavedPosition("lowBucket");
                 }
+                //lower the intake arm back down to get ready for the next cycle
+                bart.intake.intakeArm.setToSavedIntakeArmPosition("preGrab");
+
             }
             if (playerTwo.wasJustPressed(GamepadKeys.Button.B)) {
                 //we can use the left trigger to get an alternate position
@@ -559,6 +570,11 @@ public class ATeleop extends LinearOpMode {
         if (playerTwo.isDown(GamepadKeys.Button.DPAD_DOWN)) {
             bart.intake.setHorizontalSlideToSavedPosition("transfer");
             usingHorizManualControl = false;
+        } else if (playerTwo.isDown(GamepadKeys.Button.A) || playerOne.isDown(GamepadKeys.Button.RIGHT_STICK_BUTTON)) {
+            //bart.intake.setHorizontalSlideToSavedPosition("transfer");
+            usingHorizManualControl = false;
+            //bart.intake.intakeArm.setToSavedIntakeArmPosition("transfer");
+            //bart.output.setComponentPositionsFromSavedPosition("transfer");
         } else if (!isTransferring) {
             double stickInput = -playerTwo.getRightY();
 
@@ -579,7 +595,11 @@ public class ATeleop extends LinearOpMode {
             } else {
                 //stick control
                 if (!alternateControl) {
-                    bart.intake.setHorizontalSlidePower(stickInput);
+                    if (bart.intake.currentInches() > bart.intake.MAX_POINT && stickInput >= 0) {
+                        bart.intake.setHorizontalSlideToSavedPosition("max");
+                    } else {
+                        bart.intake.setHorizontalSlidePower(stickInput);
+                    }
                     if (playerTwo.getRightY() != 0) {
                         usingHorizManualControl = false;
                     }

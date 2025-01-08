@@ -270,7 +270,7 @@ public class BlueClipsNewIntake extends LinearOpMode {
                 }
 
                 if (robotAngleDeg > 140) {
-                    bart.intake.intakeArm.setOnlySpecifiedValuesToSavedIntakeArmPosition("grab", true, false, true);
+                    bart.intake.intakeArm.setOnlySpecifiedValuesToSavedIntakeArmPosition("grab", true, true, false, true);
                     return false;
                 }
                 return true;
@@ -287,7 +287,7 @@ public class BlueClipsNewIntake extends LinearOpMode {
 
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                bart.intake.intakeArm.intakeRoll.setAngleDegrees(roll);
+                bart.intake.intakeArm.intakeWristRoll.setAngleDegrees(roll);
                 return false;
             }
         }
@@ -747,7 +747,7 @@ public class BlueClipsNewIntake extends LinearOpMode {
                                 outputs.openGripper(),
                                 outputs.moveWristOutOfWay(),
                                 sleeper.sleep(timeToDropClipMilliseconds),
-                                outputs.lowerToPark(),
+                                //outputs.lowerToPark(),
                                 //fromScoreCycleToPark.build(),
                                 sleeper.sleep(1000),
 

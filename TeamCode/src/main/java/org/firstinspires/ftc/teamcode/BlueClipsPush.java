@@ -108,7 +108,7 @@ public class BlueClipsPush extends LinearOpMode {
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
 
                 //ACTION
-                if (drive.pose.position.y < 56.9) {
+                if (drive.pose.position.y < 61.4) {
                     bart.output.setComponentPositionsFromSavedPosition("highBarBack");
                     actionIsRunning = false;
                 }
@@ -278,7 +278,7 @@ public class BlueClipsPush extends LinearOpMode {
                 }
 
                 if (robotAngleDeg > 140) {
-                    bart.intake.intakeArm.setOnlySpecifiedValuesToSavedIntakeArmPosition("grab", true, false, true);
+                    bart.intake.intakeArm.setOnlySpecifiedValuesToSavedIntakeArmPosition("grab", true, true, false, true);
                     return false;
                 }
                 return true;
@@ -295,7 +295,7 @@ public class BlueClipsPush extends LinearOpMode {
 
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                bart.intake.intakeArm.intakeRoll.setAngleDegrees(roll);
+                bart.intake.intakeArm.intakeWristRoll.setAngleDegrees(roll);
                 return false;
             }
         }
@@ -521,11 +521,11 @@ public class BlueClipsPush extends LinearOpMode {
         double scoreAngleRad = Math.toRadians(270);
         Pose2d scorePose = new Pose2d(scoreVector, scoreAngleRad);
 
-        Vector2d scoreCycleVector = new Vector2d(-1, 32.5);
+        Vector2d scoreCycleVector = new Vector2d(-1, 33);
         double scoreCycleAngleRad = Math.toRadians(90);
         Pose2d scoreCyclePose = new Pose2d(scoreCycleVector, scoreCycleAngleRad);
         //GRAB POSE
-        Vector2d grabVector = new Vector2d(-33.5, 61.5);//61.5ish for strafe//-32 x sometimes
+        Vector2d grabVector = new Vector2d(-33.25, 61.75);//61.5ish for strafe//-32 x sometimes
         double grabAngleRad = Math.toRadians(90);
         Pose2d grabPose = new Pose2d(grabVector, grabAngleRad);
 
@@ -563,30 +563,28 @@ public class BlueClipsPush extends LinearOpMode {
                 .splineToConstantHeading(new Vector2d(-48, 46), Math.toRadians(90))
                 //spike 2
                 .splineToConstantHeading(new Vector2d(-48, 36), Math.toRadians(270))
-                .splineToConstantHeading(new Vector2d(-53, 18), Math.toRadians(180))
-                .splineToConstantHeading(new Vector2d(-59, 20), Math.toRadians(90))
-                .splineToConstantHeading(new Vector2d(-59, 52), Math.toRadians(90))
+                .splineToConstantHeading(new Vector2d(-55, 18), Math.toRadians(180))
+                .splineToConstantHeading(new Vector2d(-61, 20), Math.toRadians(90))
+                .splineToConstantHeading(new Vector2d(-61, 52), Math.toRadians(90))
                 //spike 3
-                .splineToConstantHeading(new Vector2d(-58, 36), Math.toRadians(270))
-                .splineToConstantHeading(new Vector2d(-60, 18), Math.toRadians(180))
-                .splineToConstantHeading(new Vector2d(-64.5, 20), Math.toRadians(90))
-                .splineToConstantHeading(new Vector2d(-64.5, 46), Math.toRadians(90))
+                .splineToConstantHeading(new Vector2d(-61, 36), Math.toRadians(270))
+                .splineToConstantHeading(new Vector2d(-62, 18), Math.toRadians(180))
+                .splineToConstantHeading(new Vector2d(-65, 20), Math.toRadians(90))
+                .splineToConstantHeading(new Vector2d(-65, 46), Math.toRadians(90))
                 .splineToConstantHeading(new Vector2d(-50, 52), Math.toRadians(0))
                 .splineToLinearHeading(new Pose2d(grabVector.x, grabVector.y-5, Math.toRadians(90)), Math.toRadians(0),
                         new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(50),
+                                drive.kinematics.new WheelVelConstraint(60),
                                 new AngularVelConstraint(Math.PI * 1.5)
                         )),
                         new ProfileAccelConstraint(-40, 45))
-                .strafeToConstantHeading(grabVector);
+                .strafeToConstantHeading(new Vector2d(grabVector.x, grabVector.y+0.5));
 
 
         TrajectoryActionBuilder fromGrabToScoreCycle = drive.actionBuilder(grabPose)
-                //.splineToConstantHeading(new Vector2d(scoreCycleVector.x-3, grabVector.y-5), Math.toRadians(-45))
-                //.splineToConstantHeading(scoreCycleVector, Math.toRadians(270));
                 .strafeToConstantHeading(scoreCycleVector,
                         new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(50),
+                                drive.kinematics.new WheelVelConstraint(60),
                                 new AngularVelConstraint(Math.PI * 1.5)
                         )),
                         new ProfileAccelConstraint(-40, 45)
@@ -594,9 +592,30 @@ public class BlueClipsPush extends LinearOpMode {
 
 
         TrajectoryActionBuilder fromScoreCycleToGrab = drive.actionBuilder(scoreCyclePose)
-                .strafeToConstantHeading(grabVector,
+                /*.strafeToConstantHeading(grabVector,
                         new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(50),
+                                drive.kinematics.new WheelVelConstraint(60),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(-40, 45)
+                );*/
+                .splineToConstantHeading(new Vector2d(scoreCycleVector.x, scoreCycleVector.y+2), Math.toRadians(90),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(60),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(-40, 45)
+                )
+                .splineToConstantHeading(new Vector2d(grabVector.x+5, grabVector.y-5), Math.toRadians(90),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(60),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(-40, 45)
+                )
+                .splineToConstantHeading(grabVector, Math.toRadians(90),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(60),
                                 new AngularVelConstraint(Math.PI * 1.5)
                         )),
                         new ProfileAccelConstraint(-40, 45)
@@ -609,7 +628,7 @@ public class BlueClipsPush extends LinearOpMode {
         bart.readHubs();
         //bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, -40, 90, false));
         bart.output.setComponentPositionsFromSavedPosition("rest");
-        bart.intake.intakeArm.setToSavedIntakeArmPosition("grab");
+        bart.intake.intakeArm.setToSavedIntakeArmPosition("rest");
         //bart.intake.intakeArm.setRollDeg(45);
         //bart.intake.closeGate();
         bart.writeAllComponents();

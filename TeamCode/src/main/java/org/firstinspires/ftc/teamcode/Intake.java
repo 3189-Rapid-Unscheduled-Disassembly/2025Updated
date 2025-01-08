@@ -30,7 +30,7 @@ public class Intake {
 
     final double TICKS_PER_INCH = 61.666667;//175.5
     final double MIN_POINT = 6;
-    final double MAX_POINT = 24;
+    final double MAX_POINT = 20;
     final double DEFAULT_ALLOWED_ERROR = 0.5;
 
 
@@ -59,9 +59,45 @@ public class Intake {
     }
 
     //TRANSFERRING
-    public void transfer() {
+    public boolean transfer(boolean outputIsReady, boolean outputGripperIsOpen) {
         setHorizontalSlideToSavedPosition("transfer");
-        intakeArm.setToSavedIntakeArmPosition("transfer");
+        if (timer.milliseconds() > 3500) {
+            timer.reset();
+        }
+
+        //this is what happens after the output closes, making us open the intake gripper
+        if (!outputGripperIsOpen) {
+            //we are ready to open intake and get out of way
+            if (timer.milliseconds() > 200) {
+                if (timer.milliseconds() > 400) {
+                    intakeArm.setToSavedIntakeArmPosition("preTransfer");
+                }
+                intakeArm.intakeGripper.open();
+            }
+            return true;
+        } else {
+            //the horizontal slide is NOT far enough away to begin moving the arm
+            if (!isAtSavedPosition("transfer")) {
+                intakeArm.setToSavedIntakeArmPosition("preTransfer");
+                timer.reset();
+            } else {
+                if (!outputIsReady) {
+                    intakeArm.setToSavedIntakeArmPosition("preTransfer");
+                    timer.reset();
+                } else {
+                    intakeArm.setToSavedIntakeArmPosition("transfer");
+                    if (timer.milliseconds() > 500) {
+                        timer.reset();
+                        return true;
+                    }
+
+                }
+            }
+        }
+
+        return false;
+
+        //tell the output to grab
     }
 
     public void setHorizontalSlideToSavedPosition(String key) {
@@ -87,7 +123,7 @@ public class Intake {
     }
 
     public void setHorizontalSlidePositionInches(double inches) {
-        double tickTarget = inchesToTicks(RobotMath.maxAndMin(inches, 24, 6));
+        double tickTarget = inchesToTicks(RobotMath.maxAndMin(inches, MAX_POINT, MIN_POINT));
         double error = tickTarget - horizontalSlidePosition;
 
         horizontalSlidePower = 0.006 * error;

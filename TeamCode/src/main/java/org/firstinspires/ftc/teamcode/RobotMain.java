@@ -12,7 +12,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 /*
 ports
-2024-12-13
+2025-01-07
 CONTROL
 MOTORS
 0 fl
@@ -22,10 +22,10 @@ MOTORS
 SERVOS
 0 intakeGripper
 1 intakeRoll
-2 intakePitchRight
+2 intakeWristPitch
 3 (armLeft was in here, but it didn't work, maybe it's the port's problem)
-4 intakePitchLeft
-5 wristLeft
+4 intakeArmPitch
+5
 
 EXPANSION
 MOTORS
@@ -35,7 +35,7 @@ MOTORS
 3 slideBack
 SERVOS
 0 outputGripper
-1 wristRight
+1 wrist
 2 armRight
 3 armLeft
 4
@@ -133,10 +133,10 @@ public class RobotMain {
 
 
     public void transfer() {
-        intake.transfer();
-        boolean outputHasGrabbed = output.transfer();
-        if (outputHasGrabbed) {
-            intake.intakeArm.intakeGripper.open();
+        boolean outputIsReady = output.transfer();
+        boolean outputShouldGrab = intake.transfer(outputIsReady, output.gripper.isOpen());
+        if (outputShouldGrab) {
+           output.gripper.close();
         }
     }
 

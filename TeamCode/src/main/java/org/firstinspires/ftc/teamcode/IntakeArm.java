@@ -3,47 +3,54 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 //this holds the pitches, roll, and gripper for the intake
 public class IntakeArm {
 
-    Joint intakePitch;
-    Joint intakeRoll;
+
+    Joint intakeArm;
+    Joint intakeWristPitch;
+    Joint intakeWristRoll;
 
     Gripper intakeGripper;
     HashMap<String, IntakeArmPosition> savedPositions = new HashMap<String, IntakeArmPosition>();
 
     public IntakeArm(HardwareMap hardwareMap) {
-        Servo intakePitchLeft = hardwareMap.get(Servo.class, "intakePitchLeft");
-        Servo intakePitchRight = hardwareMap.get(Servo.class, "intakePitchRight");
-        intakePitchLeft.setDirection(Servo.Direction.REVERSE);
-        intakePitchRight.setDirection(Servo.Direction.REVERSE);
-        List<Servo> pitchServos = new ArrayList<>();
-        pitchServos.add(intakePitchLeft);
-        pitchServos.add(intakePitchRight);
-        intakePitch = new Joint(pitchServos, 150, 0.778, "Intake Pitch");
+
+        Servo armServo = hardwareMap.get(Servo.class,"intakeArmPitch");
+        armServo.setDirection(Servo.Direction.FORWARD);
+        intakeArm = new Joint(armServo, 200, 0.18, "Intake Arm Pitch");
+
+        Servo intakeWristPitchServo = hardwareMap.get(Servo.class, "intakeWristPitch");
+        intakeWristPitchServo.setDirection(Servo.Direction.FORWARD);
+        intakeWristPitch = new Joint(intakeWristPitchServo, 300, 0.5, "Intake Wrist Pitch");
 
         Servo intakeRollServo = hardwareMap.get(Servo.class, "intakeRoll");
         intakeRollServo.setDirection(Servo.Direction.FORWARD);
-        intakeRoll = new Joint(intakeRollServo, 270, 0.52, "Intake Roll");
+        intakeWristRoll = new Joint(intakeRollServo, 270, 0.18, "Intake Roll");
 
         Servo gripperServo = hardwareMap.get(Servo.class, "intakeGripper");
         gripperServo.setDirection(Servo.Direction.REVERSE);
-        intakeGripper = new Gripper(gripperServo, 0.75, 0.17, "Intake Gripper");
+        intakeGripper = new Gripper(gripperServo, 0.75, 0.24, "Intake Gripper");
 
         //SAVED POSITIONS
-        savedPositions.put("transfer", new IntakeArmPosition(0,0, false));
-        savedPositions.put("drop", new IntakeArmPosition(-60,45, false));
-        savedPositions.put("grab", new IntakeArmPosition(-90, 0, true));//0.233,-75
+        savedPositions.put("rest", new IntakeArmPosition(113, 180, 0, true));
+
+        savedPositions.put("straightOut", new IntakeArmPosition(0, 0, 0, true));
+        double transferRollDeg = 185;
+        savedPositions.put("preTransfer", new IntakeArmPosition(25, 130, transferRollDeg, false));
+        savedPositions.put("transfer", new IntakeArmPosition(50, 180, transferRollDeg, false));
+        savedPositions.put("drop", new IntakeArmPosition(0, -60,45, false));
+        savedPositions.put("preGrab", new IntakeArmPosition(0, -90, 0, true));//0.233,-75
+        savedPositions.put("grab", new IntakeArmPosition(-12.5, -90, 0, true));//0.233,-75
+        savedPositions.put("postGrab", new IntakeArmPosition(10, -30, 0, false));//0.233,-75
     }
 
 
     //these are for teleop. dpad can turn the roll
     public void moveRollPositive45() {
-        double currentRoll = intakeRoll.currentAngleDegrees();
+        double currentRoll = intakeWristRoll.currentAngleDegrees();
         double targetRoll;
         if (currentRoll < -45) {
             targetRoll = -45;
@@ -56,10 +63,10 @@ public class IntakeArm {
         } else {
             targetRoll = -45;
         }
-        intakeRoll.setAngleDegrees(targetRoll);
+        intakeWristRoll.setAngleDegrees(targetRoll);
     }
     public void moveRollNegative45() {
-        double currentRoll = intakeRoll.currentAngleDegrees();
+        double currentRoll = intakeWristRoll.currentAngleDegrees();
         double targetRoll;
         if (currentRoll > 45) {
             targetRoll = 45;
@@ -72,72 +79,81 @@ public class IntakeArm {
         } else {
             targetRoll = 45;
         }
-        intakeRoll.setAngleDegrees(targetRoll);
+        intakeWristRoll.setAngleDegrees(targetRoll);
     }
 
     //this cycles between transfer, preGrab, grab, and then back to transfer
     //this allows us to quickly cycle to the desired pitch
     public void cycle() {
-        if (isPitchEqualToSavedIntakePosition("transfer")) {
-            setOnlySpecifiedValuesToSavedIntakeArmPosition("grab", true, false, true);
+        if (isPitchEqualToSavedIntakePosition("preGrab")) {
+            setOnlySpecifiedValuesToSavedIntakeArmPosition("grab", true, true, false, true);
+        } else if (isPitchEqualToSavedIntakePosition("grab")){
+            setToSavedIntakeArmPosition("preTransfer");
         } else {
-            setToSavedIntakeArmPosition("transfer");
+            setToSavedIntakeArmPosition("preGrab");
         }
     }
 
     //this is just for checking if we are at a certain pitch
     //we ignore roll/gripper so that way we can roll and then we still know what saved pos we're at
     public boolean isPitchEqualToSavedIntakePosition(String key) {
-        return intakePitch.isAngleEqualToGivenAngle(savedPositions.get(key).pitchDeg);
+        return intakeArm.isAngleEqualToGivenAngle(savedPositions.get(key).armPitchDeg);
     }
 
     public void setToSavedIntakeArmPosition(String key) {
         setToIntakeArmPosition(savedPositions.get(key));
     }
     public void setToIntakeArmPosition(IntakeArmPosition intakeArmPosition) {
-        intakePitch.setAngleDegrees(intakeArmPosition.pitchDeg);
-        intakeRoll.setAngleDegrees(intakeArmPosition.rollDeg);
+        intakeArm.setAngleDegrees(intakeArmPosition.armPitchDeg);
+        intakeWristPitch.setAngleDegrees(intakeArmPosition.wristPitchDeg);
+        intakeWristRoll.setAngleDegrees(intakeArmPosition.rollDeg);
         intakeGripper.setPosition(intakeArmPosition.open);
     }
 
     //kinda wierd but we only set the values that are true in the parameters.
     //that we we don't have to set the roll or whatever
     public void setOnlySpecifiedValuesToIntakeArmPosition(IntakeArmPosition intakeArmPosition,
-                                                          boolean setPitch, boolean setRoll, boolean setGripper) {
-        if (setPitch) {
-            intakePitch.setAngleDegrees(intakeArmPosition.pitchDeg);
+                                                          boolean setArmPitch, boolean setWristPitch, boolean setRoll, boolean setGripper) {
+        if (setArmPitch) {
+            intakeArm.setAngleDegrees(intakeArmPosition.armPitchDeg);
+        }
+        if (setWristPitch) {
+            intakeWristPitch.setAngleDegrees(intakeArmPosition.wristPitchDeg);
         }
         if (setRoll) {
-            intakeRoll.setAngleDegrees(intakeArmPosition.rollDeg);
+            intakeWristRoll.setAngleDegrees(intakeArmPosition.rollDeg);
         }
         if (setGripper) {
             intakeGripper.setPosition(intakeArmPosition.open);
         }
     }
     public void setOnlySpecifiedValuesToSavedIntakeArmPosition(String key,
-                                                               boolean setPitch, boolean setRoll, boolean setGripper) {
-        setOnlySpecifiedValuesToIntakeArmPosition(savedPositions.get(key), setPitch, setRoll, setGripper);
+                                                               boolean setArmPitch, boolean setWristPitch, boolean setRoll, boolean setGripper) {
+        setOnlySpecifiedValuesToIntakeArmPosition(savedPositions.get(key), setArmPitch, setWristPitch, setRoll, setGripper);
     }
 
 
 
     public void writeServoPositions() {
-        intakePitch.write();
-        intakeRoll.write();
+        intakeArm.write();
+        intakeWristPitch.write();
+        intakeWristRoll.write();
         intakeGripper.writePosition();
     }
 
     //985g
     @Override
     public String toString() {
-        return intakePitch.toString() +
-                "\n" + intakeRoll.toString() +
+        return intakeArm.toString() +
+                "\n" + intakeWristPitch.toString() +
+                "\n" + intakeWristRoll.toString() +
                 "\n" + intakeGripper.toString();
     }
 
     public String posServoTelemetry() {
-        return intakePitch.toStringServoPos() +
-                "\n" + intakeRoll.toStringServoPos() +
+        return intakeArm.toStringServoPos() +
+                "\n" + intakeWristPitch.toStringServoPos() +
+                "\n" + intakeWristRoll.toStringServoPos() +
                 "\n" + intakeGripper.toStringServoPos();
     }
 }

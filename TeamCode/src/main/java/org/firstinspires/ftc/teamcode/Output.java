@@ -63,7 +63,7 @@ public class Output {
 
         Servo gripperServo = hardwareMap.get(Servo.class, "outputGripper");
         gripperServo.setDirection(Servo.Direction.REVERSE);
-        gripper = new Gripper(gripperServo, 0.5, 0.12, "Output Gripper");
+        gripper = new Gripper(gripperServo, 0.5, 0.14, "Output Gripper");
 
 
         //put saved positions
@@ -71,7 +71,7 @@ public class Output {
                 new OutputEndPoint(0, 0, -20, false)
         );
         savedPositions.put("transfer",
-                new OutputEndPoint(0, -20, -50, true)
+                new OutputEndPoint(3.2, -30, -90, true)
         );
         savedPositions.put("rest",
                 new OutputEndPoint(0, -15, -90,false)
@@ -89,7 +89,7 @@ public class Output {
                 new OutputEndPoint(0, -3, -90, false)
         );
         savedPositions.put("highBarFront",
-                new OutputEndPoint(7, 10, -20, false)
+                new OutputEndPoint(7.75, 10, -20, false)
         );
         savedPositions.put("highBarBack",
                 new OutputEndPoint(0, 130, 170, false)
@@ -104,7 +104,7 @@ public class Output {
                 new OutputEndPoint(new Point2d(10.11, 20),  0, false)
         );
         savedPositions.put("lowBucket",
-                new OutputEndPoint(new Point2d(-12.4, 28),  150, false)
+                new OutputEndPoint(0, 110, 150, false)
         );
         savedPositions.put("highBucket",
                 new OutputEndPoint(new Point2d(-14, 46), 150, false)
@@ -132,26 +132,32 @@ public class Output {
 
     //TRANSFERRING
     public boolean transfer() {
-        if (timer.milliseconds() > 3000) {
+        //setComponentPositionsFromSavedPosition("transfer");
+
+        if (timer.milliseconds() > 3500) {
             setComponentPositionsFromSavedPosition("transfer");
             timer.reset();
         }
 
+        if (!verticalSlides.isAtTarget()) {
+            timer.reset();
+        }
         //should check to see if slides are at spot
-        if (gripper.isOpen()) {
+        return (verticalSlides.isAtTarget() && timer.milliseconds() > 500);
+        /*if (gripper.isOpen()) {
             if (timer.milliseconds() > 1500) {
                 gripper.close();
                 timer.reset();
             }
         } else {
             if (timer.milliseconds() > 1000) {
-                setComponentPositionsFromSavedPosition("aboveTransfer");
+                //setComponentPositionsFromSavedPosition("aboveTransfer");
             }
 
             return timer.milliseconds() > 500;
-        }
+        }*/
 
-        return false;
+        //return false;
     }
 
 

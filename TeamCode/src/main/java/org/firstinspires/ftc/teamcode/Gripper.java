@@ -8,7 +8,6 @@ import javax.annotation.Nonnull;
 
 public class Gripper {
     Servo gripper;
-    CRServo cr;
     private double previousServoPosition;
     final double SERVO_POSITION_SIGNIFICANT_DIFFERENCE = 0.0001;
     double position;
