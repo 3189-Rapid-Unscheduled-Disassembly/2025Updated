@@ -85,7 +85,11 @@ public class Intake {
                     intakeArm.setToSavedIntakeArmPosition("preTransfer");
                     timer.reset();
                 } else {
-                    intakeArm.setToSavedIntakeArmPosition("transfer");
+                    if (timer.milliseconds() > 200) {
+                        intakeArm.setToSavedIntakeArmPosition("transfer");
+                    } else {
+                        intakeArm.setToSavedIntakeArmPosition("preTransfer");
+                    }
                     if (timer.milliseconds() > 500) {
                         timer.reset();
                         return true;

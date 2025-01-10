@@ -32,10 +32,10 @@ public class IntakeArm {
 
         Servo gripperServo = hardwareMap.get(Servo.class, "intakeGripper");
         gripperServo.setDirection(Servo.Direction.REVERSE);
-        intakeGripper = new Gripper(gripperServo, 0.75, 0.24, "Intake Gripper");
+        intakeGripper = new Gripper(gripperServo, 0.75, 0.26, "Intake Gripper");
 
         //SAVED POSITIONS
-        savedPositions.put("rest", new IntakeArmPosition(113, 180, 0, true));
+        savedPositions.put("rest", new IntakeArmPosition(120, 180, 0, true));
 
         savedPositions.put("straightOut", new IntakeArmPosition(0, 0, 0, true));
         double transferRollDeg = 185;
@@ -43,8 +43,8 @@ public class IntakeArm {
         savedPositions.put("transfer", new IntakeArmPosition(50, 180, transferRollDeg, false));
         savedPositions.put("drop", new IntakeArmPosition(0, -60,45, false));
         savedPositions.put("preGrab", new IntakeArmPosition(0, -90, 0, true));//0.233,-75
-        savedPositions.put("grab", new IntakeArmPosition(-12.5, -90, 0, true));//0.233,-75
-        savedPositions.put("postGrab", new IntakeArmPosition(10, -30, 0, false));//0.233,-75
+        savedPositions.put("grab", new IntakeArmPosition(-10, -90, 0, false));//0.233,-75
+        savedPositions.put("postGrab", new IntakeArmPosition(30, 0, 0, false));//0.233,-75
     }
 
 
@@ -74,10 +74,8 @@ public class IntakeArm {
             targetRoll = 0;
         } else if (currentRoll > -45) {
             targetRoll = -45;
-        } else if (currentRoll > -90) {
-            targetRoll = -90;
         } else {
-            targetRoll = 45;
+            targetRoll = 90;
         }
         intakeWristRoll.setAngleDegrees(targetRoll);
     }

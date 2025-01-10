@@ -71,7 +71,7 @@ public class Output {
                 new OutputEndPoint(0, 0, -20, false)
         );
         savedPositions.put("transfer",
-                new OutputEndPoint(3.2, -30, -90, true)
+                new OutputEndPoint(3.2, -28, -90, true)
         );
         savedPositions.put("rest",
                 new OutputEndPoint(0, -15, -90,false)
@@ -83,7 +83,7 @@ public class Output {
                 new OutputEndPoint(0, 0, 0,true)
         );
         savedPositions.put("grab",
-                new OutputEndPoint(0, -13, -90, true)
+                new OutputEndPoint(0, -10.5, -90, true)
         );
         savedPositions.put("aboveGrab",
                 new OutputEndPoint(0, -3, -90, false)
@@ -92,10 +92,10 @@ public class Output {
                 new OutputEndPoint(7.75, 10, -20, false)
         );
         savedPositions.put("highBarBack",
-                new OutputEndPoint(0, 130, 170, false)
+                new OutputEndPoint(0, 135, 170, false)
         );
         savedPositions.put("highBarBackMoveWrist",
-                new OutputEndPoint(0, 130, 100, true)
+                new OutputEndPoint(0, 135, 100, true)
         );
         savedPositions.put("level1AscentAuto",
                 new OutputEndPoint(new Point2d(8.83, 22.5), 0, false)
@@ -107,7 +107,7 @@ public class Output {
                 new OutputEndPoint(0, 110, 150, false)
         );
         savedPositions.put("highBucket",
-                new OutputEndPoint(new Point2d(-14, 46), 150, false)
+                new OutputEndPoint(17, 100, 150, false)
         );
 
 
@@ -143,7 +143,7 @@ public class Output {
             timer.reset();
         }
         //should check to see if slides are at spot
-        return (verticalSlides.isAtTarget() && timer.milliseconds() > 500);
+        return (verticalSlides.isAtTarget() && timer.milliseconds() > 800);
         /*if (gripper.isOpen()) {
             if (timer.milliseconds() > 1500) {
                 gripper.close();

@@ -61,6 +61,9 @@ public class ATeleop extends LinearOpMode {
 
     boolean alternateControl = false;
 
+    //p2 driving mode
+    boolean bucketDrivingMode = true;
+
 
     double inputtedY = 12;
 
@@ -151,7 +154,7 @@ public class ATeleop extends LinearOpMode {
             bart.writeAllComponents();
 
             /** TELEMETRY **/
-
+            telemetry.addLine(bucketDrivingMode ? "BUCKET MODE" : "CLIP MODE");
             telemetry.addData("vertInches", bart.output.verticalSlides.currentInches());
             telemetry.addData("vertTicks", bart.output.verticalSlides.currentTicks);
 
@@ -423,7 +426,13 @@ public class ATeleop extends LinearOpMode {
 
         //transfer when a is held, the left trigger tells it to do a clip transfer
         if (playerTwo.isDown(GamepadKeys.Button.A)) { //|| playerOne.isDown(GamepadKeys.Button.RIGHT_STICK_BUTTON)) {
-            bart.transfer();
+            if (bucketDrivingMode) {
+                bart.transfer();
+            } else {
+                bart.intake.intakeArm.setToSavedIntakeArmPosition("postGrab");
+                bart.intake.setHorizontalSlideToSavedPosition("transfer");
+                usingHorizManualControl = false;
+            }
             isTransferring = true;
         } else {
             isTransferring = false;
@@ -462,14 +471,19 @@ public class ATeleop extends LinearOpMode {
                 bart.output.setComponentPositionsFromSavedPosition("grab");
             }*/
             if (playerTwo.wasJustPressed(GamepadKeys.Button.Y)) {
-                //we can use the left trigger to get an alternate position
-                if (!alternateControl) {
-                    bart.output.setComponentPositionsFromSavedPosition("highBucket");
+                if (bucketDrivingMode) {
+                    //we can use the left trigger to get an alternate position
+                    if (!alternateControl) {
+                        bart.output.setComponentPositionsFromSavedPosition("highBucket");
+                    } else {
+                        bart.output.setComponentPositionsFromSavedPosition("lowBucket");
+                    }
+                    //lower the intake arm back down to get ready for the next cycle
+                    bart.intake.intakeArm.setToSavedIntakeArmPosition("preGrab");
                 } else {
-                    bart.output.setComponentPositionsFromSavedPosition("lowBucket");
+                    bart.intake.intakeArm.setToSavedIntakeArmPosition("rest");
+                    bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, 45, 45, true));
                 }
-                //lower the intake arm back down to get ready for the next cycle
-                bart.intake.intakeArm.setToSavedIntakeArmPosition("preGrab");
 
             }
             if (playerTwo.wasJustPressed(GamepadKeys.Button.B)) {
@@ -481,14 +495,18 @@ public class ATeleop extends LinearOpMode {
                 }
             }
             if (playerTwo.wasJustPressed(GamepadKeys.Button.X)) {
-                if (!alternateControl) {
-                    bart.output.setComponentPositionsFromSavedPosition("grab");
+                if (bucketDrivingMode) {
+                    bart.output.setComponentPositionsFromSavedPosition("transfer");
                 } else {
-                    bart.output.setComponentPositionsFromSavedPosition("aboveGrab");
+                    if (!alternateControl) {
+                        bart.output.setComponentPositionsFromSavedPosition("grab");
+                    } else {
+                        bart.output.setComponentPositionsFromSavedPosition("aboveGrab");
+                    }
                 }
             }
             if (playerTwo.wasJustPressed(GamepadKeys.Button.RIGHT_STICK_BUTTON)) {
-                bart.output.setComponentPositionsFromSavedPosition("level1AscentTeleop");
+               bucketDrivingMode = !bucketDrivingMode;
             }
 
             bart.output.sendVerticalSlidesToTarget();
@@ -595,10 +613,10 @@ public class ATeleop extends LinearOpMode {
             } else {
                 //stick control
                 if (!alternateControl) {
-                    if (bart.intake.currentInches() > bart.intake.MAX_POINT && stickInput >= 0) {
+                    if (bart.intake.currentInches() > bart.intake.MAX_POINT-0.5 && stickInput > 0) {
                         bart.intake.setHorizontalSlideToSavedPosition("max");
                     } else {
-                        bart.intake.setHorizontalSlidePower(stickInput);
+                        bart.intake.setHorizontalSlidePower(stickInput*0.75);
                     }
                     if (playerTwo.getRightY() != 0) {
                         usingHorizManualControl = false;
