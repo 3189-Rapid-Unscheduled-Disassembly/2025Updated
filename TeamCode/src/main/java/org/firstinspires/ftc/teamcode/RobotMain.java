@@ -54,6 +54,8 @@ public class RobotMain {
 
     boolean robotCentric = true;
 
+    boolean doingCloseTransfer = false;
+
     //FIELD POINTS AND LINES
     final static FieldPoint2d BUCKET_POINT = new FieldPoint2d(new Point2d(66, 66));
     final static FieldPoint2d CLIP_PLACE_POINT = new FieldPoint2d(new Point2d(-37, 70));
@@ -115,7 +117,7 @@ public class RobotMain {
     }
 
     //public void resetIMU() {
-        //imu.reset();
+    //imu.reset();
     //}
 
 
@@ -131,12 +133,16 @@ public class RobotMain {
         telemetry.addData("Turn Speed: ", turnSpeed);
     }*/
 
+    //this really just determines if we are doing a close or far transfer
+    public void firstFrameOfTransfer() {
+        doingCloseTransfer = intake.isAtSavedPosition("transfer", 4);
+    }
 
     public void transfer() {
         boolean outputIsReady = output.transfer();
-        boolean outputShouldGrab = intake.transfer(outputIsReady, output.gripper.isOpen());
+        boolean outputShouldGrab = intake.transfer(doingCloseTransfer, outputIsReady, output.gripper.isOpen());
         if (outputShouldGrab) {
-           output.gripper.close();
+            output.gripper.close();
         }
     }
 

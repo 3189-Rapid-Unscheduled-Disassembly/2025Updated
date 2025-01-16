@@ -424,6 +424,12 @@ public class ATeleop extends LinearOpMode {
 
         alternateControl = playerTwo.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) >= 0.8;
 
+        //RESET THE TRANSFER TIMER ONLY WHEN A IS FIRST PRESSED
+        if (playerTwo.wasJustPressed(GamepadKeys.Button.A)) {
+            if (bucketDrivingMode) {
+                bart.firstFrameOfTransfer();
+            }
+        }
         //transfer when a is held, the left trigger tells it to do a clip transfer
         if (playerTwo.isDown(GamepadKeys.Button.A)) { //|| playerOne.isDown(GamepadKeys.Button.RIGHT_STICK_BUTTON)) {
             if (bucketDrivingMode) {

@@ -97,6 +97,10 @@ public class VerticalSlides {
         return RobotMath.isAbsDiffWithinRange(currentInches(), ticksToInches(targetTicks), ALLOWED_ERROR_INCHES);
     }
 
+    public boolean isAtPositionInches(double inches) {
+        return RobotMath.isAbsDiffWithinRange(currentInches(), inches, ALLOWED_ERROR_INCHES);
+    }
+
 
     public Point2d currentSlidePoint() {
         double x = Math.acos(Math.toRadians(100))/ currentInches();

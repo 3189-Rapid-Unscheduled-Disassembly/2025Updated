@@ -59,9 +59,9 @@ public class Intake {
     }
 
     //TRANSFERRING
-    public boolean transfer(boolean outputIsReady, boolean outputGripperIsOpen) {
+    public boolean transfer(boolean doingCloseTransfer, boolean outputIsReady, boolean outputGripperIsOpen) {
         setHorizontalSlideToSavedPosition("transfer");
-        if (timer.milliseconds() > 3500) {
+        if (timer.milliseconds() > 4000) {
             timer.reset();
         }
 
@@ -77,7 +77,7 @@ public class Intake {
             return true;
         } else {
             //the horizontal slide is NOT far enough away to begin moving the arm
-            if (!isAtSavedPosition("transfer")) {
+            if (!isAtSavedPosition("transfer", 2)) {
                 intakeArm.setToSavedIntakeArmPosition("preTransfer");
                 timer.reset();
             } else {
@@ -86,11 +86,17 @@ public class Intake {
                     timer.reset();
                 } else {
                     //if (timer.milliseconds() > 200) {
-                        intakeArm.setToSavedIntakeArmPosition("transfer");
+                    intakeArm.setToSavedIntakeArmPosition("transfer");
                     //} else {
-                        //intakeArm.setToSavedIntakeArmPosition("preTransfer");
+                    //intakeArm.setToSavedIntakeArmPosition("preTransfer");
                     //}
-                    if (timer.milliseconds() > 700) {//500
+                    double timeToWait;
+                    if (doingCloseTransfer) {
+                        timeToWait = 1000;
+                    } else {
+                        timeToWait = 400;
+                    }
+                    if (timer.milliseconds() > timeToWait) {//500
                         timer.reset();
                         return true;
                     }

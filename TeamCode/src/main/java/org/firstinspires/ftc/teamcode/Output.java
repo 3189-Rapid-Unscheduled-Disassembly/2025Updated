@@ -134,7 +134,7 @@ public class Output {
     public boolean transfer() {
         //setComponentPositionsFromSavedPosition("transfer");
 
-        if (timer.milliseconds() > 2000) {//3500
+        if (timer.milliseconds() > 2500) {//3500
             setComponentPositionsFromSavedPosition("transfer");
             timer.reset();
         }
