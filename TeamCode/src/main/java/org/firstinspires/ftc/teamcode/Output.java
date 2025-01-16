@@ -71,7 +71,7 @@ public class Output {
                 new OutputEndPoint(0, 0, -20, false)
         );
         savedPositions.put("transfer",
-                new OutputEndPoint(3.2, -28, -90, true)
+                new OutputEndPoint(3.5, -25, -90, true)
         );
         savedPositions.put("rest",
                 new OutputEndPoint(0, -15, -90,false)
@@ -107,7 +107,7 @@ public class Output {
                 new OutputEndPoint(0, 110, 150, false)
         );
         savedPositions.put("highBucket",
-                new OutputEndPoint(17, 100, 150, false)
+                new OutputEndPoint(17.5, 110, 150, false)
         );
 
 
@@ -134,7 +134,7 @@ public class Output {
     public boolean transfer() {
         //setComponentPositionsFromSavedPosition("transfer");
 
-        if (timer.milliseconds() > 3500) {
+        if (timer.milliseconds() > 2000) {//3500
             setComponentPositionsFromSavedPosition("transfer");
             timer.reset();
         }
@@ -143,7 +143,7 @@ public class Output {
             timer.reset();
         }
         //should check to see if slides are at spot
-        return (verticalSlides.isAtTarget() && timer.milliseconds() > 800);
+        return (verticalSlides.isAtTarget());// && timer.milliseconds() > 800);
         /*if (gripper.isOpen()) {
             if (timer.milliseconds() > 1500) {
                 gripper.close();

@@ -93,6 +93,8 @@ public class IntakeTest extends LinearOpMode {
 
             telemetry.addData("ticks", bart.intake.horizontalSlide.getCurrentPosition());
 
+
+
             telemetry.update();
 
         }

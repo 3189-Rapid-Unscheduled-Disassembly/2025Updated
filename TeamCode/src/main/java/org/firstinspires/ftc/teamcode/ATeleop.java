@@ -483,15 +483,22 @@ public class ATeleop extends LinearOpMode {
                 } else {
                     bart.intake.intakeArm.setToSavedIntakeArmPosition("rest");
                     bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, 45, 45, true));
+                    //bart.intake.setHorizontalSlideToSavedPosition("transfer");
+                    //usingHorizManualControl = false;
                 }
 
             }
             if (playerTwo.wasJustPressed(GamepadKeys.Button.B)) {
-                //we can use the left trigger to get an alternate position
-                if (!alternateControl) {
-                    bart.output.setComponentPositionsFromSavedPosition("highBarFront");
+                //score the low park
+                if (bucketDrivingMode) {
+                    bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, 20, 0, true));
                 } else {
-                    bart.output.setComponentPositionsFromSavedPosition("highBarBack");
+                    //we can use the left trigger to get an alternate position
+                    if (!alternateControl) {
+                        bart.output.setComponentPositionsFromSavedPosition("highBarFront");
+                    } else {
+                        bart.output.setComponentPositionsFromSavedPosition("highBarBack");
+                    }
                 }
             }
             if (playerTwo.wasJustPressed(GamepadKeys.Button.X)) {

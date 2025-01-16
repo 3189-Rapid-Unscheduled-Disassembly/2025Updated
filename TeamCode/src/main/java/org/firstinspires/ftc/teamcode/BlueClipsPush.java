@@ -256,6 +256,7 @@ public class BlueClipsPush extends LinearOpMode {
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 if (drive.pose.position.y < 52) {
                     bart.intake.intakeArm.setToSavedIntakeArmPosition("preGrab");
+                    return false;
                 }
                 return true;
             }
@@ -533,11 +534,11 @@ public class BlueClipsPush extends LinearOpMode {
         double scoreAngleRad = Math.toRadians(270);
         Pose2d scorePose = new Pose2d(scoreVector, scoreAngleRad);
 
-        Vector2d scoreCycleVector = new Vector2d(-1, 33);
+        Vector2d scoreCycleVector = new Vector2d(-3, 33);
         double scoreCycleAngleRad = Math.toRadians(90);
         Pose2d scoreCyclePose = new Pose2d(scoreCycleVector, scoreCycleAngleRad);
         //GRAB POSE
-        Vector2d grabVector = new Vector2d(-35, 62.25);//61.5ish for strafe//-32 x sometimes
+        Vector2d grabVector = new Vector2d(-36, 62.25);//61.5ish for strafe//-32 x sometimes
         double grabAngleRad = Math.toRadians(90);
         Pose2d grabPose = new Pose2d(grabVector, grabAngleRad);
 
@@ -572,26 +573,31 @@ public class BlueClipsPush extends LinearOpMode {
                 .splineToConstantHeading(new Vector2d(-31, 34), Math.toRadians(270))
                 .splineToConstantHeading(new Vector2d(-42, 18), Math.toRadians(180))
                 .splineToConstantHeading(new Vector2d(-48, 20), Math.toRadians(90))
-                .splineToConstantHeading(new Vector2d(-48, 46), Math.toRadians(90))
+                .splineToConstantHeading(new Vector2d(-48, 45), Math.toRadians(90))
                 //spike 2
-                .splineToConstantHeading(new Vector2d(-48, 36), Math.toRadians(270))
-                .splineToConstantHeading(new Vector2d(-54, 18), Math.toRadians(180))
-                .splineToConstantHeading(new Vector2d(-58, 20), Math.toRadians(90))
-                .splineToConstantHeading(new Vector2d(-58, 52), Math.toRadians(90))
+                .splineToConstantHeading(new Vector2d(-48, 40), Math.toRadians(270))
+                .splineToConstantHeading(new Vector2d(-56, 22), Math.toRadians(180))
+                .splineToConstantHeading(new Vector2d(-60, 24), Math.toRadians(90))
+                .splineToConstantHeading(new Vector2d(-60, 45), Math.toRadians(90))
                 //spike 3
                 .splineToConstantHeading(new Vector2d(-58, 36), Math.toRadians(270))
-                .splineToConstantHeading(new Vector2d(-60, 18), Math.toRadians(180))
-                .splineToConstantHeading(new Vector2d(-62, 20), Math.toRadians(90))
+                .splineToConstantHeading(new Vector2d(-61, 20), Math.toRadians(180))
+                .splineToConstantHeading(new Vector2d(-62, 24), Math.toRadians(90))
                 .splineToConstantHeading(new Vector2d(-62, 52), Math.toRadians(90))
                 .splineToConstantHeading(new Vector2d(-50, 52), Math.toRadians(0))
-                .splineToLinearHeading(new Pose2d(grabVector.x, grabVector.y-5, Math.toRadians(90)), Math.toRadians(0),
+                .splineToLinearHeading(new Pose2d(grabVector.x-2, grabVector.y-5, Math.toRadians(90)), Math.toRadians(0),
                         new MinVelConstraint(Arrays.asList(
                                 drive.kinematics.new WheelVelConstraint(60),
                                 new AngularVelConstraint(Math.PI * 1.5)
                         )),
                         new ProfileAccelConstraint(-40, 45))
-                .strafeToConstantHeading(new Vector2d(grabVector.x, grabVector.y+0.5));
-
+                .splineToConstantHeading(grabVector, Math.toRadians(90),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(60),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(-40, 45)
+                );
 
         TrajectoryActionBuilder fromGrabToScoreCycle = drive.actionBuilder(grabPose)
                 .strafeToConstantHeading(scoreCycleVector,
@@ -675,8 +681,6 @@ public class BlueClipsPush extends LinearOpMode {
                                 //CYCLE
                                 //grab clip 1
                                 outputs.closeGripper(),
-
-
                                 sleeper.sleep(timeToGrabClipMilliseconds),
                                 //outputs.aboveGrab(),
 
@@ -736,9 +740,11 @@ public class BlueClipsPush extends LinearOpMode {
                                 ),
 
                                 outputs.openGripper(),
+
                                 //outputs.moveWristOutOfWay(),
-                                //sleeper.sleep(timeToDropClipMilliseconds),
-                                outputs.lowerToPark(),
+                                //sleeper.sleep(150),
+
+                                //outputs.lowerToPark(),
                                 //fromScoreCycleToPark.build(),
                                 sleeper.sleep(1000),
 

@@ -68,11 +68,18 @@ public class BlueBucket extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 bart.output.setComponentPositionsFromSavedPosition("highBucket");
-                return !bart.output.isAtPosition();
+                //return !bart.output.isAtPosition();
+                return false;
             }
-
         }
 
+
+        class WaitTillSlidesArePartiallyUp implements Action {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                return !bart.output.verticalSlides.isAbovePositionInches(10);
+            }
+        }
 
         class LowerToTransfer implements Action {
             @Override
@@ -120,7 +127,7 @@ public class BlueBucket extends LinearOpMode {
         class RaiseToPark implements Action {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, 17, 0, true));
+                bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, 19, 0, true));
                 return false;
             }
         }
@@ -282,7 +289,7 @@ public class BlueBucket extends LinearOpMode {
                 if (bart.output.verticalSlides.currentInches() > 5) {
                     bart.intake.intakeArm.setToSavedIntakeArmPosition("preGrab");
                     horizTarget = this.target;
-                    return  !bart.intake.isAtPosition(horizTarget);
+                    return !bart.intake.isAtPosition(horizTarget);
                 }
                 return true;
             }
@@ -369,6 +376,10 @@ public class BlueBucket extends LinearOpMode {
         public Action raiseToHighBucket() {
             return new RaiseToHighBucket();
         }
+        public Action waitTillSlidesArePartiallyUp() {
+            return new WaitTillSlidesArePartiallyUp();
+        }
+
 
         public Action extendHoriz(double inches) {return new ExtendHoriz(inches);}
         public Action extendHorizOnceVertOutOfWay(double inches) {return new ExtendHorizOnceVertOutOfWay(inches);}
@@ -438,8 +449,20 @@ public class BlueBucket extends LinearOpMode {
                 .strafeToLinearHeading(scoreVector, scoreAngleRad);
 
         TrajectoryActionBuilder fromScoreToPark = drive.actionBuilder(scorePose)
-                .strafeToLinearHeading(new Vector2d(parkVector.x+24, parkVector.y), parkAngleRad)
-                .strafeToConstantHeading(parkVector);
+                .strafeToLinearHeading(new Vector2d(parkVector.x+24, parkVector.y), parkAngleRad,
+                    new MinVelConstraint(Arrays.asList(
+                        drive.kinematics.new WheelVelConstraint(60),
+                        new AngularVelConstraint(Math.PI * 1.5)
+                    )),
+                    new ProfileAccelConstraint(-40, 45)
+                )
+                .strafeToConstantHeading(parkVector,
+                    new MinVelConstraint(Arrays.asList(
+                        drive.kinematics.new WheelVelConstraint(60),
+                        new AngularVelConstraint(Math.PI * 1.5)
+                    )),
+                    new ProfileAccelConstraint(-40, 45)
+                );
 
 
 
@@ -464,6 +487,7 @@ public class BlueBucket extends LinearOpMode {
                         new SequentialAction(
                                 //SCORE PRELOAD
                                 outputs.raiseToHighBucket(),
+                                outputs.waitTillSlidesArePartiallyUp(),
                                 new ParallelAction(
                                         outputs.extendHorizOnceVertOutOfWay(12),
                                         fromStartToScore.build()
@@ -486,6 +510,7 @@ public class BlueBucket extends LinearOpMode {
                                 outputs.extendHoriz(12),
                                 //score 1
                                 outputs.raiseToHighBucket(),
+                                outputs.waitTillSlidesArePartiallyUp(),
                                 fromSpikeOneToScore.build(),
                                 outputs.openGripper(),
                                 sleeper.sleep(timeToDropMilliseconds),
@@ -506,6 +531,7 @@ public class BlueBucket extends LinearOpMode {
                                 outputs.setIntakeRoll(90),
                                 //score 2
                                 outputs.raiseToHighBucket(),
+                                outputs.waitTillSlidesArePartiallyUp(),
                                 fromSpikeTwoToScore.build(),
                                 outputs.openGripper(),
                                 sleeper.sleep(timeToDropMilliseconds),
@@ -526,6 +552,7 @@ public class BlueBucket extends LinearOpMode {
                                 outputs.setIntakeArmPosition("preGrab"),
                                 //score 3
                                 outputs.raiseToHighBucket(),
+                                outputs.waitTillSlidesArePartiallyUp(),
                                 fromSpikeThreeToScore.build(),
                                 outputs.openGripper(),
                                 sleeper.sleep(timeToDropMilliseconds),

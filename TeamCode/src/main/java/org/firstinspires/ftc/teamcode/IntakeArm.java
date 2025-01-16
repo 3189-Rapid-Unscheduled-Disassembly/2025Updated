@@ -32,14 +32,14 @@ public class IntakeArm {
 
         Servo gripperServo = hardwareMap.get(Servo.class, "intakeGripper");
         gripperServo.setDirection(Servo.Direction.REVERSE);
-        intakeGripper = new Gripper(gripperServo, 0.75, 0.26, "Intake Gripper");
+        intakeGripper = new Gripper(gripperServo, 0.75, 0.23, "Intake Gripper");
 
         //SAVED POSITIONS
         savedPositions.put("rest", new IntakeArmPosition(120, 180, 0, true));
 
         savedPositions.put("straightOut", new IntakeArmPosition(0, 0, 0, true));
         double transferRollDeg = 185;
-        savedPositions.put("preTransfer", new IntakeArmPosition(25, 130, transferRollDeg, false));
+        savedPositions.put("preTransfer", new IntakeArmPosition(25, 110, transferRollDeg, false));
         savedPositions.put("transfer", new IntakeArmPosition(50, 180, transferRollDeg, false));
         savedPositions.put("drop", new IntakeArmPosition(0, -60,45, false));
         savedPositions.put("preGrab", new IntakeArmPosition(0, -90, 0, true));//0.233,-75

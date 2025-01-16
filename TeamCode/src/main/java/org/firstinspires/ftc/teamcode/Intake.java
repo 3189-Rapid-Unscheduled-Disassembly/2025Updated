@@ -85,12 +85,12 @@ public class Intake {
                     intakeArm.setToSavedIntakeArmPosition("preTransfer");
                     timer.reset();
                 } else {
-                    if (timer.milliseconds() > 200) {
+                    //if (timer.milliseconds() > 200) {
                         intakeArm.setToSavedIntakeArmPosition("transfer");
-                    } else {
-                        intakeArm.setToSavedIntakeArmPosition("preTransfer");
-                    }
-                    if (timer.milliseconds() > 500) {
+                    //} else {
+                        //intakeArm.setToSavedIntakeArmPosition("preTransfer");
+                    //}
+                    if (timer.milliseconds() > 700) {//500
                         timer.reset();
                         return true;
                     }
