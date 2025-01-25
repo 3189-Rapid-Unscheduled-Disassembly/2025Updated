@@ -28,6 +28,8 @@ public class Intake {
     //171 3
     int horizontalSlidePosition;
 
+    double waitTimeMS = 1000;
+
     final double TICKS_PER_INCH = 61.666667;//175.5
     final double MIN_POINT = 6;
     final double MAX_POINT = 20;
@@ -58,8 +60,13 @@ public class Intake {
         horizontalSlidePosition = horizontalSlide.getCurrentPosition();
     }
 
+    public void calculateWaitTime() {
+        waitTimeMS = -33.333*currentInches() + 1200;
+        //reset timer to eliminate weird stuff
+        timer.reset();
+    }
     //TRANSFERRING
-    public boolean transfer(boolean doingCloseTransfer, boolean outputIsReady, boolean outputGripperIsOpen) {
+    public boolean transfer(boolean outputIsReady, boolean outputGripperIsOpen) {
         setHorizontalSlideToSavedPosition("transfer");
         if (timer.milliseconds() > 4000) {
             timer.reset();
@@ -90,13 +97,7 @@ public class Intake {
                     //} else {
                     //intakeArm.setToSavedIntakeArmPosition("preTransfer");
                     //}
-                    double timeToWait;
-                    if (doingCloseTransfer) {
-                        timeToWait = 1000;
-                    } else {
-                        timeToWait = 400;
-                    }
-                    if (timer.milliseconds() > timeToWait) {//500
+                    if (timer.milliseconds() > waitTimeMS) {//500
                         timer.reset();
                         return true;
                     }

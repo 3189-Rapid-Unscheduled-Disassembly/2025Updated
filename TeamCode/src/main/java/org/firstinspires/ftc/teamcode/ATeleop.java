@@ -157,6 +157,9 @@ public class ATeleop extends LinearOpMode {
             telemetry.addLine(bucketDrivingMode ? "BUCKET MODE" : "CLIP MODE");
             telemetry.addData("vertInches", bart.output.verticalSlides.currentInches());
             telemetry.addData("vertTicks", bart.output.verticalSlides.currentTicks);
+            telemetry.addLine(bart.output.wrist.toString());
+
+            telemetry.addLine(bart.output.wrist.toStringServoPos());
 
             //telemetry.addLine(bart.output.currentPosition().pointTelemetry());
             //telemetry.addData("\n", bart.output.currentPosition().componentValuesIrl());
@@ -268,9 +271,9 @@ public class ATeleop extends LinearOpMode {
                 //once we get there do the intaking until we get one
                 //do it later
                 //for now just press b to move on
-                if (playerOne.wasJustPressed(GamepadKeys.Button.B)) {
+                /*if (playerOne.wasJustPressed(GamepadKeys.Button.B)) {
                     currentState = State.DRIVE_TO_BUCKET;
-                }
+                }*/
 
                 //when switching to DRIVE_TO_BUCKET switch on visionPortal and set cameraOn to true
 
@@ -387,9 +390,9 @@ public class ATeleop extends LinearOpMode {
 
     public void manualControl() {
 
-        if (playerOne.wasJustPressed(GamepadKeys.Button.Y)) {
-            isFieldRelative = !isFieldRelative;
-        }
+        /*if (playerOne.wasJustPressed(GamepadKeys.Button.Y)) {
+            //isFieldRelative = !isFieldRelative;
+        }*/
         if (!isFieldRelative) {
             //bart.driveRobotRelative(playerOne.getLeftY(), playerOne.getLeftX(), playerOne.getRightX());
             goToTargetAngle();
@@ -520,6 +523,10 @@ public class ATeleop extends LinearOpMode {
             }
             if (playerTwo.wasJustPressed(GamepadKeys.Button.RIGHT_STICK_BUTTON)) {
                bucketDrivingMode = !bucketDrivingMode;
+               //if we switch to clips, we wanna raise the arm so that way we can do near
+                if (!bucketDrivingMode) {
+                    bart.output.setComponentPositionsFromSavedPosition("straightOut");
+                }
             }
 
             bart.output.sendVerticalSlidesToTarget();
@@ -531,17 +538,24 @@ public class ATeleop extends LinearOpMode {
         }
 
         //switch drive mode (robot-oriented default, switch to field-oriented)
-        if (playerOne.wasJustPressed(GamepadKeys.Button.Y)) {
+        /*if (playerOne.wasJustPressed(GamepadKeys.Button.Y)) {
             bart.switchDriveMode();
+        }*/
+
+
+        //HANG CODE
+
+        if (playerOne.wasJustPressed(GamepadKeys.Button.Y)) {
+            bart.output.setComponentPositionsFromSavedPosition("preHang");
+            //if we are already at rest, from doing clips, we can just leave it
+            if (!bart.intake.intakeArm.isPitchEqualToSavedIntakePosition("rest")) {
+                bart.intake.intakeArm.setToSavedIntakeArmPosition("preTransfer");
+            }
         }
-
-
-        //toggle camera
-        if (playerOne.wasJustPressed(GamepadKeys.Button.A)) {
-            if (cameraIsOn) {
-                //visionPortal.stopStreaming();
-            } else {
-                //visionPortal.resumeStreaming();
+        if (playerOne.wasJustPressed(GamepadKeys.Button.B)) {
+            bart.output.setComponentPositionsFromSavedPosition("hang");
+            if (!bart.intake.intakeArm.isPitchEqualToSavedIntakePosition("rest")) {
+                bart.intake.intakeArm.setToSavedIntakeArmPosition("preTransfer");
             }
         }
 

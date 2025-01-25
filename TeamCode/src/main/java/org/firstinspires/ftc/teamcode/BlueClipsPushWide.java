@@ -5,17 +5,13 @@ import androidx.annotation.NonNull;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.AngularVelConstraint;
-import com.acmerobotics.roadrunner.Arclength;
 import com.acmerobotics.roadrunner.MinVelConstraint;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.Pose2dDual;
-import com.acmerobotics.roadrunner.PosePath;
 import com.acmerobotics.roadrunner.ProfileAccelConstraint;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
-import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -24,7 +20,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import java.util.Arrays;
 
 @Autonomous
-public class BlueClipsPush extends LinearOpMode {
+public class BlueClipsPushWide extends LinearOpMode {
     RobotMain bart;
     MecanumDrive drive;
     Outputs outputs;
@@ -108,8 +104,9 @@ public class BlueClipsPush extends LinearOpMode {
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
 
                 //ACTION
-                if (drive.pose.position.y < 62.1) {
+                if (drive.pose.position.y < 61.5) {//62.1
                     bart.output.setComponentPositionsFromSavedPosition("highBarBack");
+                    bart.output.gripper.setPosition(0.22);
                     actionIsRunning = false;
                 }
 
@@ -194,6 +191,32 @@ public class BlueClipsPush extends LinearOpMode {
                 return actionIsRunning;
             }
 
+        }
+
+        class CloseGripperLoose implements Action {
+
+            boolean actionIsRunning = false;
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+
+                //ACTION
+                bart.output.gripper.setPosition(0.22);
+                return actionIsRunning;
+            }
+
+        }
+
+        class CloseGripperTightAfterDelay implements Action {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                //ACTION
+                if (drive.pose.position.y < 56) {
+                    bart.output.gripper.close();
+                    return false;
+                }
+                return true;
+            }
         }
 
         class RetractHoriz implements Action {
@@ -499,6 +522,15 @@ public class BlueClipsPush extends LinearOpMode {
         public Action closeGripper() {
             return new CloseGripper();
         }
+        public Action closeGripperLoose() {
+            return new CloseGripperLoose();
+        }
+
+        public Action closeGripperTightAfterDelay() {
+            return new CloseGripperTightAfterDelay();
+        }
+
+
 
         public Action lowerIntakeAtEnd() { return new LowerIntakeAtEnd();}
 
@@ -534,13 +566,15 @@ public class BlueClipsPush extends LinearOpMode {
         double scoreAngleRad = Math.toRadians(270);
         Pose2d scorePose = new Pose2d(scoreVector, scoreAngleRad);
 
-            Vector2d scoreCycleVector = new Vector2d(-3, 33.25);
-            double scoreCycleAngleRad = Math.toRadians(90);
-            Pose2d scoreCyclePose = new Pose2d(scoreCycleVector, scoreCycleAngleRad);
+        Vector2d scoreCycleVector = new Vector2d(-5, 36);
+        double scoreCycleAngleRad = Math.toRadians(90);
+        Pose2d scoreCyclePose = new Pose2d(scoreCycleVector, scoreCycleAngleRad);
         //GRAB POSE
-        Vector2d grabVector = new Vector2d(-36, 62.5);//61.5ish for strafe//-32 x sometimes
+        Vector2d grabVector = new Vector2d(-38, 62.5);//61.5ish for strafe//-32 x sometimes
         double grabAngleRad = Math.toRadians(90);
         Pose2d grabPose = new Pose2d(grabVector, grabAngleRad);
+
+
 
         bart = new RobotMain(hardwareMap, telemetry);
         drive = new MecanumDrive(hardwareMap, beginPose);
@@ -575,23 +609,23 @@ public class BlueClipsPush extends LinearOpMode {
                 .splineToConstantHeading(new Vector2d(-48, 20), Math.toRadians(90))
                 .splineToConstantHeading(new Vector2d(-48, 45), Math.toRadians(90))
                 //spike 2
-                .splineToConstantHeading(new Vector2d(-48, 40), Math.toRadians(270))
+                .splineToConstantHeading(new Vector2d(-45, 40), Math.toRadians(270))
                 .splineToConstantHeading(new Vector2d(-56, 22), Math.toRadians(180))
                 .splineToConstantHeading(new Vector2d(-60, 24), Math.toRadians(90))
                 .splineToConstantHeading(new Vector2d(-60, 45), Math.toRadians(90))
                 //spike 3
-                .splineToConstantHeading(new Vector2d(-58, 36), Math.toRadians(270))
-                .splineToConstantHeading(new Vector2d(-61, 20), Math.toRadians(180))
-                .splineToConstantHeading(new Vector2d(-62, 24), Math.toRadians(90))
-                .splineToConstantHeading(new Vector2d(-62, 46), Math.toRadians(90))
-                .splineToConstantHeading(new Vector2d(-50, 49), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(-54, 36), Math.toRadians(270))
+                .splineToConstantHeading(new Vector2d(-60, 22), Math.toRadians(180))
+                .splineToConstantHeading(new Vector2d(-67, 24), Math.toRadians(90))
+                .splineToConstantHeading(new Vector2d(-65.5, 48), Math.toRadians(90))
+                .splineToConstantHeading(new Vector2d(-50, 51), Math.toRadians(0))
                 .splineToLinearHeading(new Pose2d(grabVector.x-2, grabVector.y-5, Math.toRadians(90)), Math.toRadians(0),
                         new MinVelConstraint(Arrays.asList(
                                 drive.kinematics.new WheelVelConstraint(60),
                                 new AngularVelConstraint(Math.PI * 1.5)
                         )),
                         new ProfileAccelConstraint(-40, 45))
-                .splineToConstantHeading(grabVector, Math.toRadians(90),
+                .splineToConstantHeading(new Vector2d(grabVector.x, grabVector.y+0.5), Math.toRadians(90),
                         new MinVelConstraint(Arrays.asList(
                                 drive.kinematics.new WheelVelConstraint(60),
                                 new AngularVelConstraint(Math.PI * 1.5)
@@ -639,8 +673,6 @@ public class BlueClipsPush extends LinearOpMode {
                         new ProfileAccelConstraint(-40, 45)
                 );
 
-        TrajectoryActionBuilder fromScoreCycleToPark = drive.actionBuilder(scoreCyclePose)
-                .strafeToConstantHeading(new Vector2d(grabVector.x, grabVector.y-4));
 
         //bart.output.setComponentPositionsFromSavedPosition("rest");
         bart.readHubs();
@@ -680,13 +712,14 @@ public class BlueClipsPush extends LinearOpMode {
 
                                 //CYCLE
                                 //grab clip 1
-                                outputs.closeGripper(),
+                                outputs.closeGripperLoose(),
                                 sleeper.sleep(timeToGrabClipMilliseconds),
                                 //outputs.aboveGrab(),
 
                                 //SCORE THE CLIP
                                 new ParallelAction(
                                         outputs.raiseToHighBarBackOnceAwayFromWall(),
+                                        outputs.closeGripperTightAfterDelay(),
                                         fromGrabToScoreCycle.build()
                                 ),
 
@@ -698,11 +731,12 @@ public class BlueClipsPush extends LinearOpMode {
                                 outputs.lowerToGrab(),
                                 sleeper.sleep(timeToDropClipMilliseconds),
                                 fromScoreCycleToGrab.build(),
-                                outputs.closeGripper(),
+                                outputs.closeGripperLoose(),
                                 sleeper.sleep(timeToGrabClipMilliseconds),
                                 //score
                                 new ParallelAction(
                                         outputs.raiseToHighBarBackOnceAwayFromWall(),
+                                        outputs.closeGripperTightAfterDelay(),
                                         fromGrabToScoreCycle.build()
                                 ),
 
@@ -714,11 +748,12 @@ public class BlueClipsPush extends LinearOpMode {
                                 outputs.lowerToGrab(),
                                 sleeper.sleep(timeToDropClipMilliseconds),
                                 fromScoreCycleToGrab.build(),
-                                outputs.closeGripper(),
+                                outputs.closeGripperLoose(),
                                 sleeper.sleep(timeToGrabClipMilliseconds),
                                 //score
                                 new ParallelAction(
                                         outputs.raiseToHighBarBackOnceAwayFromWall(),
+                                        outputs.closeGripperTightAfterDelay(),
                                         fromGrabToScoreCycle.build()
                                 ),
 
@@ -730,18 +765,23 @@ public class BlueClipsPush extends LinearOpMode {
                                 outputs.lowerToGrab(),
                                 sleeper.sleep(timeToDropClipMilliseconds),
                                 fromScoreCycleToGrab.build(),
-                                outputs.closeGripper(),
+                                outputs.closeGripperLoose(),
                                 sleeper.sleep(timeToGrabClipMilliseconds),
                                 //score
                                 new ParallelAction(
                                         outputs.raiseToHighBarBackOnceAwayFromWall(),
+                                        outputs.closeGripperTightAfterDelay(),
                                         outputs.lowerIntakeAtEnd(),
                                         fromGrabToScoreCycle.build()
                                 ),
 
                                 outputs.openGripper(),
 
-                                //outputs.moveWristOutOfWay(),
+                                //outputs.lowerToGrab(),
+                                //sleeper.sleep(timeToDropClipMilliseconds),
+
+
+                                outputs.moveWristOutOfWay(),
                                 //sleeper.sleep(150),
 
                                 //outputs.lowerToPark(),

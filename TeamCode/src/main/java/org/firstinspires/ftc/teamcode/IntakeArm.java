@@ -20,11 +20,11 @@ public class IntakeArm {
 
         Servo armServo = hardwareMap.get(Servo.class,"intakeArmPitch");
         armServo.setDirection(Servo.Direction.FORWARD);
-        intakeArm = new Joint(armServo, 200, 0.18, "Intake Arm Pitch");
+        intakeArm = new Joint(armServo, 200, 0.21, "Intake Arm Pitch");
 
         Servo intakeWristPitchServo = hardwareMap.get(Servo.class, "intakeWristPitch");
         intakeWristPitchServo.setDirection(Servo.Direction.FORWARD);
-        intakeWristPitch = new Joint(intakeWristPitchServo, 300, 0.5, "Intake Wrist Pitch");
+        intakeWristPitch = new Joint(intakeWristPitchServo, 300, 0.473, "Intake Wrist Pitch");
 
         Servo intakeRollServo = hardwareMap.get(Servo.class, "intakeRoll");
         intakeRollServo.setDirection(Servo.Direction.FORWARD);
@@ -40,10 +40,10 @@ public class IntakeArm {
         savedPositions.put("straightOut", new IntakeArmPosition(0, 0, 0, true));
         double transferRollDeg = 185;
         savedPositions.put("preTransfer", new IntakeArmPosition(25, 110, transferRollDeg, false));
-        savedPositions.put("transfer", new IntakeArmPosition(50, 180, transferRollDeg, false));
+        savedPositions.put("transfer", new IntakeArmPosition(35, 180, transferRollDeg, false));
         savedPositions.put("drop", new IntakeArmPosition(0, -60,45, false));
         savedPositions.put("preGrab", new IntakeArmPosition(0, -90, 0, true));//0.233,-75
-        savedPositions.put("grab", new IntakeArmPosition(-10, -90, 0, false));//0.233,-75
+        savedPositions.put("grab", new IntakeArmPosition(-15, -90, 0, false));//0.233,-75
         savedPositions.put("postGrab", new IntakeArmPosition(30, 0, 0, false));//0.233,-75
     }
 

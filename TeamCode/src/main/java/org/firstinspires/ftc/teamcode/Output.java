@@ -55,7 +55,7 @@ public class Output {
         List<Servo> armServos = new ArrayList<>();
         armServos.add(armLeft);
         armServos.add(armRight);
-        arm = new Joint(armServos, 180, 0.286, "Arm");
+        arm = new Joint(armServos, 180, 0.28, "Arm");
 
         Servo wristServo = hardwareMap.get(Servo.class, "wrist");
         wristServo.setDirection(Servo.Direction.REVERSE);
@@ -63,7 +63,7 @@ public class Output {
 
         Servo gripperServo = hardwareMap.get(Servo.class, "outputGripper");
         gripperServo.setDirection(Servo.Direction.REVERSE);
-        gripper = new Gripper(gripperServo, 0.5, 0.14, "Output Gripper");
+        gripper = new Gripper(gripperServo, 0.5, 0.14, "Output Gripper");//0.22
 
 
         //put saved positions
@@ -71,7 +71,7 @@ public class Output {
                 new OutputEndPoint(0, 0, -20, false)
         );
         savedPositions.put("transfer",
-                new OutputEndPoint(3.5, -25, -90, true)
+                new OutputEndPoint(3, -25.5, -95, true)
         );
         savedPositions.put("rest",
                 new OutputEndPoint(0, -15, -90,false)
@@ -83,8 +83,8 @@ public class Output {
                 new OutputEndPoint(0, 0, 0,true)
         );
         savedPositions.put("grab",
-                new OutputEndPoint(0, -10.5, -90, true)
-        );
+                new OutputEndPoint(0, -11, -90, true)
+        );//-11
         savedPositions.put("aboveGrab",
                 new OutputEndPoint(0, -3, -90, false)
         );
@@ -92,10 +92,10 @@ public class Output {
                 new OutputEndPoint(7.75, 10, -20, false)
         );
         savedPositions.put("highBarBack",
-                new OutputEndPoint(0, 135, 170, false)
+                new OutputEndPoint(0, 140, 165, false)
         );
         savedPositions.put("highBarBackMoveWrist",
-                new OutputEndPoint(0, 135, 100, true)
+                new OutputEndPoint(0, 140, 140, true)
         );
         savedPositions.put("level1AscentAuto",
                 new OutputEndPoint(new Point2d(8.83, 22.5), 0, false)
@@ -108,6 +108,12 @@ public class Output {
         );
         savedPositions.put("highBucket",
                 new OutputEndPoint(17.5, 110, 150, false)
+        );
+        savedPositions.put("preHang",
+                new OutputEndPoint(12, -15, -90, true)
+        );
+        savedPositions.put("hang",
+                new OutputEndPoint(6.75, -15, -90, true)
         );
 
 
@@ -130,14 +136,18 @@ public class Output {
         gripper.writePosition();
     }
 
+    public void firstFrameOfTransfer() {
+        setComponentPositionsFromSavedPosition("transfer");
+    }
+
     //TRANSFERRING
     public boolean transfer() {
         //setComponentPositionsFromSavedPosition("transfer");
 
-        if (timer.milliseconds() > 2500) {//3500
-            setComponentPositionsFromSavedPosition("transfer");
-            timer.reset();
-        }
+        //if (timer.milliseconds() > 2500) {//3500
+            //setComponentPositionsFromSavedPosition("transfer");
+//            timer.reset();
+        //}
 
         if (!verticalSlides.isAtTarget()) {
             timer.reset();

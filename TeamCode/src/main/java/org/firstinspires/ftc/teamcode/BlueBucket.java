@@ -80,6 +80,12 @@ public class BlueBucket extends LinearOpMode {
                 return !bart.output.verticalSlides.isAbovePositionInches(10);
             }
         }
+        class WaitTillSlidesAreAllTheWayUp implements Action {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                return !bart.output.verticalSlides.isAbovePositionInches(17.25);
+            }
+        }
 
         class LowerToTransfer implements Action {
             @Override
@@ -100,9 +106,25 @@ public class BlueBucket extends LinearOpMode {
             }
         }
 
-        class Transfer implements Action {
+        class LowerToPreParkOnceAway implements Action {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                if (drive.pose.position.y < 52) {
+                    bart.output.setComponentPositionsFromSavedPosition("straightOut");
+                    return false;
+                }
+                return true;
+            }
+        }
+
+        class Transfer implements Action {
+            boolean intialized = false;
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                if (!intialized) {
+                    bart.firstFrameOfTransfer();
+                    intialized = true;
+                }
                 isTransferingNow = true;
                 bart.transfer();
                 //we are done
@@ -113,6 +135,14 @@ public class BlueBucket extends LinearOpMode {
                     return false;
                 }
                 return true;
+            }
+        }
+
+        class WaitUntilAwayFromWall implements Action {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                return drive.pose.position.x > 43;
+
             }
         }
 
@@ -347,6 +377,8 @@ public class BlueBucket extends LinearOpMode {
         public Action lowerToTransferOnceAway() {
             return new LowerToTransferOnceAway();
         }
+        public Action lowerToPreParkOnceAway() {return new LowerToPreParkOnceAway();}
+        public Action waitUntilAwayFromWall() {return new WaitUntilAwayFromWall();}
 
 
         public Action transfer() {
@@ -379,6 +411,7 @@ public class BlueBucket extends LinearOpMode {
         public Action waitTillSlidesArePartiallyUp() {
             return new WaitTillSlidesArePartiallyUp();
         }
+        public Action waitTillSlidesAreAllTheWayUp() {return new WaitTillSlidesAreAllTheWayUp();}
 
 
         public Action extendHoriz(double inches) {return new ExtendHoriz(inches);}
@@ -393,29 +426,31 @@ public class BlueBucket extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        Pose2d beginPose = new Pose2d(40, 65.5, Math.toRadians(180));
+        Pose2d beginPose = new Pose2d(40, 66.5, Math.toRadians(180));
 
-        //SCORE POSES
-        Vector2d scoreVector = new Vector2d(58, 56);
-        double scoreAngleRad = Math.toRadians(240);
+        Vector2d scoreVector = new Vector2d(55.5, 57);
+        double scoreAngleRad = Math.toRadians(225);
         Pose2d scorePose = new Pose2d(scoreVector, scoreAngleRad);
 
-        Vector2d spike1Vector = new Vector2d(49, 46);
-        double spike1AngleRad = Math.toRadians(270);
-        Pose2d spike1Pose = new Pose2d(spike1Vector, spike1AngleRad);
+        Vector2d firstSampleVector = new Vector2d(48.5, 43);
+        double firstSampleAngleRad = Math.toRadians(270);
+        Pose2d firstSamplePose = new Pose2d(firstSampleVector, firstSampleAngleRad);
 
-        Vector2d spike2Vector = new Vector2d(58, 46);
-        double spike2AngleRad = Math.toRadians(270);
-        Pose2d spike2Pose = new Pose2d(spike2Vector, spike2AngleRad);
+        Vector2d secondSampleVector = new Vector2d(57.5, 44);
+        double secondSampleAngleRad = Math.toRadians(270);
+        Pose2d secondSamplePose = new Pose2d(secondSampleVector, secondSampleAngleRad);
 
-        Vector2d spike3Vector = new Vector2d(53, 26.5);
-        double spike3AngleRad = Math.toRadians(0);
-        Pose2d spike3Pose = new Pose2d(spike3Vector, spike3AngleRad);
+        Vector2d thirdSampleVector = new Vector2d(54, 27.25);
+        double thirdSamplAngleRad = Math.toRadians(360);
+        Pose2d thirdSamplePose = new Pose2d(thirdSampleVector, thirdSamplAngleRad);
 
-        Vector2d parkVector = new Vector2d(21.5, 14);
+        Vector2d parkVector = new Vector2d(36, 12);
         double parkAngleRad = Math.toRadians(180);
         Pose2d parkPose = new Pose2d(parkVector, parkAngleRad);
 
+        Vector2d park2Vector = new Vector2d(20, 12);
+        double park2AngleRad = Math.toRadians(180);
+        Pose2d park2Pose = new Pose2d(park2Vector, park2AngleRad);
 
         bart = new RobotMain(hardwareMap, telemetry);
         drive = new MecanumDrive(hardwareMap, beginPose);
@@ -428,42 +463,33 @@ public class BlueBucket extends LinearOpMode {
 
 
 
-
-        //DRIVE TRAJECTORIES
         TrajectoryActionBuilder fromStartToScore = drive.actionBuilder(beginPose)
                 .strafeToLinearHeading(scoreVector, scoreAngleRad);
 
-        TrajectoryActionBuilder fromScoreToSpikeOne = drive.actionBuilder(scorePose)
-                .strafeToLinearHeading(spike1Vector, spike1AngleRad);
-        TrajectoryActionBuilder fromSpikeOneToScore = drive.actionBuilder(spike1Pose)
+        TrajectoryActionBuilder fromScoreToFirstSample = drive.actionBuilder(scorePose)
+                .strafeToLinearHeading(firstSampleVector, firstSampleAngleRad);
+
+        TrajectoryActionBuilder fromFirstSampleToScore = drive.actionBuilder(firstSamplePose)
                 .strafeToLinearHeading(scoreVector, scoreAngleRad);
 
-        TrajectoryActionBuilder fromScoreToSpikeTwo = drive.actionBuilder(scorePose)
-                .strafeToLinearHeading(spike2Vector, spike2AngleRad);
-        TrajectoryActionBuilder fromSpikeTwoToScore = drive.actionBuilder(spike2Pose)
+        TrajectoryActionBuilder fromScoreToSecondSample = drive.actionBuilder(scorePose)
+                .strafeToLinearHeading(secondSampleVector, secondSampleAngleRad);
+
+        TrajectoryActionBuilder fromSecondSampleToScore = drive.actionBuilder(secondSamplePose)
                 .strafeToLinearHeading(scoreVector, scoreAngleRad);
 
-        TrajectoryActionBuilder fromScoreToSpikeThree = drive.actionBuilder(scorePose)
-                .strafeToLinearHeading(spike3Vector, spike3AngleRad);
-        TrajectoryActionBuilder fromSpikeThreeToScore = drive.actionBuilder(spike3Pose)
+        TrajectoryActionBuilder fromScoreToThirdSample = drive.actionBuilder(scorePose)
+                .strafeToLinearHeading(thirdSampleVector, thirdSamplAngleRad);
+
+        TrajectoryActionBuilder fromThirdSampleToScore = drive.actionBuilder(thirdSamplePose)
+                .strafeToConstantHeading(new Vector2d(thirdSampleVector.x-12, thirdSampleVector.y))
                 .strafeToLinearHeading(scoreVector, scoreAngleRad);
 
         TrajectoryActionBuilder fromScoreToPark = drive.actionBuilder(scorePose)
-                .strafeToLinearHeading(new Vector2d(parkVector.x+24, parkVector.y), parkAngleRad,
-                    new MinVelConstraint(Arrays.asList(
-                        drive.kinematics.new WheelVelConstraint(60),
-                        new AngularVelConstraint(Math.PI * 1.5)
-                    )),
-                    new ProfileAccelConstraint(-40, 45)
-                )
-                .strafeToConstantHeading(parkVector,
-                    new MinVelConstraint(Arrays.asList(
-                        drive.kinematics.new WheelVelConstraint(60),
-                        new AngularVelConstraint(Math.PI * 1.5)
-                    )),
-                    new ProfileAccelConstraint(-40, 45)
-                );
+                .strafeToLinearHeading(parkVector, parkAngleRad);
 
+        TrajectoryActionBuilder fromParkToPark2 = drive.actionBuilder(parkPose)
+                .strafeToLinearHeading(park2Vector, park2AngleRad);
 
 
         bart.readHubs();
@@ -471,11 +497,6 @@ public class BlueBucket extends LinearOpMode {
         bart.intake.intakeArm.setToSavedIntakeArmPosition("rest");
 
         bart.writeAllComponents();
-
-        int timeToDropMilliseconds = 500;
-        int timeToGrabMilliseconds = 500;
-        int timeAfterTransfer = 100;
-
 
         waitForStart();
 
@@ -485,90 +506,72 @@ public class BlueBucket extends LinearOpMode {
 
                 new ParallelAction(
                         new SequentialAction(
-                                //SCORE PRELOAD
+                                //preload
+                                outputs.setIntakeArmPosition("preGrab"),
                                 outputs.raiseToHighBucket(),
-                                outputs.waitTillSlidesArePartiallyUp(),
-                                new ParallelAction(
-                                        outputs.extendHorizOnceVertOutOfWay(12),
-                                        fromStartToScore.build()
-                                ),
-                                outputs.openGripper(),
-                                sleeper.sleep(timeToDropMilliseconds),
 
-                                //SPIKE 1
-                                //grab 1
+                                fromStartToScore.build(),
+                                outputs.openGripper(),
+
+                                //spike 1
                                 new ParallelAction(
-                                        fromScoreToSpikeOne.build(),
+                                        fromScoreToFirstSample.build(),
+                                        outputs.lowerToTransferOnceAway()
+                                ),
+
+                                outputs.setIntakeArmPosition("grab"),
+
+                                sleeper.sleep(1000),
+                                outputs.transfer(),
+                                outputs.setIntakeArmPosition("preGrab"),
+                                outputs.raiseToHighBucket(),
+                                fromFirstSampleToScore.build(),
+                                outputs.waitTillSlidesAreAllTheWayUp(),
+                                outputs.openGripper(),
+
+                                //spike 2
+                                new ParallelAction(
+                                        fromScoreToSecondSample.build(),
                                         outputs.lowerToTransferOnceAway()
                                 ),
                                 outputs.setIntakeArmPosition("grab"),
-                                sleeper.sleep(timeToGrabMilliseconds),
-                                //transfer 1
+                                sleeper.sleep(1000),
                                 outputs.transfer(),
-                                sleeper.sleep(timeAfterTransfer),
                                 outputs.setIntakeArmPosition("preGrab"),
-                                outputs.extendHoriz(12),
-                                //score 1
-                                outputs.raiseToHighBucket(),
-                                outputs.waitTillSlidesArePartiallyUp(),
-                                fromSpikeOneToScore.build(),
-                                outputs.openGripper(),
-                                sleeper.sleep(timeToDropMilliseconds),
-
-                                //SPIKE 2
-                                //grab 2
-                                new ParallelAction(
-                                        fromScoreToSpikeTwo.build(),
-                                        outputs.lowerToTransferOnceAway()
-                                ),
-                                outputs.setIntakeArmPosition("grab"),
-                                sleeper.sleep(timeToGrabMilliseconds),
-                                //transfer 2
-                                outputs.transfer(),
-                                sleeper.sleep(timeAfterTransfer),
-                                outputs.setIntakeArmPosition("preGrab"),
-                                outputs.extendHoriz(8),
                                 outputs.setIntakeRoll(90),
-                                //score 2
                                 outputs.raiseToHighBucket(),
-                                outputs.waitTillSlidesArePartiallyUp(),
-                                fromSpikeTwoToScore.build(),
+                                fromSecondSampleToScore.build(),
+                                outputs.waitTillSlidesAreAllTheWayUp(),
                                 outputs.openGripper(),
-                                sleeper.sleep(timeToDropMilliseconds),
 
-                                //SPIKE 3
-                                //grab 3
+                                //spike 3
                                 new ParallelAction(
-                                        fromScoreToSpikeThree.build(),
+                                        fromScoreToThirdSample.build(),
                                         outputs.lowerToTransferOnceAway()
                                 ),
                                 outputs.setIntakeArmPosition("grab"),
                                 outputs.setIntakeRoll(90),
-                                sleeper.sleep(timeToGrabMilliseconds),
-                                //transfer 3
-                                outputs.transfer(),
-                                outputs.extendHoriz(6),
-                                sleeper.sleep(timeAfterTransfer),
-                                outputs.setIntakeArmPosition("preGrab"),
-                                //score 3
-                                outputs.raiseToHighBucket(),
-                                outputs.waitTillSlidesArePartiallyUp(),
-                                fromSpikeThreeToScore.build(),
-                                outputs.openGripper(),
-                                sleeper.sleep(timeToDropMilliseconds),
+                                sleeper.sleep(1000),
+                                new ParallelAction(
+                                        new SequentialAction(
+                                                outputs.waitUntilAwayFromWall(),
+                                                outputs.transfer(),
+                                                outputs.raiseToHighBucket()
+                                        ),
+                                        fromThirdSampleToScore.build()
+                                ),
 
-                                //PARK
-                                outputs.lowerToPrePark(),
-                                fromScoreToPark.build(),
+                                outputs.setIntakeArmPosition("preGrab"),
+                                outputs.waitTillSlidesAreAllTheWayUp(),
+                                outputs.openGripper(),
+
+                                //park
+                                new ParallelAction(
+                                        fromScoreToPark.build(),
+                                        outputs.lowerToPreParkOnceAway()
+                                ),
+                                fromParkToPark2.build(),
                                 outputs.raiseToPark(),
-
-
-
-
-
-
-
-
 
                                 sleeper.sleep(10000),
                                 outputs.endProgram()
