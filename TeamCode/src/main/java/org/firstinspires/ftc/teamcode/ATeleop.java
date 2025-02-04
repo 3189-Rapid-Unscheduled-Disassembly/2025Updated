@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
@@ -11,7 +13,9 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
@@ -48,7 +52,9 @@ public class ATeleop extends LinearOpMode {
     final double yP = 0.05;
     final double thetaP = 0.05;
     final double angularP = 4;
-    final double MAX_DRIVE_VELOCITY_MULTIPLIER = 0.7;
+    final double MAX_DRIVE_VELOCITY_MULTIPLIER = 1;
+    final double MAX_TURN_VELOCITY_MULTIPLIER = 0.7;
+
 
 
 
@@ -60,6 +66,8 @@ public class ATeleop extends LinearOpMode {
     boolean usingHorizManualControl = false;
 
     boolean alternateControl = false;
+    boolean stupidControl = false;
+
 
     //p2 driving mode
     boolean bucketDrivingMode = true;
@@ -139,6 +147,11 @@ public class ATeleop extends LinearOpMode {
         elapsedTime = new ElapsedTime();
         elapsedTime.reset();
 
+        TelemetryPacket packet = new TelemetryPacket();
+        FtcDashboard dashboard = FtcDashboard.getInstance();
+        Telemetry dashboardTelemetry = dashboard.getTelemetry();
+
+
         while (opModeIsActive()) {
 
             //READ
@@ -190,6 +203,10 @@ public class ATeleop extends LinearOpMode {
             //telemetry.addData("Target Drive Angle", targetAngle);
 
             telemetry.addData("horizInches", bart.intake.currentInches());
+            telemetry.addData("horizAmps", bart.intake.horizontalSlide.getCurrent(CurrentUnit.AMPS));
+            packet.put("horizAmps", bart.intake.horizontalSlide.getCurrent(CurrentUnit.AMPS));
+            dashboardTelemetry.addData("horizAmps", bart.intake.horizontalSlide.getCurrent(CurrentUnit.AMPS));
+            dashboardTelemetry.update();
 
 
             telemetry.update();
@@ -399,7 +416,12 @@ public class ATeleop extends LinearOpMode {
             //if (playerOne.getRightX() != 0) targetAngle -= gamepad1.right_stick_x*5;
             double turnSpeed;
             if (playerOne.getRightX() != 0) {
-                turnSpeed = -playerOne.getRightX() * MAX_DRIVE_VELOCITY_MULTIPLIER;
+                turnSpeed = -playerOne.getRightX() * 1;//MAX_TURN_VELOCITY_MULTIPLIER;
+                boolean turnSpeedIsPositive = turnSpeed >= 0;
+                turnSpeed *= turnSpeed;
+                if (!turnSpeedIsPositive) {
+                    turnSpeed = -turnSpeed;
+                }
                 targetAngle = Math.toDegrees(bart.mecanaDruve.pose.heading.toDouble());
                 usingAutoAngle = false;
             } else {
@@ -426,6 +448,8 @@ public class ATeleop extends LinearOpMode {
 
 
         alternateControl = playerTwo.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) >= 0.8;
+        stupidControl = playerTwo.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) >= 0.8;
+
 
         //RESET THE TRANSFER TIMER ONLY WHEN A IS FIRST PRESSED
         if (playerTwo.wasJustPressed(GamepadKeys.Button.A)) {
@@ -503,21 +527,36 @@ public class ATeleop extends LinearOpMode {
                     bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, 20, 0, true));
                 } else {
                     //we can use the left trigger to get an alternate position
-                    if (!alternateControl) {
-                        bart.output.setComponentPositionsFromSavedPosition("highBarFront");
+                    if (!stupidControl) {
+                        if (!alternateControl) {
+                            bart.output.setComponentPositionsFromSavedPosition("highBarFront");
+                        } else {
+                            bart.output.setComponentPositionsFromSavedPosition("highBarBack");
+                        }
                     } else {
-                        bart.output.setComponentPositionsFromSavedPosition("highBarBack");
+                        bart.intake.intakeArm.setToSavedIntakeArmPosition("lowBar");
+                        bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, 20, 0, true));
                     }
                 }
             }
             if (playerTwo.wasJustPressed(GamepadKeys.Button.X)) {
                 if (bucketDrivingMode) {
-                    bart.output.setComponentPositionsFromSavedPosition("transfer");
-                } else {
                     if (!alternateControl) {
-                        bart.output.setComponentPositionsFromSavedPosition("grab");
+                        bart.output.setComponentPositionsFromSavedPosition("transfer");
                     } else {
-                        bart.output.setComponentPositionsFromSavedPosition("aboveGrab");
+                        //use this to reset vertical slides better
+                        bart.output.setComponentPositionsFromSavedPosition("grab");
+                    }
+                } else {
+                    if (!stupidControl) {
+                        if (!alternateControl) {
+                            bart.output.setComponentPositionsFromSavedPosition("grab");
+                        } else {
+                            bart.output.setComponentPositionsFromSavedPosition("aboveGrab");
+                        }
+                    } else {
+                        bart.intake.intakeArm.setToSavedIntakeArmPosition("stupidGrab");
+                        bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, 20, 0, true));
                     }
                 }
             }
@@ -548,20 +587,28 @@ public class ATeleop extends LinearOpMode {
         if (playerOne.wasJustPressed(GamepadKeys.Button.Y)) {
             bart.output.setComponentPositionsFromSavedPosition("preHang");
             //if we are already at rest, from doing clips, we can just leave it
-            if (!bart.intake.intakeArm.isPitchEqualToSavedIntakePosition("rest")) {
-                bart.intake.intakeArm.setToSavedIntakeArmPosition("preTransfer");
-            }
+            //if (!bart.intake.intakeArm.isPitchEqualToSavedIntakePosition("rest")) {
+                //bart.intake.intakeArm.setToSavedIntakeArmPosition("preTransfer");
+            //}
+            bart.intake.intakeArm.setToSavedIntakeArmPosition("rest");
         }
         if (playerOne.wasJustPressed(GamepadKeys.Button.B)) {
             bart.output.setComponentPositionsFromSavedPosition("hang");
-            if (!bart.intake.intakeArm.isPitchEqualToSavedIntakePosition("rest")) {
-                bart.intake.intakeArm.setToSavedIntakeArmPosition("preTransfer");
-            }
+            //if (!bart.intake.intakeArm.isPitchEqualToSavedIntakePosition("rest")) {
+               //bart.intake.intakeArm.setToSavedIntakeArmPosition("preTransfer");
+            //}
+            bart.intake.intakeArm.setToSavedIntakeArmPosition("rest");
         }
 
         //reset the encoders for the two slide systems
         if (playerTwo.wasJustReleased(GamepadKeys.Button.LEFT_STICK_BUTTON)) {
-            bart.resetEncoders();
+            //reset vertical and horiz
+            if (!alternateControl) {
+                bart.resetEncoders();
+            } else {
+                //reset only the horiz
+                bart.intake.resetEncoder();
+            }
         }
 
 

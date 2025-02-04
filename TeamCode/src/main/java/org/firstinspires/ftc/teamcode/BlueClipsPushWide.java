@@ -211,7 +211,7 @@ public class BlueClipsPushWide extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 //ACTION
-                if (drive.pose.position.y < 56) {
+                if (drive.pose.position.y < 58) {
                     bart.output.gripper.close();
                     return false;
                 }

@@ -7,6 +7,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+
 import java.util.HashMap;
 
 public class Intake {
@@ -27,6 +29,7 @@ public class Intake {
     //-14 0
     //171 3
     int horizontalSlidePosition;
+    double horizontalSlideAmps;
 
     double waitTimeMS = 1000;
 
@@ -44,7 +47,7 @@ public class Intake {
         horizontalSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         horizontalSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        savedPositions.put("transfer", MIN_POINT);
+        savedPositions.put("transfer", MIN_POINT-0.1);
         savedPositions.put("max", MAX_POINT);
 
         horizontalSlidePosition = 0;
@@ -58,10 +61,15 @@ public class Intake {
 
     public void readAllComponents() {
         horizontalSlidePosition = horizontalSlide.getCurrentPosition();
+        horizontalSlideAmps = horizontalSlide.getCurrent(CurrentUnit.AMPS);
     }
 
     public void calculateWaitTime() {
-        waitTimeMS = -33.333*currentInches() + 1200;
+        if (intakeArm.isPitchEqualToSavedIntakePosition("grabCheck")) {
+            waitTimeMS = -36*currentInches() + 1200;
+        } else {
+            waitTimeMS = -33.333 * currentInches() + 1200;
+        }
         //reset timer to eliminate weird stuff
         timer.reset();
     }
@@ -134,7 +142,7 @@ public class Intake {
     }
 
     public void setHorizontalSlidePositionInches(double inches) {
-        double tickTarget = inchesToTicks(RobotMath.maxAndMin(inches, MAX_POINT, MIN_POINT));
+        double tickTarget = inchesToTicks(RobotMath.maxAndMin(inches, MAX_POINT, MIN_POINT-1));
         double error = tickTarget - horizontalSlidePosition;
 
         horizontalSlidePower = 0.006 * error;
@@ -157,12 +165,19 @@ public class Intake {
         horizontalSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
-    //GATE
+    //check if horizAmps should reset the encoder pose, that means we hit the hard stop
+    public void checkIfHitHardStop() {
+        if (horizontalSlideAmps > 5 && horizontalSlidePower < -0.1) {
+            resetEncoder();
+        }
+    }
 
     //WRITE
     public void writeAllComponents() {
         writeHorizontalSlide();
         intakeArm.writeServoPositions();
+        //reset horiz encoder if it hits the back stop
+        checkIfHitHardStop();
     }
 
     public void writeHorizontalSlide() {

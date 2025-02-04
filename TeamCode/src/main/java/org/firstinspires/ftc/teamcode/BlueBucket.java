@@ -436,7 +436,7 @@ public class BlueBucket extends LinearOpMode {
         double firstSampleAngleRad = Math.toRadians(270);
         Pose2d firstSamplePose = new Pose2d(firstSampleVector, firstSampleAngleRad);
 
-        Vector2d secondSampleVector = new Vector2d(57.5, 44);
+        Vector2d secondSampleVector = new Vector2d(57.25, 43);
         double secondSampleAngleRad = Math.toRadians(270);
         Pose2d secondSamplePose = new Pose2d(secondSampleVector, secondSampleAngleRad);
 
@@ -510,6 +510,8 @@ public class BlueBucket extends LinearOpMode {
                                 outputs.setIntakeArmPosition("preGrab"),
                                 outputs.raiseToHighBucket(),
 
+                                outputs.waitTillSlidesArePartiallyUp(),
+
                                 fromStartToScore.build(),
                                 outputs.openGripper(),
 
@@ -519,12 +521,15 @@ public class BlueBucket extends LinearOpMode {
                                         outputs.lowerToTransferOnceAway()
                                 ),
 
+                                sleeper.sleep(250),
+
                                 outputs.setIntakeArmPosition("grab"),
 
                                 sleeper.sleep(1000),
                                 outputs.transfer(),
                                 outputs.setIntakeArmPosition("preGrab"),
                                 outputs.raiseToHighBucket(),
+                                outputs.waitTillSlidesArePartiallyUp(),
                                 fromFirstSampleToScore.build(),
                                 outputs.waitTillSlidesAreAllTheWayUp(),
                                 outputs.openGripper(),
@@ -534,12 +539,15 @@ public class BlueBucket extends LinearOpMode {
                                         fromScoreToSecondSample.build(),
                                         outputs.lowerToTransferOnceAway()
                                 ),
+
+                                sleeper.sleep(250),
                                 outputs.setIntakeArmPosition("grab"),
                                 sleeper.sleep(1000),
                                 outputs.transfer(),
                                 outputs.setIntakeArmPosition("preGrab"),
                                 outputs.setIntakeRoll(90),
                                 outputs.raiseToHighBucket(),
+                                outputs.waitTillSlidesArePartiallyUp(),
                                 fromSecondSampleToScore.build(),
                                 outputs.waitTillSlidesAreAllTheWayUp(),
                                 outputs.openGripper(),
@@ -549,6 +557,8 @@ public class BlueBucket extends LinearOpMode {
                                         fromScoreToThirdSample.build(),
                                         outputs.lowerToTransferOnceAway()
                                 ),
+
+                                sleeper.sleep(250),
                                 outputs.setIntakeArmPosition("grab"),
                                 outputs.setIntakeRoll(90),
                                 sleeper.sleep(1000),

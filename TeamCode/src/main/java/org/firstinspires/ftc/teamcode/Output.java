@@ -71,7 +71,7 @@ public class Output {
                 new OutputEndPoint(0, 0, -20, false)
         );
         savedPositions.put("transfer",
-                new OutputEndPoint(3, -25.5, -95, true)
+                new OutputEndPoint(2.8, -25.5, -95, true)
         );
         savedPositions.put("rest",
                 new OutputEndPoint(0, -15, -90,false)
@@ -110,12 +110,11 @@ public class Output {
                 new OutputEndPoint(17.5, 110, 150, false)
         );
         savedPositions.put("preHang",
-                new OutputEndPoint(12, -15, -90, true)
+                new OutputEndPoint(12, 45, 45, true)
         );
         savedPositions.put("hang",
-                new OutputEndPoint(6.75, -15, -90, true)
+                new OutputEndPoint(1, 45, 45, true)
         );
-
 
         timer = new ElapsedTime();
         timer.reset();

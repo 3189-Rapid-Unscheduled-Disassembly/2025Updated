@@ -44,7 +44,13 @@ public class IntakeArm {
         savedPositions.put("drop", new IntakeArmPosition(0, -60,45, false));
         savedPositions.put("preGrab", new IntakeArmPosition(0, -90, 0, true));//0.233,-75
         savedPositions.put("grab", new IntakeArmPosition(-15, -90, 0, false));//0.233,-75
+        savedPositions.put("grabCheck", new IntakeArmPosition(15, -90, 0, false));//0.233,-75
         savedPositions.put("postGrab", new IntakeArmPosition(30, 0, 0, false));//0.233,-75
+
+        savedPositions.put("stupidGrab", new IntakeArmPosition(38, 0, 90, true));//0.233,-75
+
+        savedPositions.put("lowBar", new IntakeArmPosition(18, 80, 90, false));//0.233,-75
+
     }
 
 
@@ -86,8 +92,11 @@ public class IntakeArm {
         if (isPitchEqualToSavedIntakePosition("preGrab")) {
             setOnlySpecifiedValuesToSavedIntakeArmPosition("grab", true, true, false, true);
         } else if (isPitchEqualToSavedIntakePosition("grab")){
-            setToSavedIntakeArmPosition("preTransfer");
+            setOnlySpecifiedValuesToSavedIntakeArmPosition("grabCheck", true, true, false, true);
+        } else if (isPitchEqualToSavedIntakePosition("grabCheck")){
+            setOnlySpecifiedValuesToSavedIntakeArmPosition("preGrab", true, true, false, true);
         } else {
+            //this is for going from preTransfer or whatever
             setToSavedIntakeArmPosition("preGrab");
         }
     }
