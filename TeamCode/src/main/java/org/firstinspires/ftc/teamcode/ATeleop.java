@@ -134,9 +134,24 @@ public class ATeleop extends LinearOpMode {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
 
+        boolean isIntakeArmJank = false;
+        while (!isStarted()) {
+            if (gamepad1.a || gamepad2.a) {
+                isIntakeArmJank = true;
+            }
+            telemetry.addData("isIntakeArmJank", isIntakeArmJank);
+            telemetry.update();
+        }
+
         waitForStart();
-        bart.output.setComponentPositionsFromSavedPosition("grab");
-        bart.intake.intakeArm.setToSavedIntakeArmPosition("preGrab");
+        if (!isIntakeArmJank) {
+            bart.output.setComponentPositionsFromSavedPosition("grab");
+            bart.intake.intakeArm.setToSavedIntakeArmPosition("preGrab");
+        } else {
+            //ONLY USED WHEN INTAKE ARM ENDED JANKILY
+            bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, 45, 45, true));
+            bart.intake.intakeArm.setOnlySpecifiedValuesToSavedIntakeArmPosition("grabCheck", true, false, true, true);
+        }
 
         currentState = State.MANUAL;
         previousState = currentState;
@@ -202,12 +217,13 @@ public class ATeleop extends LinearOpMode {
 
             //telemetry.addData("Target Drive Angle", targetAngle);
 
-            telemetry.addData("horizInches", bart.intake.currentInches());
+            /*telemetry.addData("horizInches", bart.intake.currentInches());
             telemetry.addData("horizAmps", bart.intake.horizontalSlide.getCurrent(CurrentUnit.AMPS));
             packet.put("horizAmps", bart.intake.horizontalSlide.getCurrent(CurrentUnit.AMPS));
             dashboardTelemetry.addData("horizAmps", bart.intake.horizontalSlide.getCurrent(CurrentUnit.AMPS));
-            dashboardTelemetry.update();
+            dashboardTelemetry.update();*/
 
+            telemetry.addData("stick input", -playerOne.getRightX());
 
             telemetry.update();
 
@@ -413,12 +429,19 @@ public class ATeleop extends LinearOpMode {
         if (!isFieldRelative) {
             //bart.driveRobotRelative(playerOne.getLeftY(), playerOne.getLeftX(), playerOne.getRightX());
             goToTargetAngle();
-            //if (playerOne.getRightX() != 0) targetAngle -= gamepad1.right_stick_x*5;
             double turnSpeed;
+            //if (playerOne.getRightX() != 0) targetAngle -= gamepad1.right_stick_x*5;
             if (playerOne.getRightX() != 0) {
-                turnSpeed = -playerOne.getRightX() * 1;//MAX_TURN_VELOCITY_MULTIPLIER;
-                boolean turnSpeedIsPositive = turnSpeed >= 0;
-                turnSpeed *= turnSpeed;
+                double p1rsx = -playerOne.getRightX() * 1;//MAX_TURN_VELOCITY_MULTIPLIER;
+                boolean turnSpeedIsPositive = p1rsx >= 0;
+                p1rsx = Math.abs(p1rsx);
+                if (p1rsx < 0.025) {
+                    turnSpeed = 0;
+                } else if (p1rsx < 0.3) {
+                    turnSpeed = 0.15;
+                } else {
+                    turnSpeed = p1rsx * 0.7;
+                }
                 if (!turnSpeedIsPositive) {
                     turnSpeed = -turnSpeed;
                 }
@@ -576,6 +599,14 @@ public class ATeleop extends LinearOpMode {
             bart.output.gripper.flipFlop();
         }
 
+        //move intake out of way. time to fight
+        if (playerOne.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) {
+            bart.intake.intakeArm.setToSavedIntakeArmPosition("fight");
+            if (!bucketDrivingMode) {
+                bart.output.setComponentPositionsFromSavedPosition("fight");
+            }
+        }
+
         //switch drive mode (robot-oriented default, switch to field-oriented)
         /*if (playerOne.wasJustPressed(GamepadKeys.Button.Y)) {
             bart.switchDriveMode();
@@ -687,7 +718,7 @@ public class ATeleop extends LinearOpMode {
             } else {
                 //stick control
                 if (!alternateControl) {
-                    if (bart.intake.currentInches() > bart.intake.MAX_POINT-0.5 && stickInput > 0) {
+                    if (bart.intake.currentInches() > bart.intake.MAX_POINT-0.5 && stickInput >= 0) {
                         bart.intake.setHorizontalSlideToSavedPosition("max");
                     } else {
                         bart.intake.setHorizontalSlidePower(stickInput*0.75);
@@ -713,10 +744,10 @@ public class ATeleop extends LinearOpMode {
     }
 
     public void checkIfKilled() {
-        if (!playerOne.isDown(GamepadKeys.Button.LEFT_BUMPER)) {
+        /*if (!playerOne.isDown(GamepadKeys.Button.LEFT_BUMPER)) {
             previousState = currentState;
             currentState = State.MANUAL;
-        }
+        }*/
     }
     public void doPlayerOnesChecksEachFrame() {
         checkIfKilled();

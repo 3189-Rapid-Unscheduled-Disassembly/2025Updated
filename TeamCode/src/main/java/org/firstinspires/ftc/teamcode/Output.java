@@ -110,10 +110,14 @@ public class Output {
                 new OutputEndPoint(17.5, 110, 150, false)
         );
         savedPositions.put("preHang",
-                new OutputEndPoint(12, 45, 45, true)
+                new OutputEndPoint(14, 20, 20, true)
         );
         savedPositions.put("hang",
-                new OutputEndPoint(1, 45, 45, true)
+                new OutputEndPoint(1, 20, 20, true)
+        );
+
+        savedPositions.put("fight",
+                new OutputEndPoint(0, 20, 20, true)
         );
 
         timer = new ElapsedTime();

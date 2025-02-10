@@ -27,7 +27,7 @@ public class Joint {
 
     String labelTelemetry;
 
-    private double currentPositionAngleDegrees;
+    private double currentPositionAngleDegrees = -3600;
     private double previousPositionAngleDegrees = -3600;
 
     private final double DEGREES_SIGNIFICANT_DIFFERENCE = 0.0001;

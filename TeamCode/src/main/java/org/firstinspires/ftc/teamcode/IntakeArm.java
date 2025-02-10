@@ -51,6 +51,9 @@ public class IntakeArm {
 
         savedPositions.put("lowBar", new IntakeArmPosition(18, 80, 90, false));//0.233,-75
 
+        savedPositions.put("fight", new IntakeArmPosition(80, 80, 0, true));//0.233,-75
+
+
     }
 
 
