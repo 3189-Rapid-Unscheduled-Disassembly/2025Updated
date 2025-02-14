@@ -39,6 +39,9 @@ public final class TwoDeadWheelLocalizer implements Localizer {
     private int lastParPos, lastPerpPos;
     private Rotation2d lastHeading;
 
+    public double subtractorRad = 0;
+
+
     private final double inPerTick;
 
     private double lastRawHeadingVel, headingVelOffset;
@@ -63,6 +66,16 @@ public final class TwoDeadWheelLocalizer implements Localizer {
       FlightRecorder.write("TWO_DEAD_WHEEL_PARAMS", PARAMS);
     }
 
+    //ADDED
+    @Override
+    public double getSubtractorRad() {
+        return subtractorRad;
+    }
+    @Override
+    public void setSubtractorRad(double rad) {
+        subtractorRad = rad;
+    }
+
     public Twist2dDual<Time> update() {
         PositionVelocityPair parPosVel = par.getPositionAndVelocity();
         PositionVelocityPair perpPosVel = perp.getPositionAndVelocity();
@@ -73,6 +86,9 @@ public final class TwoDeadWheelLocalizer implements Localizer {
         FlightRecorder.write("TWO_DEAD_WHEEL_INPUTS", new TwoDeadWheelInputsMessage(parPosVel, perpPosVel, angles, angularVelocity));
 
         Rotation2d heading = Rotation2d.exp(angles.getYaw(AngleUnit.RADIANS));
+        //ADDED, angle subtract for teleop stuff. shoudln't impact auto
+        heading.minus(Rotation2d.fromDouble(subtractorRad));
+
 
         // see https://github.com/FIRST-Tech-Challenge/FtcRobotController/issues/617
         double rawHeadingVel = angularVelocity.zRotationRate;

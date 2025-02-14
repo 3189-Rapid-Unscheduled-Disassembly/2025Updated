@@ -137,6 +137,7 @@ public final class MecanumDrive {
         public final Encoder leftFront, leftBack, rightBack, rightFront;
         public final IMU imu;
 
+
         private int lastLeftFrontPos, lastLeftBackPos, lastRightBackPos, lastRightFrontPos;
         private Rotation2d lastHeading;
         private boolean initialized;
@@ -214,6 +215,16 @@ public final class MecanumDrive {
                     twist.line,
                     DualNum.cons(headingDelta, twist.angle.drop(1))
             );
+        }
+
+        @Override
+        public double getSubtractorRad() {
+            return 0;
+        }
+
+        @Override
+        public void setSubtractorRad(double rad) {
+
         }
     }
 
@@ -468,6 +479,9 @@ public final class MecanumDrive {
     }
 
     public void setPosFromOutside(Pose2d newPose) {
+        double subtractorDeg = Math.toDegrees(localizer.getSubtractorRad());
+                subtractorDeg -= Math.toDegrees(pose.heading.toDouble()) - Math.toDegrees(newPose.heading.toDouble());
+        localizer.setSubtractorRad(Math.toRadians(subtractorDeg));
         pose = newPose;
     }
 

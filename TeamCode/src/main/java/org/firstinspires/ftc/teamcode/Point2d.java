@@ -40,6 +40,17 @@ public class Point2d {
         return angle;
     }
 
+    public double angleBetweenPoints0To180(Point2d point2d) {
+        double angle = Math.toDegrees(Math.atan2(point2d.y - this.y, point2d.x - this.x));
+        if (angle < 0) {
+            angle += 360;
+        }
+        if (angle > 180) {
+            angle -= 180;
+        }
+        return angle;
+    }
+
     public Vector2d toVector2d() {
         return new Vector2d(x, y);
     }

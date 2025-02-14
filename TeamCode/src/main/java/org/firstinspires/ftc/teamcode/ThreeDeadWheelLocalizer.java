@@ -98,4 +98,14 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
 
         return twist;
     }
+
+    @Override
+    public double getSubtractorRad() {
+        return 0;
+    }
+
+    @Override
+    public void setSubtractorRad(double rad) {
+
+    }
 }

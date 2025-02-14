@@ -6,6 +6,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
@@ -22,6 +23,10 @@ public class IntakeTest extends LinearOpMode {
         bart = new RobotMain(hardwareMap, telemetry);
         bart.intake.intakeArm.setToSavedIntakeArmPosition("straightOut");
         GamepadEx playerOne, playerTwo;
+
+        Servo gateServo = hardwareMap.get(Servo.class, "gate");
+        gateServo.setDirection(Servo.Direction.REVERSE);
+        Joint gate = new Joint(gateServo, 270, 0.1, "gate");
 
         playerOne = new GamepadEx(gamepad1);
         playerTwo = new GamepadEx(gamepad2);
@@ -87,6 +92,19 @@ public class IntakeTest extends LinearOpMode {
                 bart.intake.intakeArm.setToSavedIntakeArmPosition("grab");
             }
 
+            if (playerOne.wasJustPressed(GamepadKeys.Button.A)) {
+                gate.setAngleDegrees(0);
+            }
+
+            if (playerOne.wasJustPressed(GamepadKeys.Button.X)) {
+                gate.setAngleDegrees(210);
+            }
+
+
+            if (playerOne.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) {
+                gate.setAngleDegrees(60);
+            }
+            gate.write();
 
             telemetry.addLine(bart.intake.intakeArm.toString());
             telemetry.addLine("\n" + bart.intake.intakeArm.posServoTelemetry());

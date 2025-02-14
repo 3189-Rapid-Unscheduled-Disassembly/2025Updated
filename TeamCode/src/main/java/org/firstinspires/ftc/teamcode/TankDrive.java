@@ -209,6 +209,16 @@ public final class TankDrive {
 
             return kinematics.forward(twist);
         }
+
+        @Override
+        public double getSubtractorRad() {
+            return 0;
+        }
+
+        @Override
+        public void setSubtractorRad(double rad) {
+
+        }
     }
 
     public TankDrive(HardwareMap hardwareMap, Pose2d pose) {

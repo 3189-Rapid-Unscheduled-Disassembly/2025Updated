@@ -2,8 +2,12 @@ package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.AngularVelConstraint;
+import com.acmerobotics.roadrunner.MinVelConstraint;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
+import com.acmerobotics.roadrunner.ProfileAccelConstraint;
+import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
@@ -22,6 +26,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
+import java.util.Arrays;
 import java.util.List;
 
 @TeleOp
@@ -30,7 +35,9 @@ public class ATeleop extends LinearOpMode {
     RobotMain bart;
 
 
-    /**CAMERA**/
+    /**
+     * CAMERA
+     **/
     private final Position cameraPosition = new Position(DistanceUnit.INCH,
             0, 0, 0, 0);
     private final YawPitchRollAngles cameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES,
@@ -56,8 +63,6 @@ public class ATeleop extends LinearOpMode {
     final double MAX_TURN_VELOCITY_MULTIPLIER = 0.7;
 
 
-
-
     double p1PreviousRightTrigger = 0;
     double p1PreviousLeftTrigger = 0;
 
@@ -74,6 +79,8 @@ public class ATeleop extends LinearOpMode {
 
 
     double inputtedY = 12;
+
+
 
     enum State {
         MANUAL,
@@ -175,6 +182,9 @@ public class ATeleop extends LinearOpMode {
             bart.readHubs();
             bart.mecanaDruve.updatePoseEstimate();
 
+
+
+
             //UPDATE
             stateMachine();
 
@@ -203,7 +213,7 @@ public class ATeleop extends LinearOpMode {
             if (loopTime < minLoopTime) minLoopTime = loopTime;
             totalLoops++;
             totalTime = elapsedTime.milliseconds();
-            avgLoopTime = totalTime/totalLoops;
+            avgLoopTime = totalTime / totalLoops;
             /*telemetry.addData("Loop Time", loopTime);
             telemetry.addData("Max Loop Time", maxLoopTime);
             telemetry.addData("Min Loop Time", minLoopTime);
@@ -230,9 +240,7 @@ public class ATeleop extends LinearOpMode {
         }
 
 
-
     }
-
 
 
     public void stateMachine() {
@@ -291,7 +299,7 @@ public class ATeleop extends LinearOpMode {
                 bart.driveRobotRelative(0, playerOne.getLeftX(), 0);
 
                 //EVENTS
-                if(playerOne.isDown(GamepadKeys.Button.RIGHT_BUMPER)) {
+                if (playerOne.isDown(GamepadKeys.Button.RIGHT_BUMPER)) {
                     currentState = State.INTAKE;
                 }
                 checkIfKilled();
@@ -349,7 +357,7 @@ public class ATeleop extends LinearOpMode {
                 //just doing that, nothgin else
                 break;
 
-                //do later alan thign if we do
+            //do later alan thign if we do
         }
     }
 
@@ -403,19 +411,19 @@ public class ATeleop extends LinearOpMode {
         //double thetaDiff = desiredPos.heading.toDouble() -
 
 
-            bart.driveFieldRelative(
-                    difference.position.x*xP,
-                    difference.position.y*yP,
-                    difference.heading.toDouble()*thetaP);
+        bart.driveFieldRelative(
+                difference.position.x * xP,
+                difference.position.y * yP,
+                difference.heading.toDouble() * thetaP);
 
     }
 
     public double getXSpeed(double desiredX) {
-        return  (desiredX-bart.mecanaDruve.pose.position.x)*xP;
+        return (desiredX - bart.mecanaDruve.pose.position.x) * xP;
     }
 
     public boolean atPos(Pose2d desiredPos) {
-        return  RobotMath.isAbsDiffWithinRange(desiredPos.position.x, bart.mecanaDruve.pose.position.x, 0.5) &&
+        return RobotMath.isAbsDiffWithinRange(desiredPos.position.x, bart.mecanaDruve.pose.position.x, 0.5) &&
                 RobotMath.isAbsDiffWithinRange(desiredPos.position.y, bart.mecanaDruve.pose.position.y, 0.5) &&
                 RobotMath.isAbsDiffWithinRange(desiredPos.heading.toDouble(), bart.mecanaDruve.pose.heading.toDouble(), Math.toRadians(5));
     }
@@ -457,17 +465,16 @@ public class ATeleop extends LinearOpMode {
             }
             bart.mecanaDruve.setDrivePowers(new PoseVelocity2d(
                     new Vector2d(
-                            -gamepad1.left_stick_y*MAX_DRIVE_VELOCITY_MULTIPLIER,
-                            -gamepad1.left_stick_x*MAX_DRIVE_VELOCITY_MULTIPLIER
+                            -gamepad1.left_stick_y * MAX_DRIVE_VELOCITY_MULTIPLIER,
+                            -gamepad1.left_stick_x * MAX_DRIVE_VELOCITY_MULTIPLIER
                     ),
                     turnSpeed
             ));
         } else {
-            bart.driveFieldRelative(playerOne.getLeftY()*MAX_DRIVE_VELOCITY_MULTIPLIER,
-                    -playerOne.getLeftX()*MAX_DRIVE_VELOCITY_MULTIPLIER,
-                    -playerOne.getRightX()*MAX_DRIVE_VELOCITY_MULTIPLIER);
+            bart.driveFieldRelative(playerOne.getLeftY() * MAX_DRIVE_VELOCITY_MULTIPLIER,
+                    -playerOne.getLeftX() * MAX_DRIVE_VELOCITY_MULTIPLIER,
+                    -playerOne.getRightX() * MAX_DRIVE_VELOCITY_MULTIPLIER);
         }
-
 
 
         alternateControl = playerTwo.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) >= 0.8;
@@ -493,10 +500,10 @@ public class ATeleop extends LinearOpMode {
         } else {
             isTransferring = false;
         }
-            //bart.intake.setHorizontalSlideToSavedPosition("transfer");
-            //usingHorizManualControl = false;
-            //bart.intake.intakeArm.setToSavedIntakeArmPosition("transfer");
-            //bart.output.setComponentPositionsFromSavedPosition("transfer");
+        //bart.intake.setHorizontalSlideToSavedPosition("transfer");
+        //usingHorizManualControl = false;
+        //bart.intake.intakeArm.setToSavedIntakeArmPosition("transfer");
+        //bart.output.setComponentPositionsFromSavedPosition("transfer");
 
 
         //INTAKE CONTROL
@@ -584,8 +591,8 @@ public class ATeleop extends LinearOpMode {
                 }
             }
             if (playerTwo.wasJustPressed(GamepadKeys.Button.RIGHT_STICK_BUTTON)) {
-               bucketDrivingMode = !bucketDrivingMode;
-               //if we switch to clips, we wanna raise the arm so that way we can do near
+                bucketDrivingMode = !bucketDrivingMode;
+                //if we switch to clips, we wanna raise the arm so that way we can do near
                 if (!bucketDrivingMode) {
                     bart.output.setComponentPositionsFromSavedPosition("straightOut");
                 }
@@ -619,14 +626,14 @@ public class ATeleop extends LinearOpMode {
             bart.output.setComponentPositionsFromSavedPosition("preHang");
             //if we are already at rest, from doing clips, we can just leave it
             //if (!bart.intake.intakeArm.isPitchEqualToSavedIntakePosition("rest")) {
-                //bart.intake.intakeArm.setToSavedIntakeArmPosition("preTransfer");
+            //bart.intake.intakeArm.setToSavedIntakeArmPosition("preTransfer");
             //}
             bart.intake.intakeArm.setToSavedIntakeArmPosition("rest");
         }
         if (playerOne.wasJustPressed(GamepadKeys.Button.B)) {
             bart.output.setComponentPositionsFromSavedPosition("hang");
             //if (!bart.intake.intakeArm.isPitchEqualToSavedIntakePosition("rest")) {
-               //bart.intake.intakeArm.setToSavedIntakeArmPosition("preTransfer");
+            //bart.intake.intakeArm.setToSavedIntakeArmPosition("preTransfer");
             //}
             bart.intake.intakeArm.setToSavedIntakeArmPosition("rest");
         }
@@ -651,7 +658,7 @@ public class ATeleop extends LinearOpMode {
                 usingHorizManualControl = true;
                 bart.intake.intakeArm.setToSavedIntakeArmPosition("transfer");
             } else {
-                 if (bart.intake.intakeArm.isPitchEqualToSavedIntakePosition("transfer")) {
+                if (bart.intake.intakeArm.isPitchEqualToSavedIntakePosition("transfer")) {
                     bart.intake.intakeArm.setToSavedIntakeArmPosition("grab");
                 } else {
                     if (bart.intake.intakeArm.intakeGripper.isOpen()) {
@@ -688,7 +695,6 @@ public class ATeleop extends LinearOpMode {
         p1PreviousLeftTrigger = playerOne.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER);
 
 
-
         //horizontal slide
         if (playerTwo.isDown(GamepadKeys.Button.DPAD_DOWN)) {
             bart.intake.setHorizontalSlideToSavedPosition("transfer");
@@ -718,10 +724,10 @@ public class ATeleop extends LinearOpMode {
             } else {
                 //stick control
                 if (!alternateControl) {
-                    if (bart.intake.currentInches() > bart.intake.MAX_POINT-0.5 && stickInput >= 0) {
+                    if (bart.intake.currentInches() > bart.intake.MAX_POINT - 0.5 && stickInput >= 0) {
                         bart.intake.setHorizontalSlideToSavedPosition("max");
                     } else {
-                        bart.intake.setHorizontalSlidePower(stickInput*0.75);
+                        bart.intake.setHorizontalSlidePower(stickInput * 0.75);
                     }
                     if (playerTwo.getRightY() != 0) {
                         usingHorizManualControl = false;
@@ -735,7 +741,7 @@ public class ATeleop extends LinearOpMode {
 
         //this is kinda jank, wanna find a better way
         //honestly really shocked this even works at all
-        if (!alternateControl &&  playerTwo.getRightY() != 0) {
+        if (!alternateControl && playerTwo.getRightY() != 0) {
             usingHorizManualControl = false;
         }
 
@@ -749,6 +755,7 @@ public class ATeleop extends LinearOpMode {
             currentState = State.MANUAL;
         }*/
     }
+
     public void doPlayerOnesChecksEachFrame() {
         checkIfKilled();
         inputtedY = RobotMain.dpadInputToChangeValueUpIsNegative(inputtedY, playerOne);

@@ -20,6 +20,7 @@ public class Intake {
 
     DcMotorEx horizontalSlide;
     IntakeArm intakeArm;
+    Joint gate;
 
     private double horizontalSlidePower;
     private double previousHorizontalSlidePower;
@@ -54,11 +55,25 @@ public class Intake {
 
         intakeArm = new IntakeArm(hardwareMap);
 
+        Servo gateServo = hardwareMap.get(Servo.class, "gate");
+        gateServo.setDirection(Servo.Direction.REVERSE);
+        gate = new Joint(gateServo, 270, 0.1, "gate");
 
         timer = new ElapsedTime();
         timer.reset();
     }
 
+    public void closeGate() {
+        gate.setAngleDegrees(0);
+    }
+
+    public void partiallyOpenGate() {
+        gate.setAngleDegrees(60);
+    }
+
+    public void fullyOpenGate() {
+        gate.setAngleDegrees(180);
+    }
     public void readAllComponents() {
         horizontalSlidePosition = horizontalSlide.getCurrentPosition();
         horizontalSlideAmps = horizontalSlide.getCurrent(CurrentUnit.AMPS);
@@ -145,7 +160,7 @@ public class Intake {
         double tickTarget = inchesToTicks(RobotMath.maxAndMin(inches, MAX_POINT, MIN_POINT-1));
         double error = tickTarget - horizontalSlidePosition;
 
-        horizontalSlidePower = 0.006 * error;
+        horizontalSlidePower = 0.007 * error;
     }
 
     public double inchesToTicks(double inches) {
@@ -168,7 +183,7 @@ public class Intake {
     //check if horizAmps should reset the encoder pose, that means we hit the hard stop
     public void checkIfHitHardStop() {
         if (horizontalSlideAmps > 5 && horizontalSlidePower < -0.1) {
-            resetEncoder();
+            //resetEncoder();
         }
     }
 
@@ -176,6 +191,7 @@ public class Intake {
     public void writeAllComponents() {
         writeHorizontalSlide();
         intakeArm.writeServoPositions();
+        gate.write();
         //reset horiz encoder if it hits the back stop
         checkIfHitHardStop();
     }

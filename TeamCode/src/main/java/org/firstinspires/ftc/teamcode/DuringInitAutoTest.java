@@ -24,7 +24,7 @@ public class DuringInitAutoTest extends LinearOpMode {
             gamepadEx.readButtons();
 
             if (upIsPositive) {
-                value = RobotMain.dpadInputToChangeValueUpIsPositive(value, gamepadEx);
+                //value = RobotMain.dpadInputToChangeValueUpIsPositive(value, gamepadEx);
             } else {
                 value = RobotMain.dpadInputToChangeValueUpIsNegative(value, gamepadEx);
             }

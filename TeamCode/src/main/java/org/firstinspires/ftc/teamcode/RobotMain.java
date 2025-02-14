@@ -189,15 +189,15 @@ public class RobotMain {
         mecanaDruve.setPosFromOutside(new Pose2d(new Vector2d(mecanaDruve.pose.position.x, mecanaDruve.pose.position.y), Math.toRadians(angleRobotIsAtDeg)));
     }
 
-    public static double dpadInputToChangeValueUpIsPositive(double currentValue, GamepadEx gamepadEx) {
+    public static double dpadInputToChangeValueUpIsPositive(double currentValue, GamepadEx gamepadEx, double increment) {
         if (gamepadEx.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) {
-            return currentValue - 6;
+            return currentValue - 6*increment;
         } else if (gamepadEx.wasJustPressed(GamepadKeys.Button.DPAD_UP)) {
-            return currentValue + 6;
+            return currentValue + 6*increment;
         } else if (gamepadEx.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) {
-            return currentValue + 1;
+            return currentValue + increment;
         } else if (gamepadEx.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) {
-            return currentValue - 1;
+            return currentValue - increment;
         }
         return currentValue;
     }

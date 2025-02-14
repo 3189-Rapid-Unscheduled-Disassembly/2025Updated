@@ -23,8 +23,8 @@ public class IntakeArm {
         intakeArm = new Joint(armServo, 200, 0.21, "Intake Arm Pitch");
 
         Servo intakeWristPitchServo = hardwareMap.get(Servo.class, "intakeWristPitch");
-        intakeWristPitchServo.setDirection(Servo.Direction.FORWARD);
-        intakeWristPitch = new Joint(intakeWristPitchServo, 300, 0.473, "Intake Wrist Pitch");
+        intakeWristPitchServo.setDirection(Servo.Direction.FORWARD);//34/16
+        intakeWristPitch = new Joint(intakeWristPitchServo, 637.5, 0.484, "Intake Wrist Pitch");
 
         Servo intakeRollServo = hardwareMap.get(Servo.class, "intakeRoll");
         intakeRollServo.setDirection(Servo.Direction.FORWARD);
@@ -46,12 +46,10 @@ public class IntakeArm {
         savedPositions.put("grab", new IntakeArmPosition(-15, -90, 0, false));//0.233,-75
         savedPositions.put("grabCheck", new IntakeArmPosition(15, -90, 0, false));//0.233,-75
         savedPositions.put("postGrab", new IntakeArmPosition(30, 0, 0, false));//0.233,-75
-
         savedPositions.put("stupidGrab", new IntakeArmPosition(38, 0, 90, true));//0.233,-75
-
         savedPositions.put("lowBar", new IntakeArmPosition(18, 80, 90, false));//0.233,-75
-
         savedPositions.put("fight", new IntakeArmPosition(80, 80, 0, true));//0.233,-75
+        savedPositions.put("limelight", new IntakeArmPosition(15, -15, 0, true));//0.233,-75
 
 
     }

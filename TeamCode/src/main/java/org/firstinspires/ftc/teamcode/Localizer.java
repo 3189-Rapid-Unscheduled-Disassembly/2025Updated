@@ -5,4 +5,9 @@ import com.acmerobotics.roadrunner.Twist2dDual;
 
 public interface Localizer {
     Twist2dDual<Time> update();
+    //ADDED
+    double getSubtractorRad();
+    void setSubtractorRad(double rad);
+
+
 }
