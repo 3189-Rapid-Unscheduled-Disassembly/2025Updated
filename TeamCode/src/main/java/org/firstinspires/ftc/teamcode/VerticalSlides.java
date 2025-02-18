@@ -23,8 +23,8 @@ public class VerticalSlides {
     ElapsedTime time;
 
     final double ALLOWED_ERROR_INCHES = 0.25;
-    final double p = 0.0033;
-    final double d = 0.0015;
+    final double p = 0.0085;//0.01
+    final double d = 0.1;//0.0001
 
     final double TICKS_PER_INCH = 153.829;
     public VerticalSlides(HardwareMap hardwareMap) {
@@ -46,7 +46,7 @@ public class VerticalSlides {
         previousTime = 0;
 
         time = new ElapsedTime();
-
+        time.reset();
     }
 
 
@@ -74,15 +74,15 @@ public class VerticalSlides {
     //currently just a p controller
     public void goToTargetAsync() {
         currentError = targetTicks - currentTicks();
-        currentTime = time.milliseconds();
-        deltaTime = currentTime - previousTime;
+        //currentTime = ;
+        deltaTime = time.milliseconds() - previousTime;
+        previousTime = time.milliseconds();
         derivative = (currentError - previousError) / deltaTime;
         previousError = currentError;
-        previousTime = currentTime;
         //we don't need to power when the slides are at zero
-        if (targetTicks > 10 || currentTicks > 10) {
+        if (targetTicks > 10 || currentTicks() > 10) {
             //if (!isAtTarget()) {
-                slidePower = (currentError * p) + 0;//(derivative * d);
+                setSlidePower((currentError * p) + (derivative * d));
             //} else {
                 //setSlidePower(currentTicks() * 0.000003);//maybe need back drive in the future
                 //slidePower = 0;

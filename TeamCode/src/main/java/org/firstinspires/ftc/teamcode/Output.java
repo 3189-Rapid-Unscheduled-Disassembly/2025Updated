@@ -191,6 +191,7 @@ public class Output {
         //vertical slides
         verticalSlides.setTargetInches(slideTargetInches);
     }
+
     public void sendVerticalSlidesToTarget() {
         //slide per frame
         verticalSlides.goToTargetAsync();

@@ -36,6 +36,9 @@ public class BlueClipsInput extends LinearOpMode {
     boolean isTransferingNow = false;
 
     double horizTargetSub;
+    //boolean isBlue = true;
+    //double inputtedRoll;
+    AutoSamplePose inputtedPose;
 
 
     //OUTPUT SYNCHRONOUS MOVEMENTS ACTIONS IF NEEDED
@@ -478,19 +481,40 @@ public class BlueClipsInput extends LinearOpMode {
             boolean isNotLinedUp = true;
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                double desiredDistance = 4;
                 //bart.intake.setHorizontalSlidePositionInches(bart.intake.currentInches()+limelight.getLastResultDistanceInches()-4.3);
-                horizTarget = bart.intake.currentInches()+limelight.getLastResultDistanceInches()-4.3;
+                horizTarget = bart.intake.currentInches()+limelight.getLastResultDistanceInches()-desiredDistance;
 
+                double desiredTy;
+                if (inputtedPose.getRoll() == 0) {
+                    desiredTy = 0;
+                } else if (inputtedPose.getRoll() == -45) {
+                    desiredTy = -4;//-5
+                } else if (inputtedPose.getRoll() == 45) {
+                    desiredTy = 4;//5
+                } else {
+                    desiredTy = 6;//7
+                }
+
+                double errorTy = desiredTy - limelight.returnLastResultTY();
                 drive.setDrivePowers(new PoseVelocity2d(
                         new Vector2d(
                                 0,
-                                0.035* limelight.returnLastResultTY()
+                                -0.2 * Math.signum(errorTy)//0.045
                         ),
                         0
                 ));
-                if (RobotMath.isAbsDiffWithinRange(limelight.getLastResultDistanceInches(),4.3,0.25) &&
-                    RobotMath.isAbsDiffWithinRange(limelight.returnLastResultTY(),0,3)) {
+                if (RobotMath.isAbsDiffWithinRange(limelight.getLastResultDistanceInches(),desiredDistance,0.25) &&
+                    RobotMath.isAbsDiffWithinRange(errorTy,0,3)) {
                     isNotLinedUp = false;
+                    drive.setDrivePowers(new PoseVelocity2d(
+                            new Vector2d(
+                                    0,
+                                    0
+                            ),
+                            0
+                    ));
+
                 }
 
                 telemetryPacket.put("Result Exists?", limelight.isSeeingResult());
@@ -587,6 +611,160 @@ public class BlueClipsInput extends LinearOpMode {
         public Action retractHoriz() {
             return new RetractHoriz();
         }
+
+
+        class WaitTillPastAngle implements Action {
+            double targetAngleDeg;
+            boolean onceGreaterThan;
+
+
+            //true=extend once angle larger than inputted angle
+            public WaitTillPastAngle(double targetAngleDeg, boolean onceGreaterThan) {
+                this.targetAngleDeg = targetAngleDeg;
+                this.onceGreaterThan = onceGreaterThan;
+            }
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                double robotAngleDeg = Math.toDegrees(drive.pose.heading.toDouble());
+                //the .toDouble() returns from -pi to pi rad, so -180 to 180 deg
+                //the math works on a 0 to 360, so we need to change those angles to their equal, but positive
+                //spent too much time trying to find the error
+                if (robotAngleDeg < 0) {
+                    robotAngleDeg += 360;
+                }
+
+
+                if (onceGreaterThan) {
+                    return !(robotAngleDeg >= targetAngleDeg);
+                } else {
+                    return !(robotAngleDeg <= targetAngleDeg);
+                }
+            }
+        }
+
+        public Action waitTillPastAngle(double targetAngle, boolean onceGreaterThan) {
+            return new WaitTillPastAngle(targetAngle, onceGreaterThan);
+        }
+        class CloseGate implements Action {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                bart.intake.closeGate();
+                return false;
+            }
+        }
+
+        class CloseGateOnceXLessThanNegative12 implements Action {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                if (drive.pose.position.x < -4) {
+                    bart.intake.closeGate();
+                    //remove later
+                    //bart.intake.intakeArm.setToSavedIntakeArmPosition("preGrab");
+                    return false;
+                }
+                return true;
+            }
+        }
+
+        class PartiallyOpenGate implements Action {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                bart.intake.partiallyOpenGate();
+                return false;
+            }
+        }
+
+        class FullyOpenGate implements Action {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                bart.intake.fullyOpenGate();
+                return false;
+            }
+        }
+
+        class SetGateOncePastAngle implements Action {
+
+            double targetAngleDeg;
+            boolean onceGreaterThan;
+            int position;
+
+
+            //true=extend once angle larger than inputted angle
+            public SetGateOncePastAngle(double targetAngleDeg, boolean onceGreaterThan, int postion) {
+                this.position = postion;
+                this.targetAngleDeg = targetAngleDeg;
+                this.onceGreaterThan = onceGreaterThan;
+            }
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                double robotAngleDeg = Math.toDegrees(drive.pose.heading.toDouble());
+                //the .toDouble() returns from -pi to pi rad, so -180 to 180 deg
+                //the math works on a 0 to 360, so we need to change those angles to their equal, but positive
+                //spent too much time trying to find the error
+                if (robotAngleDeg < 0) {
+                    robotAngleDeg += 360;
+                }
+
+                //this side is for if we desire to be larger than the inputted angle
+                if (onceGreaterThan) {
+                    if (robotAngleDeg >= targetAngleDeg) {
+                        if (position == 0) {
+                            bart.intake.closeGate();
+                        } else if (position == 1){
+                            bart.intake.partiallyOpenGate();
+                        } else {
+                            bart.intake.fullyOpenGate();
+                        }
+                        return false;
+                    }
+                } else {
+                    if (robotAngleDeg <= targetAngleDeg) {
+                        if (position == 0) {
+                            bart.intake.closeGate();
+                        } else if (position == 1){
+                            bart.intake.partiallyOpenGate();
+                        } else {
+                            bart.intake.fullyOpenGate();
+                        }
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+        }
+
+
+        public Action closeGate() {
+            return new CloseGate();
+        }
+        public Action partiallyOpenGate() {
+            return new PartiallyOpenGate();
+        }
+        public Action fullyOpenGate() {
+            return new FullyOpenGate();
+        }
+        public Action closeGateOnceXLessThanNegative12() {
+            return new CloseGateOnceXLessThanNegative12();
+        }
+
+        public Action setGateOncePastAngle(double targetAngleDeg, boolean onceGreaterThan, int position) {
+            return new SetGateOncePastAngle(targetAngleDeg, onceGreaterThan, position);
+        }
+
+        class WaitTillHorizIsRetracted implements Action {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                return !bart.intake.isAtSavedPosition("transfer");
+            }
+
+        }
+
+        public Action waitTillHorizIsRetracted() {return new WaitTillHorizIsRetracted();}
+
+
     }
 
 
@@ -611,7 +789,6 @@ public class BlueClipsInput extends LinearOpMode {
 
 
         bart = new RobotMain(hardwareMap, telemetry);
-        limelight = new Limelight(hardwareMap, 1);
         drive = new MecanumDrive(hardwareMap, beginPose);
         outputs = new Outputs();
         sleeper = new Sleeper();
@@ -637,66 +814,69 @@ public class BlueClipsInput extends LinearOpMode {
 
         int timeToDropClipMilliseconds = 100;
         int timeToGrabClipMilliseconds = 50;
-        GamepadEx playerOne = new GamepadEx(gamepad1);
+        GamepadEx playerTwo = new GamepadEx(gamepad2);
         int currentlyInputting = 0;//0=x, 1=y, 2=roll
-        double inputtedX = 0;
-        double inputtedY = 12;
-        double inputtedRoll = 0;
+        //double inputtedX = 0;
+        //double inputtedY = 12;
+        //inputtedRoll = 0;
 
         double yMax = 16;
 
-        while (currentlyInputting <= 2) {
-            playerOne.readButtons();
 
-            telemetry.addData("X", inputtedX);
-            telemetry.addData("Y", inputtedY);
-            telemetry.addData("Roll", inputtedRoll);
+        inputtedPose = new AutoSamplePose(1, 0, 12, 0,
+                false, true, true, 5, -5, 16, 0, 90, -45);
 
+        while (inputtedPose.stillInputting && opModeInInit() && !isStopRequested()) {
+            playerTwo.readButtons();
 
-            if (currentlyInputting == 0) {
-                inputtedX = RobotMain.dpadInputToChangeValueUpIsPositive(inputtedX, playerOne, 1);
-                inputtedX = RobotMath.maxAndMin(inputtedX, 6, -6);
-                telemetry.addLine("\nCurrently Editing X");
-            } else if (currentlyInputting == 1) {
-                inputtedY = RobotMain.dpadInputToChangeValueUpIsPositive(inputtedY, playerOne, 1);
-                inputtedY = RobotMath.maxAndMin(inputtedY, yMax, 4);
-                telemetry.addLine("\nCurrently Editing Y");
-            } else {
-                inputtedRoll = RobotMain.dpadInputToChangeValueUpIsPositive(inputtedRoll, playerOne, 45);
-                inputtedRoll = RobotMath.maxAndMin(inputtedRoll, 90, -45);
-                telemetry.addLine("\nCurrently Editing Roll");
-            }
+            inputtedPose.inputAutoSamplePose(playerTwo);
 
-            if (playerOne.wasJustPressed(GamepadKeys.Button.A)) {
-                currentlyInputting++;
-            }
-
-            telemetry.addLine("Press A to Advance");
-
+            telemetry.addLine(inputtedPose.toString());
+            telemetry.addLine("\nPress A to Advance");
             telemetry.update();
         }
 
-        horizTargetSub = yMax-inputtedY+6;//2 min
+        horizTargetSub = yMax-inputtedPose.getY()+6;//2 min
 
 
 
-        telemetry.addLine("DONE INPUTTING");
-        telemetry.addData("FINAL X", inputtedX);
-        telemetry.addData("FINAL Y", inputtedY);
-        telemetry.addData("FINAL ROLL", inputtedRoll);
-        telemetry.addData("horizTargetSub", horizTargetSub);
+        telemetry.addLine("DONE INPUTTING\nFINAL VALUES");
+        //telemetry.addData("COLOR", isBlue ? "BLUE" : "RED");
+        /*telemetry.addData("X", i);
+        telemetry.addData("Y", inputtedY);
+        telemetry.addData("ROLL", inputtedRoll);*/
+        //telemetry.addData("horizTargetSub", horizTargetSub);
+        telemetry.addLine(inputtedPose.toString());
         telemetry.update();
 
 
 
+        //LIMELIGHT STUFF
+        if (inputtedPose.getColor() == 1) {
+            limelight = new Limelight(hardwareMap, 1);
+        } else {
+            limelight = new Limelight(hardwareMap, 2);
+        }
 
 
         //SCORE POSES
-        Vector2d scoreVector = new Vector2d(inputtedX, 35);
+        Vector2d scoreVector = new Vector2d(inputtedPose.getX(), 35);
         double scoreAngleRad = Math.toRadians(270);
         Pose2d scorePose = new Pose2d(scoreVector, scoreAngleRad);
 
-        Pose2d normalizedGrab = new Pose2d(inputtedX, 29, Math.toRadians(270));
+        Pose2d normalizedGrabPose = new Pose2d(inputtedPose.getX(), 29, Math.toRadians(270));
+
+        Pose2d dropSubPose = new Pose2d(-40, 40, Math.toRadians(120));
+
+        Pose2d grabSpark1Pose = new Pose2d(-32, 40, Math.toRadians(240));//-36,36
+        Pose2d grabSpark2Pose = new Pose2d(-42, 40, Math.toRadians(240));//-41, 40
+        Pose2d grabSpark3Pose = new Pose2d(-46, 26, Math.toRadians(200));
+
+
+        Pose2d dropSpark1Pose = new Pose2d(grabSpark2Pose.position, Math.toRadians(130));
+
+        Pose2d dropSpark2Pose = new Pose2d(-44, 40, Math.toRadians(130));
+
 
         Vector2d scoreCycleVector = new Vector2d(-5, 34);
         double scoreCycleAngleRad = Math.toRadians(90);
@@ -710,19 +890,61 @@ public class BlueClipsInput extends LinearOpMode {
         //DRIVE TRAJECTORIES
 
 
-        TrajectoryActionBuilder fromStartToScore;
+        //TrajectoryActionBuilder fromStartToScore;
         //if left of x -5, we shift over first
-        if (inputtedX > -5) {
+        /*if (inputtedX > -5) {
             fromStartToScore = drive.actionBuilder(beginPose)
                     .strafeToConstantHeading(new Vector2d(inputtedX, beginPose.position.y))
                     .strafeToConstantHeading(scoreVector);
         } else {
             fromStartToScore = drive.actionBuilder(beginPose)
                     .strafeToConstantHeading(scoreVector);
-        }
+        }*/
+        TrajectoryActionBuilder fromStartToScore = drive.actionBuilder(beginPose)
+
+            .splineToConstantHeading(scorePose.position, Math.toRadians(270),
+                    new MinVelConstraint(Arrays.asList(
+                            drive.kinematics.new WheelVelConstraint(preloadMaxWheelVel),
+                            new AngularVelConstraint(Math.PI * 1.5)
+                    )),
+                    new ProfileAccelConstraint(preloadMinAccel, preloadMaxAccel)
+            );
 
         TrajectoryActionBuilder fromScoreToNormalizedGrab = drive.actionBuilder(scorePose)
-                .strafeToConstantHeading(normalizedGrab.position);
+                .strafeToConstantHeading(normalizedGrabPose.position);
+
+        TrajectoryActionBuilder fromNormalizedGrabToDrop = drive.actionBuilder(normalizedGrabPose)
+                .splineToConstantHeading(new Vector2d(normalizedGrabPose.position.x, normalizedGrabPose.position.y + 10), Math.toRadians(90),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(scoreCycleMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(scoreCycleMinAccel, scoreCycleMaxAccel)
+                )
+                .splineToLinearHeading(dropSubPose, Math.toRadians(180),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(scoreCycleMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(scoreCycleMinAccel, scoreCycleMaxAccel)
+                );
+
+        TrajectoryActionBuilder fromSubDropToSweep = drive.actionBuilder(dropSubPose)
+                //SPIKE 1
+                .strafeToLinearHeading(grabSpark1Pose.position, grabSpark1Pose.heading)
+                .strafeToLinearHeading(dropSpark1Pose.position, dropSpark1Pose.heading)
+                //SPIKE 2
+                .turnTo(grabSpark2Pose.heading.toDouble())
+                .strafeToLinearHeading(dropSpark2Pose.position, dropSpark2Pose.heading)
+                //SPIKE 3
+                .splineToLinearHeading(grabSpark3Pose, Math.toRadians(200))
+                .splineToConstantHeading(new Vector2d(grabSpark3Pose.position.x, grabSpark3Pose.position.y+6), Math.toRadians(90))
+                .splineToLinearHeading(new Pose2d(grabSpark3Pose.position.x, 40, Math.toRadians(90)), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(grabVector.x, grabVector.y-2), Math.toRadians(90));
+//                .strafeToLinearHeading(grabSpark3Pose.position, grabSpark3Pose.heading)
+//                .strafeToConstantHeading(new Vector2d(grabSpark3Pose.position.x-1, grabSpark3Pose.position.y+10))
+//                .strafeToLinearHeading(grabPose.position, grabPose.heading);
+
 
 
         TrajectoryActionBuilder fromScoreToPush = drive.actionBuilder(scorePose)
@@ -803,9 +1025,10 @@ public class BlueClipsInput extends LinearOpMode {
 
 
         telemetry.addLine("READY TO START");
-        telemetry.addData("FINAL X", inputtedX);
-        telemetry.addData("FINAL Y", inputtedY);
-        telemetry.addData("FINAL ROLL", inputtedRoll);
+        /*telemetry.addData("X", inputtedX);
+        telemetry.addData("Y", inputtedY);
+        telemetry.addData("ROLL", inputtedRoll);*/
+        telemetry.addLine(inputtedPose.toString());
         telemetry.addData("horizTargetSub", horizTargetSub);
         telemetry.update();
 
@@ -816,27 +1039,74 @@ public class BlueClipsInput extends LinearOpMode {
         Actions.runBlocking(
 
                 new ParallelAction(
+                        //SEND COMPONENTS TO POSITION EVERY FRAME
+                        outputs.readComponents(),
+                        outputs.sendComponentsToPositions(),
+                        outputs.writeComponents(),
                         new SequentialAction(
 
                                 //SCORE PRELOAD
                                 outputs.raiseToHighBarFront(),
+                                //fromStartToScore.build(),
                                 outputs.setIntakeArmPosition("limelight"),
-                                outputs.setIntakeRoll(inputtedRoll),
+                                outputs.setIntakeRoll(inputtedPose.getRoll()),
                                 new ParallelAction(
                                         fromStartToScore.build(),
                                         outputs.extendHoriz(horizTargetSub)
                                 ),
                                 outputs.openGripper(),
-                                sleeper.sleep(200),
+                                //sleeper.sleep(100),
                                 outputs.lowerOutOfWay(),
-                                sleeper.sleep(300),
+                                //sleeper.sleep(100),
+                                //grab the sub sample
                                 fromScoreToNormalizedGrab.build(),
                                 outputs.lineUpWithLimelight(),
                                 outputs.setIntakeArmPosition("preGrab"),
-                                outputs.setIntakeRoll(inputtedRoll),
-                                sleeper.sleep(500),
+                                outputs.setIntakeRoll(inputtedPose.getRoll()),
+                                sleeper.sleep(200),
                                 outputs.setIntakeArmPosition("grab"),
-                                outputs.setIntakeRoll(inputtedRoll),
+                                outputs.setIntakeRoll(inputtedPose.getRoll()),
+                                sleeper.sleep(500),
+                                outputs.setIntakeArmPosition("postGrab"),
+                                //drop the sub sample
+                                new ParallelAction(
+                                  fromNormalizedGrabToDrop.build(),
+                                  new SequentialAction(
+                                          outputs.extendHoriz(6),
+                                          outputs.extendHorizOncePastAngle(19, 180, false),
+                                          outputs.partiallyOpenGate()
+                                  )
+                                ),
+                                outputs.setIntakeGripperOpen(true),
+                                sleeper.sleep(100),
+                                outputs.setIntakeArmPosition("rest"),
+                                
+                                //SWEEP
+                                new ParallelAction(
+                                    fromSubDropToSweep.build(),
+                                    new SequentialAction(
+                                            //SPIKE 1
+                                            outputs.setGateOncePastAngle(220, true, 0),
+                                            //SPIKE 2
+                                            outputs.waitTillPastAngle(140, false),
+                                            outputs.setGateOncePastAngle(140, true, 1),
+                                            outputs.setGateOncePastAngle(220, true, 0),
+                                            //SPIKE 3
+                                            outputs.waitTillPastAngle(140, false),
+                                            outputs.setGateOncePastAngle(140,  true, 1),
+                                            outputs.setGateOncePastAngle(180,  true, 0),
+                                            outputs.waitTillPastAngle(135, false),
+                                            outputs.fullyOpenGate(),
+                                            outputs.waitTillPastAngle(100, false),
+                                            outputs.extendHoriz(6),
+
+                                            outputs.waitTillHorizIsRetracted(), outputs.lowerToGrab()
+
+                                    )
+                                ),
+
+
+
 
 
 
@@ -956,12 +1226,7 @@ public class BlueClipsInput extends LinearOpMode {
                                 sleeper.sleep(1000),
 
                                 outputs.endProgram()
-                        ),
-                        //SEND COMPONENTS TO POSITION EVERY FRAME
-
-                        outputs.sendComponentsToPositions(),
-                        outputs.writeComponents(),
-                        outputs.readComponents()
+                        )
                 )
         );
 
