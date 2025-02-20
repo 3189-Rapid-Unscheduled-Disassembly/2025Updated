@@ -151,7 +151,18 @@ public class AutoSamplePose {
             colorString = "RED";
         }
 
-        return colorString + "\nX:" + x + "\nY: " + y + "\nROLL:" + roll;
+        String rollString = "BLANK";
+        if (roll == 0) {
+            rollString = "STRAIGHT";
+        } else if (roll == -45) {
+            rollString = "RIGHT";
+        } else if (roll == 45) {
+            rollString = "LEFT";
+        } else if (roll == 90) {
+            rollString = "THOGGIN'";
+        }
+
+        return colorString + "\nX: " + x + "\nY: " + y + "\nROLL: " + roll +"\n" + rollString;
     }
 
 }

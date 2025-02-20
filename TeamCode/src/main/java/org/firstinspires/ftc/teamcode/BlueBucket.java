@@ -196,7 +196,7 @@ public class BlueBucket extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
 
-                bart.intake.setHorizontalSlideToSavedPosition("transfer");
+                bart.intake.horizontalSlide.setTargetInches(0);
 
                 //endProgram = !bart.intake.isAtSavedPosition("transfer");
 
@@ -303,7 +303,7 @@ public class BlueBucket extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 horizTarget = this.target;
-                return !bart.intake.isAtPosition(horizTarget);
+                return !bart.intake.horizontalSlide.isAtTarget();
             }
 
         }
@@ -319,7 +319,7 @@ public class BlueBucket extends LinearOpMode {
                 if (bart.output.verticalSlides.currentInches() > 5) {
                     bart.intake.intakeArm.setToSavedIntakeArmPosition("preGrab");
                     horizTarget = this.target;
-                    return !bart.intake.isAtPosition(horizTarget);
+                    return !bart.intake.horizontalSlide.isAbovePositionInches(horizTarget);
                 }
                 return true;
             }
@@ -339,7 +339,7 @@ public class BlueBucket extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 if (!isTransferingNow) {
-                    bart.intake.setHorizontalSlidePositionInches(horizTarget);
+                    bart.intake.horizontalSlide.setTargetInches(horizTarget);
                 }
                 bart.writeAllComponents();
                 return !endProgram;

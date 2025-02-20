@@ -39,7 +39,7 @@ SERVOS
 2 armRight
 3 armLeft
 4
-5
+5 gate
 */
 
 public class RobotMain {
@@ -112,7 +112,7 @@ public class RobotMain {
 
     public void resetEncoders() {
         output.verticalSlides.resetEncoder();
-        intake.resetEncoder();
+        intake.horizontalSlide.resetEncoder();
     }
 
     //public void resetIMU() {
@@ -134,7 +134,7 @@ public class RobotMain {
 
     //this really just determines if we are doing a close or far transfer
     public void firstFrameOfTransfer() {
-       intake.calculateWaitTime();
+       intake.firstFrameOfTransfer();
        output.firstFrameOfTransfer();
     }
 

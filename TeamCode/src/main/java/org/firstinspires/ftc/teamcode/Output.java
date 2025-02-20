@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.roadrunner.Line;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -21,7 +25,7 @@ import java.util.List;
  */
 
 public class Output {
-    VerticalSlides verticalSlides;
+    LinearSlide verticalSlides;
     Joint arm;
     Joint wrist;
     Gripper gripper;
@@ -46,7 +50,25 @@ public class Output {
 
 
     public Output(HardwareMap hardwareMap) {
-        verticalSlides = new VerticalSlides(hardwareMap);
+        DcMotorEx front = hardwareMap.get(DcMotorEx.class, "slideFront");
+        DcMotorEx back = hardwareMap.get(DcMotorEx.class, "slideBack");
+
+        front.setDirection(DcMotorSimple.Direction.FORWARD);
+        back.setDirection(DcMotorSimple.Direction.FORWARD);
+
+        back.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        back.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        front.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        back.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        List<DcMotorEx> motors = new ArrayList<>();
+        motors.add(back);
+        motors.add(front);
+
+        verticalSlides = new LinearSlide(motors, "veticalSlide",
+                153.829, 18, 0, 0.25,
+                0.0085, 0.1);
 
         Servo armLeft = hardwareMap.get(Servo.class, "armLeft");
         Servo armRight = hardwareMap.get(Servo.class, "armRight");
@@ -83,7 +105,7 @@ public class Output {
                 new OutputEndPoint(0, 0, 0,true)
         );
         savedPositions.put("grab",
-                new OutputEndPoint(0, -11, -90, true)
+                new OutputEndPoint(0, -12, -90, true)
         );//-11
         savedPositions.put("aboveGrab",
                 new OutputEndPoint(0, -3, -90, false)
@@ -126,7 +148,7 @@ public class Output {
 
 
     public void readAllComponents() {
-        verticalSlides.readCurrentTicks();
+        verticalSlides.readCurrentPosition();
         //arm.readServoPositions();
         //wrist.readServoPositions();
         //gripper.readPosition();

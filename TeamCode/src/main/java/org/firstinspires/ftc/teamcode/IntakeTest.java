@@ -38,11 +38,11 @@ public class IntakeTest extends LinearOpMode {
 
             //bart.intake.setHorizontalSlidePower(-gamepad1.right_stick_y*0.5);
             if (playerTwo.isDown(GamepadKeys.Button.A)) {
-                bart.intake.setHorizontalSlideToSavedPosition("transfer");
+                bart.intake.horizontalSlide.setTargetInches(0);
             } else if (playerTwo.isDown(GamepadKeys.Button.B)) {
-                bart.intake.setHorizontalSlideToSavedPosition("max");
+                bart.intake.horizontalSlide.setTargetInches(14);
             } else {
-                bart.intake.setHorizontalSlidePower(-gamepad1.left_stick_y*0.5);
+                bart.intake.horizontalSlide.setPower(-gamepad1.left_stick_y*0.5);
             }
 
             if (playerTwo.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) {
@@ -109,7 +109,7 @@ public class IntakeTest extends LinearOpMode {
             telemetry.addLine(bart.intake.intakeArm.toString());
             telemetry.addLine("\n" + bart.intake.intakeArm.posServoTelemetry());
 
-            telemetry.addData("ticks", bart.intake.horizontalSlide.getCurrentPosition());
+            telemetry.addData("ticks", bart.intake.horizontalSlide.currentTicks());
 
 
 

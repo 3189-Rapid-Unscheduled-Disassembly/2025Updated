@@ -127,7 +127,7 @@ public class LimelightTest extends LinearOpMode {
 
 
     public void lookingForSample() {
-        bart.intake.setHorizontalSlidePositionInches(6);
+        bart.intake.horizontalSlide.setTargetInches(0);
 
         LLResult result = limelight.getLatestResult();
 
@@ -229,7 +229,7 @@ public class LimelightTest extends LinearOpMode {
                 telemetry.addLine("MOVE WRIST");
                 if (gamepad1.b) {
                     hasFoundSample = true;
-                    slideTarget = bart.intake.currentInches()+distFromCameraToSample-3.5;
+                    slideTarget = bart.intake.horizontalSlide.currentInches()+distFromCameraToSample-3.5;
                 }
             }
 
@@ -250,9 +250,10 @@ public class LimelightTest extends LinearOpMode {
 
 
     public void goToSample() {
-        bart.intake.setHorizontalSlidePositionInches(slideTarget);
+        bart.intake.horizontalSlide.setTargetInches(slideTarget);
+        bart.intake.horizontalSlide.goToTargetAsync();
 
-        if (bart.intake.isAtPosition(slideTarget)) {
+        if (bart.intake.horizontalSlide.isAtTarget()) {
             if (timer.milliseconds() > 2000) {
                 bart.intake.intakeArm.setOnlySpecifiedValuesToSavedIntakeArmPosition("grab",
                         true, true, false, true);

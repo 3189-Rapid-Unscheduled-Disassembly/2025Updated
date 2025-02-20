@@ -18,40 +18,34 @@ public class Intake {
     ElapsedTime timer;
 
 
-    DcMotorEx horizontalSlide;
+    LinearSlide horizontalSlide;
     IntakeArm intakeArm;
     Joint gate;
 
-    private double horizontalSlidePower;
-    private double previousHorizontalSlidePower;
-    final double HORIZ_POWER_SIGNIFICANT_DIFFERENCE = 0.0001;
 
-
-    //-14 0
-    //171 3
-    int horizontalSlidePosition;
-    double horizontalSlideAmps;
+    ElapsedTime dTimer;
 
     double waitTimeMS = 1000;
 
-    final double TICKS_PER_INCH = 61.666667;//175.5
-    final double MIN_POINT = 6;
-    final double MAX_POINT = 20;
-    final double DEFAULT_ALLOWED_ERROR = 0.5;
+    final double MIN_POINT = 0;
+    final double MAX_POINT = 14;
 
 
     public Intake(HardwareMap hardwareMap) {
-        horizontalSlide = hardwareMap.get(DcMotorEx.class, "slideHoriz");
+        DcMotorEx horizontalSlideMotor = hardwareMap.get(DcMotorEx.class, "slideHoriz");
 
-        horizontalSlide.setDirection(DcMotorSimple.Direction.REVERSE);
+        horizontalSlideMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        horizontalSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        horizontalSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        horizontalSlideMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        horizontalSlideMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        savedPositions.put("transfer", MIN_POINT-0.1);
-        savedPositions.put("max", MAX_POINT);
+        horizontalSlide = new LinearSlide(horizontalSlideMotor, "horizontalSlide",
+                61.666667, 14, 0, 0.25,
+                0.007, 0.17);
 
-        horizontalSlidePosition = 0;
+        savedPositions.put("transfer", 0.0);
+        savedPositions.put("max", 14.0);
+
 
         intakeArm = new IntakeArm(hardwareMap);
 
@@ -72,25 +66,26 @@ public class Intake {
     }
 
     public void fullyOpenGate() {
-        gate.setAngleDegrees(180);
+        gate.setAngleDegrees(210);
     }
     public void readAllComponents() {
-        horizontalSlidePosition = horizontalSlide.getCurrentPosition();
-        horizontalSlideAmps = horizontalSlide.getCurrent(CurrentUnit.AMPS);
+       horizontalSlide.readCurrentPosition();
     }
 
-    public void calculateWaitTime() {
+    public void firstFrameOfTransfer() {
         if (intakeArm.isPitchEqualToSavedIntakePosition("grabCheck")) {
-            waitTimeMS = -36*currentInches() + 1200;
+            waitTimeMS = -36*horizontalSlide.currentInches() + 1200;
         } else {
-            waitTimeMS = -33.333 * currentInches() + 1200;
+            waitTimeMS = -33.333 * horizontalSlide.currentInches() + 1200;
         }
+
+        setHorizontalSlideToSavedPosition("transfer");
+
         //reset timer to eliminate weird stuff
         timer.reset();
     }
     //TRANSFERRING
     public boolean transfer(boolean outputIsReady, boolean outputGripperIsOpen) {
-        setHorizontalSlideToSavedPosition("transfer");
         if (timer.milliseconds() > 4000) {
             timer.reset();
         }
@@ -107,7 +102,7 @@ public class Intake {
             return true;
         } else {
             //the horizontal slide is NOT far enough away to begin moving the arm
-            if (!isAtSavedPosition("transfer", 2)) {
+            if (!isHorizontalSlideAtSavedPos("transfer")) {
                 intakeArm.setToSavedIntakeArmPosition("preTransfer");
                 timer.reset();
             } else {
@@ -115,11 +110,8 @@ public class Intake {
                     intakeArm.setToSavedIntakeArmPosition("preTransfer");
                     timer.reset();
                 } else {
-                    //if (timer.milliseconds() > 200) {
                     intakeArm.setToSavedIntakeArmPosition("transfer");
-                    //} else {
-                    //intakeArm.setToSavedIntakeArmPosition("preTransfer");
-                    //}
+
                     if (timer.milliseconds() > waitTimeMS) {//500
                         timer.reset();
                         return true;
@@ -135,72 +127,23 @@ public class Intake {
     }
 
     public void setHorizontalSlideToSavedPosition(String key) {
-        setHorizontalSlidePositionInches(savedPositions.get(key));
-    }
-
-    public boolean isAtSavedPosition(String key) {
-        return isAtPosition(savedPositions.get(key), DEFAULT_ALLOWED_ERROR);
-    }
-
-    public boolean isAtSavedPosition(String key, double allowedError) {
-        return isAtPosition(savedPositions.get(key), allowedError);
-    }
-    public boolean isAtPosition(double inches) {
-        return isAtPosition(inches, DEFAULT_ALLOWED_ERROR);
-    }
-    public boolean isAtPosition(double inches, double allowedError) {
-        return RobotMath.isAbsDiffWithinRange(inches, currentInches(), allowedError);
-    }
-
-    public double currentInches() {
-        return ticksToInches(horizontalSlidePosition);
-    }
-
-    public void setHorizontalSlidePositionInches(double inches) {
-        double tickTarget = inchesToTicks(RobotMath.maxAndMin(inches, MAX_POINT, MIN_POINT-1));
-        double error = tickTarget - horizontalSlidePosition;
-
-        horizontalSlidePower = 0.007 * error;
-    }
-
-    public double inchesToTicks(double inches) {
-        return (inches - MIN_POINT) * TICKS_PER_INCH;
-    }
-    public double ticksToInches(double ticks) {
-        return (ticks / TICKS_PER_INCH) + MIN_POINT;
+        horizontalSlide.setTargetInches(savedPositions.get(key));
     }
 
 
-    public void setHorizontalSlidePower(double power) {
-        horizontalSlidePower = power;
+    public boolean isHorizontalSlideAtSavedPos(String key) {
+        return isHorizontalSlideAtSavedPos(key, horizontalSlide.DEFAULT_ERROR_INCHES);
     }
-
-    public void resetEncoder() {
-        horizontalSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        horizontalSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-    }
-
-    //check if horizAmps should reset the encoder pose, that means we hit the hard stop
-    public void checkIfHitHardStop() {
-        if (horizontalSlideAmps > 5 && horizontalSlidePower < -0.1) {
-            //resetEncoder();
-        }
+    public boolean isHorizontalSlideAtSavedPos(String key, double allowedError) {
+        return horizontalSlide.isAtPositionInches(savedPositions.get(key), allowedError);
     }
 
     //WRITE
     public void writeAllComponents() {
-        writeHorizontalSlide();
+        horizontalSlide.writeSlidePower();
         intakeArm.writeServoPositions();
         gate.write();
         //reset horiz encoder if it hits the back stop
-        checkIfHitHardStop();
-    }
-
-    public void writeHorizontalSlide() {
-        if (!RobotMath.isAbsDiffWithinRange(previousHorizontalSlidePower, horizontalSlidePower, HORIZ_POWER_SIGNIFICANT_DIFFERENCE)) {
-            horizontalSlide.setPower(horizontalSlidePower);
-        }
-        previousHorizontalSlidePower = horizontalSlidePower;
     }
 
 

@@ -76,55 +76,29 @@ public class PIDTuner extends LinearOpMode {
             playerOne.readButtons();
             playerTwo.readButtons();
             bart.readHubs();
+
+            double currentTicks = bart.intake.horizontalSlide.currentTicks();
+
             deltaTime = timer.milliseconds() - previousTime;
             previousTime = timer.milliseconds();
-            error = TARGET_POS - bart.output.verticalSlides.currentTicks();
+            error = TARGET_POS - currentTicks;
             summedError += error*deltaTime;
             changeInError = (error-previousError) / deltaTime;
             previousError = error;
             calculatedPower = (P*error)+(I*summedError)+(D*changeInError);
 
-            //bart.output.verticalSlides.setSlidePower(calculatedPower);
             summedError -= INTEGRAL_DECAY;
             if (summedError < 0) summedError = 0;
 
-            /*if (TARGET_POS > 1000) {
-                bart.output.setComponentPositionsFromSavedPosition("highBarFront");
-            } else {
-                bart.output.setComponentPositionsFromSavedPosition("grab");
-            }*/
-            if (playerTwo.getLeftY()  != 0) {
-                bart.output.verticalSlides.setSlidePower(0.5 * playerTwo.getLeftY());
-                bart.output.setTargetToCurrentPosition();
-            } else {
-                if (playerTwo.wasJustPressed(GamepadKeys.Button.X)) {
-                    bart.output.setComponentPositionsFromSavedPosition("grab");
-                }
-                if (playerTwo.wasJustPressed(GamepadKeys.Button.B)) {
-                    bart.output.setComponentPositionsFromSavedPosition("highBarFront");
-                }
 
-                bart.output.sendVerticalSlidesToTarget();
-            }
-
-            bart.intake.setHorizontalSlideToSavedPosition("transfer");
-
-            //bart.output.verticalSlides.setTargetTicks(TARGET_POS);
+            bart.intake.horizontalSlide.setPower(calculatedPower);
             bart.writeAllComponents();
 
 
-            bart.mecanaDruve.updatePoseEstimate();
 
-            bart.mecanaDruve.setDrivePowers(new PoseVelocity2d(
-                    new Vector2d(
-                            playerOne.getLeftY() * 1,
-                            -playerOne.getLeftX() * 1
-                    ),
-                    -playerOne.getRightX()
-            ));
 
             TelemetryPacket packet = new TelemetryPacket();
-            packet.put("Current Pos", bart.output.verticalSlides.currentTicks());
+            packet.put("Current Pos", currentTicks);
             packet.put("Target Pos", TARGET_POS);
             packet.put("Error", error);
             ftcDashboard.sendTelemetryPacket(packet);
