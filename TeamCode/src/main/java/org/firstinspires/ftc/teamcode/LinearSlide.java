@@ -36,6 +36,7 @@ public class LinearSlide {
     final double p, d;
 
     final double MAX_INCHES, MIN_INCHES;
+    final double MAX_TICKS, MIN_TICKS;
 
     ElapsedTime pidTimer;
 
@@ -53,6 +54,9 @@ public class LinearSlide {
 
         this.MAX_INCHES = MAX_INCHES;
         this.MIN_INCHES = MIN_INCHES;
+        this.MAX_TICKS = inchesToTicks(MAX_INCHES);
+        this.MIN_TICKS = inchesToTicks(MIN_INCHES);
+
         this.DEFAULT_ERROR_INCHES = DEFAULT_ERROR_INCHES;
 
         this.p = p;
@@ -80,6 +84,9 @@ public class LinearSlide {
 
         this.MAX_INCHES = MAX_INCHES;
         this.MIN_INCHES = MIN_INCHES;
+        this.MAX_TICKS = inchesToTicks(MAX_INCHES);
+        this.MIN_TICKS = inchesToTicks(MIN_INCHES);
+
         this.DEFAULT_ERROR_INCHES = DEFAULT_ERROR_INCHES;
 
         this.p = p;
@@ -90,10 +97,11 @@ public class LinearSlide {
     }
 
     public void setTargetTicks(double ticks) {
+        ticks = RobotMath.maxAndMin(ticks, MAX_TICKS, MIN_TICKS);
         targetTicks = ticks;
     }
     public void setTargetInches(double inches) {
-        targetTicks = inchesToTicks(inches);
+        setTargetTicks(inchesToTicks(inches));
     }
     public void setTargetToCurrentPosition() {
         targetTicks = currentTicks();

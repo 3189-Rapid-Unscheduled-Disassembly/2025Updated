@@ -6,7 +6,8 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 
 public class AutoSamplePose {
-    private double color, x, y, roll;
+    private int color;
+    private double x, y, roll;
     private final double xIncrement = 1;
     private final double yIncrement = 1;
     private final double rollIncrement = 45;
@@ -20,7 +21,7 @@ public class AutoSamplePose {
     //color: 0 = yellow, 1 = blue, 2 = red
     //x, y are as if you are blue. Left is always +x, towards you is always +y
     //roll is relative to how the robot will be grabbing it. So, on the bucket, it'll be rotated from the drivers' perspective
-    public AutoSamplePose(double color, double x, double y, double roll,
+    public AutoSamplePose(int color, double x, double y, double roll,
                           boolean isYellowLegal, boolean isBlueLegal, boolean isRedLegal,
                           double xMax, double xMin, double yMax, double yMin, double rollMax, double rollMin) {
         this.color = color;
@@ -93,10 +94,10 @@ public class AutoSamplePose {
 
 
     //COLOR
-    public double getColor() {
+    public int getColor() {
         return color;
     }
-    public void setColor(double color) {
+    public void setColor(int color) {
         this.color = color;
     }
 

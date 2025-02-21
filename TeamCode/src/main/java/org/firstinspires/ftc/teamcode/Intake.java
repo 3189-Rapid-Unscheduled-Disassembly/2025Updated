@@ -31,12 +31,14 @@ public class Intake {
     final double MAX_POINT = 14;
 
 
-    public Intake(HardwareMap hardwareMap) {
+    public Intake(HardwareMap hardwareMap, boolean resetEncoders) {
         DcMotorEx horizontalSlideMotor = hardwareMap.get(DcMotorEx.class, "slideHoriz");
 
         horizontalSlideMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        horizontalSlideMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        if (resetEncoders) {
+            horizontalSlideMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        }
         horizontalSlideMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         horizontalSlide = new LinearSlide(horizontalSlideMotor, "horizontalSlide",
@@ -74,9 +76,9 @@ public class Intake {
 
     public void firstFrameOfTransfer() {
         if (intakeArm.isPitchEqualToSavedIntakePosition("grabCheck")) {
-            waitTimeMS = -36*horizontalSlide.currentInches() + 1200;
+            waitTimeMS = -36*horizontalSlide.currentInches() + 800;
         } else {
-            waitTimeMS = -33.333 * horizontalSlide.currentInches() + 1200;
+            waitTimeMS = -33.333 * horizontalSlide.currentInches() + 800;
         }
 
         setHorizontalSlideToSavedPosition("transfer");
@@ -102,7 +104,7 @@ public class Intake {
             return true;
         } else {
             //the horizontal slide is NOT far enough away to begin moving the arm
-            if (!isHorizontalSlideAtSavedPos("transfer")) {
+            if (!isHorizontalSlideAtSavedPos("transfer", 2)) {
                 intakeArm.setToSavedIntakeArmPosition("preTransfer");
                 timer.reset();
             } else {

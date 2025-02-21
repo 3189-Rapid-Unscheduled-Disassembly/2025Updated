@@ -96,7 +96,7 @@ public class ATeleop extends LinearOpMode {
 
 
         //create robot
-        bart = new RobotMain(hardwareMap, telemetry);
+        bart = new RobotMain(hardwareMap, telemetry, false);
 
         //Create Gamepads
         playerOne = new GamepadEx(gamepad1);
@@ -118,8 +118,15 @@ public class ATeleop extends LinearOpMode {
         }
 
         waitForStart();
+        bart.readHubs();
+
         if (!isIntakeArmJank) {
-            bart.output.setComponentPositionsFromSavedPosition("grab");
+            bart.output.setTargetToCurrentPosition();
+            /*if (bart.output.verticalSlides.currentInches() > 9) {
+                bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(17, 0, 0, false));
+            } else {
+                bart.output.setComponentPositionsFromSavedPosition("straightOut");
+            }*/
             bart.intake.intakeArm.setToSavedIntakeArmPosition("preGrab");
         } else {
             //ONLY USED WHEN INTAKE ARM ENDED JANKILY

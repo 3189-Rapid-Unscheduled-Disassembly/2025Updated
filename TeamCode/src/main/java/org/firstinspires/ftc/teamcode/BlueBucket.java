@@ -505,6 +505,10 @@ public class BlueBucket extends LinearOpMode {
         Actions.runBlocking(
 
                 new ParallelAction(
+                        //SEND COMPONENTS TO POSITION EVERY FRAME
+                        outputs.readComponents(),
+                        outputs.sendComponentsToPositions(),
+                        outputs.writeComponents(),
                         new SequentialAction(
                                 //preload
                                 outputs.setIntakeArmPosition("preGrab"),
@@ -521,11 +525,11 @@ public class BlueBucket extends LinearOpMode {
                                         outputs.lowerToTransferOnceAway()
                                 ),
 
-                                sleeper.sleep(250),
+                                sleeper.sleep(100),
 
                                 outputs.setIntakeArmPosition("grab"),
 
-                                sleeper.sleep(1000),
+                                sleeper.sleep(200),
                                 outputs.transfer(),
                                 outputs.setIntakeArmPosition("preGrab"),
                                 outputs.raiseToHighBucket(),
@@ -540,9 +544,9 @@ public class BlueBucket extends LinearOpMode {
                                         outputs.lowerToTransferOnceAway()
                                 ),
 
-                                sleeper.sleep(250),
+                                sleeper.sleep(100),
                                 outputs.setIntakeArmPosition("grab"),
-                                sleeper.sleep(1000),
+                                sleeper.sleep(200),
                                 outputs.transfer(),
                                 outputs.setIntakeArmPosition("preGrab"),
                                 outputs.setIntakeRoll(90),
@@ -558,10 +562,10 @@ public class BlueBucket extends LinearOpMode {
                                         outputs.lowerToTransferOnceAway()
                                 ),
 
-                                sleeper.sleep(250),
+                                sleeper.sleep(100),
                                 outputs.setIntakeArmPosition("grab"),
                                 outputs.setIntakeRoll(90),
-                                sleeper.sleep(1000),
+                                sleeper.sleep(200),
                                 new ParallelAction(
                                         new SequentialAction(
                                                 outputs.waitUntilAwayFromWall(),
@@ -585,11 +589,7 @@ public class BlueBucket extends LinearOpMode {
 
                                 sleeper.sleep(10000),
                                 outputs.endProgram()
-                        ),
-                        //SEND COMPONENTS TO POSITION EVERY FRAME
-                        outputs.sendComponentsToPositions(),
-                        outputs.writeComponents(),
-                        outputs.readComponents()
+                        )
                 )
         );
 

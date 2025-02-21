@@ -228,6 +228,28 @@ class AutoActions {
             return false;
         }
     }
+    class Transfer implements Action {
+        boolean intialized = false;
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            if (!intialized) {
+                bart.firstFrameOfTransfer();
+                intialized = true;
+            }
+
+            bart.transfer();
+            //we are done
+            if (!bart.output.gripper.isOpen() &&
+                    bart.intake.intakeArm.isPitchEqualToSavedIntakePosition("preTransfer")
+            ) {
+                return false;
+            }
+            return true;
+        }
+    }
+    public Action transfer() {
+        return new Transfer();
+    }
 
     class LowerIntakeAtEnd implements Action {
         @Override
@@ -332,7 +354,8 @@ class AutoActions {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             bart.intake.horizontalSlide.setTargetInches(target);
-            return !bart.intake.horizontalSlide.isAtTarget();
+            //return !bart.intake.horizontalSlide.isAtTarget();
+            return false;
         }
 
     }
@@ -525,18 +548,35 @@ class AutoActions {
                 robotAngleDeg += 360;
             }
 
-
-            if (onceGreaterThan) {
-                return !(robotAngleDeg >= targetAngleDeg);
-            } else {
-                return !(robotAngleDeg <= targetAngleDeg);
-            }
-        }
+            return waitTillPastReturn(robotAngleDeg, targetAngleDeg, onceGreaterThan);        }
     }
 
     public Action waitTillPastAngle(double targetAngle, boolean onceGreaterThan) {
         return new WaitTillPastAngle(targetAngle, onceGreaterThan);
     }
+
+    class WaitTillPastX implements Action {
+        double targetX;
+        boolean onceGreaterThan;
+
+
+        //true=extend once angle larger than inputted angle
+        public WaitTillPastX(double targetX, boolean onceGreaterThan) {
+            this.targetX = targetX;
+            this.onceGreaterThan = onceGreaterThan;
+        }
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            double currentX = drive.pose.position.x;
+            return waitTillPastReturn(currentX, targetX, onceGreaterThan);
+
+        }
+    }
+    public Action waitTillPastX(double targetX, boolean onceGreaterThan) {
+        return new WaitTillPastX(targetX, onceGreaterThan);
+    }
+
 
     class WaitTillPastY implements Action {
         double targetY;
@@ -552,17 +592,34 @@ class AutoActions {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             double currentY = drive.pose.position.y;
-            if (onceGreaterThan) {
-                return !(currentY >= targetY);
-            } else {
-                return !(currentY <= targetY);
-            }
+            return waitTillPastReturn(currentY, targetY, onceGreaterThan);
+
         }
     }
     public Action waitTillPastY(double targetY, boolean onceGreaterThan) {
         return new WaitTillPastY(targetY, onceGreaterThan);
     }
 
+    class WaitTillHorizPastInches implements Action {
+        double targetInches;
+        boolean onceGreaterThan;
+
+
+        //true=extend once angle larger than inputted angle
+        public WaitTillHorizPastInches(double targetInches, boolean onceGreaterThan) {
+            this.targetInches = targetInches;
+            this.onceGreaterThan = onceGreaterThan;
+        }
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            double currentInches = bart.intake.horizontalSlide.currentInches();
+            return waitTillPastReturn(currentInches, targetInches, onceGreaterThan);
+        }
+    }
+    public Action waitTillHorizPastInches(double targetInches, boolean onceGreaterThan) {
+        return new WaitTillHorizPastInches(targetInches, onceGreaterThan);
+    }
 
 
     class CloseGate implements Action {
@@ -683,6 +740,71 @@ class AutoActions {
 
     public Action waitTillHorizIsRetracted() {return new WaitTillHorizIsRetracted();}
 
+    class RaiseToHighBucket implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            bart.output.setComponentPositionsFromSavedPosition("highBucket");
+            //return !bart.output.isAtPosition();
+            return false;
+        }
+    }
+    public Action raiseToHighBucket() {
+        return new RaiseToHighBucket();
+    }
 
+
+    class WaitTillSlidesArePartiallyUp implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            return !bart.output.verticalSlides.isAbovePositionInches(10);
+        }
+    }
+    class WaitTillSlidesAreAllTheWayUp implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            return !bart.output.verticalSlides.isAbovePositionInches(17.25);
+        }
+    }
+
+    class LowerToTransfer implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            bart.output.setComponentPositionsFromSavedPosition("transfer");
+            return false;
+        }
+    }
+    public Action waitTillSlidesArePartiallyUp() {
+        return new WaitTillSlidesArePartiallyUp();
+    }
+    public Action waitTillSlidesAreAllTheWayUp() {return new WaitTillSlidesAreAllTheWayUp();}
+
+
+    class LowerToTransferOnceAway implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            if (drive.pose.position.y < 52) {
+                bart.output.setComponentPositionsFromSavedPosition("transfer");
+                return false;
+            }
+            return true;
+        }
+    }
+
+    public Action lowerToTransfer() {
+        return new LowerToTransfer();
+    }
+    public Action lowerToTransferOnceAway() {
+        return new LowerToTransferOnceAway();
+    }
+
+
+
+    private boolean waitTillPastReturn(double current, double target, boolean onceGreaterThan) {
+        if (onceGreaterThan) {
+            return !(current >= target);
+        } else {
+            return !(current <= target);
+        }
+    }
 }
 

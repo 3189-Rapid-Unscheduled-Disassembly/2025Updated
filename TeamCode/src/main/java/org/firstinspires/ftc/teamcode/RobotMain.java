@@ -66,43 +66,25 @@ public class RobotMain {
         //Receive Hardware Map and telemetry
         this.telemetry = telemetry;
 
-        //imu = new RevIMU(hardwareMap);
-        //imu.init();
 
+        // input motors exactly as shown below
+        mecanaDruve = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
+
+        output = new Output(hardwareMap, true);
+        intake = new Intake(hardwareMap, true);
+
+    }
+
+    public RobotMain(HardwareMap hardwareMap, Telemetry telemetry, boolean resetEncoders) {
+        //Receive Hardware Map and telemetry
+        this.telemetry = telemetry;
 
 
         // input motors exactly as shown below
         mecanaDruve = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
 
-        //DcMotorEx slideLeft = hardwareMap.get(DcMotorEx.class, "slideLeft");
-        //DcMotorEx slideRight = hardwareMap.get(DcMotorEx.class, "slideRight");
-
-        //Servo armLeft = hardwareMap.get(Servo.class, "armLeft");
-        //Servo armRight = hardwareMap.get(Servo.class, "armRight");
-
-        //Servo wristLeft = hardwareMap.get(Servo.class, "wristLeft");
-        //Servo wristRight = hardwareMap.get(Servo.class, "wristRight");
-        //Servo gripperFront = hardwareMap.get(Servo.class, "gripperFront");
-        //Servo gripperBack = hardwareMap.get(Servo.class, "gripperBack");
-
-        //wristLeft.setDirection(Servo.Direction.FORWARD);
-        //wristRight.setDirection(Servo.Direction.REVERSE);//club test2
-        //club test fr5
-
-        //armLeft.setDirection(Servo.Direction.REVERSE);
-        //armRight.setDirection(Servo.Direction.FORWARD);
-
-        //gripperFront.setDirection(Servo.Direction.REVERSE);
-        //gripperBack.setDirection(Servo.Direction.FORWARD);
-
-        //VerticalSlides verticalSlides = new VerticalSlides(hardwareMap);
-        //Arm arm = new Arm(hardwareMap);
-        //Wrist wrist = new Wrist(hardwareMap);
-        //Gripper gripper = new Gripper(hardwareMap);
-
-
-        output = new Output(hardwareMap);
-        intake = new Intake(hardwareMap);
+        output = new Output(hardwareMap, resetEncoders);
+        intake = new Intake(hardwareMap, resetEncoders);
 
     }
 

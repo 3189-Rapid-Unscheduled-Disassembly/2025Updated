@@ -1,44 +1,27 @@
 package org.firstinspires.ftc.teamcode;
 
-import androidx.annotation.NonNull;
-
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.AngularVelConstraint;
 import com.acmerobotics.roadrunner.MinVelConstraint;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.ProfileAccelConstraint;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.TurnConstraints;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
-import com.arcrobotics.ftclib.gamepad.GamepadEx;
-import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import java.util.Arrays;
 
-@Autonomous
-public class BlueClipsInput extends LinearOpMode {
+@Autonomous(name = "Blue 5+1(2)")
+public class Blue5Plus12 extends LinearOpMode {
     RobotMain bart;
     MecanumDrive drive;
-    Limelight limelight;
     AutoActions autoActions;
     Sleeper sleeper;
-    boolean endProgram = false;
 
-    boolean isTransferingNow = false;
-
-    double horizTargetSub;
-    //boolean isBlue = true;
-    //double inputtedRoll;
-    AutoSamplePose inputtedPose;
 
 
     //OUTPUT SYNCHRONOUS MOVEMENTS ACTIONS IF NEEDED
@@ -61,7 +44,7 @@ public class BlueClipsInput extends LinearOpMode {
 
 
 
-
+        Pose2d sample = new Pose2d(-35, 57, Math.toRadians(135));
 
 
         //bart.output.setComponentPositionsFromSavedPosition("rest");
@@ -76,58 +59,9 @@ public class BlueClipsInput extends LinearOpMode {
 
         int timeToDropClipMilliseconds = 100;
         int timeToGrabClipMilliseconds = 100;
-        GamepadEx playerTwo = new GamepadEx(gamepad2);
-        int currentlyInputting = 0;//0=x, 1=y, 2=roll
-        //double inputtedX = 0;
-        //double inputtedY = 12;
-        //inputtedRoll = 0;
 
+        autoActions = new AutoActions(bart, drive);
 
-
-        double yMax = 20;
-        double yMin = 4;
-        //previous yMax16, yMin
-        inputtedPose = new AutoSamplePose(1, 0, 12, 0,
-                false, true, true, 5, -5, yMax, yMin, 90, -45);
-
-        while (inputtedPose.stillInputting && opModeInInit() && !isStopRequested()) {
-            playerTwo.readButtons();
-
-            inputtedPose.inputAutoSamplePose(playerTwo);
-
-            telemetry.addLine(inputtedPose.toString());
-            telemetry.addLine("\nPress A to Advance");
-            telemetry.update();
-        }
-
-        horizTargetSub = yMax-inputtedPose.getY();//2 min
-
-
-
-        telemetry.addLine("DONE INPUTTING\nFINAL VALUES");
-        //telemetry.addData("COLOR", isBlue ? "BLUE" : "RED");
-        /*telemetry.addData("X", i);
-        telemetry.addData("Y", inputtedY);
-        telemetry.addData("ROLL", inputtedRoll);*/
-        //telemetry.addData("horizTargetSub", horizTargetSub);
-        telemetry.addLine(inputtedPose.toString());
-        telemetry.update();
-
-
-
-        //LIMELIGHT STUFF
-        if (inputtedPose.getColor() == 1) {
-            limelight = new Limelight(hardwareMap, 1);
-        } else {
-            limelight = new Limelight(hardwareMap, 2);
-        }
-
-        autoActions = new AutoActions(bart, drive, limelight);
-
-
-
-        //SCORE POSES
-        Pose2d scorePoseWithInput = new Pose2d(inputtedPose.getX(), 35, Math.toRadians(270));
 
         //DRIVE TRAJECTORIES
         //TrajectoryActionBuilder fromStartToScore;
@@ -142,36 +76,25 @@ public class BlueClipsInput extends LinearOpMode {
         }*/
         TrajectoryActionBuilder fromStartToScore = drive.actionBuilder(AutoPoses.beginPoseClips)
 
-            .splineToConstantHeading(scorePoseWithInput.position, Math.toRadians(270),
-                    new MinVelConstraint(Arrays.asList(
-                            drive.kinematics.new WheelVelConstraint(AutoPoses.preloadMaxWheelVel),
-                            new AngularVelConstraint(Math.PI * 1.5)
-                    )),
-                    new ProfileAccelConstraint(AutoPoses.preloadMinAccel, AutoPoses.preloadMaxAccel)
-            );
+                .splineToConstantHeading(AutoPoses.scorePreloadClipsPose.position, Math.toRadians(270),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(AutoPoses.preloadMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(AutoPoses.preloadMinAccel, AutoPoses.preloadMaxAccel)
+                );
+        // -36, 60, 135
+        TrajectoryActionBuilder fromScoreToSample = drive.actionBuilder(AutoPoses.scoreCycleClipsPose)
+                .strafeToLinearHeading(sample.position, sample.heading);
 
         /*TrajectoryActionBuilder fromScoreToNormalizedGrab = drive.actionBuilder(scorePose)
                 .strafeToConstantHeading(normalizedGrabPose.position);
 */
 
-        TrajectoryActionBuilder fromScoreToDrop = drive.actionBuilder(scorePoseWithInput)
-                .splineToConstantHeading(new Vector2d(scorePoseWithInput.position.x, scorePoseWithInput.position.y + 8), Math.toRadians(90),
-                        new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(AutoPoses.scoreCycleMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
-                        )),
-                        new ProfileAccelConstraint(AutoPoses.scoreCycleMinAccel, AutoPoses.scoreCycleMaxAccel)
-                )
-                .splineToLinearHeading(AutoPoses.dropSubClipsPose, Math.toRadians(180),
-                        new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(AutoPoses.scoreCycleMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
-                        )),
-                        new ProfileAccelConstraint(AutoPoses.scoreCycleMinAccel, AutoPoses.scoreCycleMaxAccel)
-                );
 
-        TrajectoryActionBuilder fromSubDropToSweep = drive.actionBuilder(AutoPoses.dropSubClipsPose)
+        TrajectoryActionBuilder fromPreloadScoreToSweep = drive.actionBuilder(AutoPoses.scorePreloadClipsPose)
                 //SPIKE 1
+                .strafeToLinearHeading(AutoPoses.shiftPoseByInputs(AutoPoses.scorePreloadClipsPose,0, 6, -1000).position, AutoPoses.grabSpark1ClipsPose.heading.toDouble())
                 .strafeToLinearHeading(AutoPoses.grabSpark1ClipsPose.position, AutoPoses.grabSpark1ClipsPose.heading,
                         new MinVelConstraint(Arrays.asList(
                                 drive.kinematics.new WheelVelConstraint(AutoPoses.sweepMaxWheelVel),
@@ -245,7 +168,7 @@ public class BlueClipsInput extends LinearOpMode {
                         )),
                         new ProfileAccelConstraint(sweepMinAccel, sweepMaxAccel)
                 )*/
-                .splineToSplineHeading(AutoPoses.grabWallClipsPose, Math.toRadians(90),
+                .splineToSplineHeading(AutoPoses.shiftPoseByInputs(AutoPoses.grabWallClipsPose, 0, 1, 0), Math.toRadians(90),
                         new MinVelConstraint(Arrays.asList(
                                 drive.kinematics.new WheelVelConstraint(AutoPoses.sweepMaxWheelVel-5),
                                 new AngularVelConstraint(Math.PI * 1.5)
@@ -296,15 +219,37 @@ public class BlueClipsInput extends LinearOpMode {
                         )),
                         new ProfileAccelConstraint(scoreCycleGrabMinAccel, scoreCycleMaxAccel)
                 );
-*/
 
+
+*/
+        TrajectoryActionBuilder fromGrabToBucket = drive.actionBuilder(sample)
+                /*.turnTo(Math.toRadians(180))
+                .strafeToLinearHeading(
+                        new Vector2d(48, 56.5),
+                        Math.toRadians(180),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(AutoPoses.scoreCycleGrabMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(AutoPoses.scoreCycleGrabMinAccel, AutoPoses.scoreCycleGrabMaxAccel)
+                )
+                        .turnTo(Math.toRadians(225));*/
+                .splineToSplineHeading(AutoPoses.shiftPoseByInputs(AutoPoses.grabWallClipsPose, 4, -4, 90), Math.toRadians(0),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(AutoPoses.scoreCycleGrabMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(AutoPoses.scoreCycleGrabMinAccel, AutoPoses.scoreCycleGrabMaxAccel)
+                )
+                .splineToSplineHeading(new Pose2d(48, 56.5, Math.toRadians(225)), Math.toRadians(0),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(AutoPoses.scoreCycleGrabMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(AutoPoses.scoreCycleGrabMinAccel, AutoPoses.scoreCycleGrabMaxAccel)
+                );
 
         telemetry.addLine("READY TO START!\n");
-        /*telemetry.addData("X", inputtedX);
-        telemetry.addData("Y", inputtedY);
-        telemetry.addData("ROLL", inputtedRoll);*/
-        telemetry.addLine(inputtedPose.toString());
-        telemetry.addData("horizTargetSub", horizTargetSub);
         telemetry.update();
 
         waitForStart();
@@ -322,65 +267,37 @@ public class BlueClipsInput extends LinearOpMode {
 
                                 //SCORE PRELOAD
                                 autoActions.raiseToHighBarFront(),
-                                //fromStartToScore.build(),
-                                autoActions.setIntakeArmPosition("limelight"),
-                                autoActions.setIntakeRoll(inputtedPose.getRoll()),
-                                new ParallelAction(
-                                        fromStartToScore.build(),
-                                        autoActions.extendHoriz(horizTargetSub)
-                                ),
+                                fromStartToScore.build(),
+
                                 autoActions.openGripper(),
-                                //sleeper.sleep(100),
                                 autoActions.lowerOutOfWay(),
-                                //sleeper.sleep(100),
-                                //grab the sub sample
-//                                fromScoreToNormalizedGrab.build(),
-                                autoActions.lineUpWithLimelight(inputtedPose),
-                                autoActions.setIntakeArmPosition("preGrab"),
-                                autoActions.setIntakeRoll(inputtedPose.getRoll()),
-                                sleeper.sleep(200),//200,150
-                                autoActions.setIntakeArmPosition("grab"),
-                                autoActions.setIntakeRoll(inputtedPose.getRoll()),
-                                sleeper.sleep(300),//500,200
-                                autoActions.setIntakeArmPosition("grabCheck"),
-                                autoActions.partiallyOpenGate(),
-                                //drop the sub sample
-                                new ParallelAction(
-                                  fromScoreToDrop.build(),
-                                  new SequentialAction(
-                                          autoActions.extendHoriz(0),
-                                          autoActions.waitTillPastAngle(180, false),
-                                          autoActions.extendHoriz(14)
-                                  )
-                                ),
-                                autoActions.setIntakeGripperOpen(true),
-                                sleeper.sleep(100),
-                                autoActions.setIntakeArmPosition("rest"),
-                                autoActions.extendHoriz(13),
-                                
+
+                                autoActions.closeGate(),
+
                                 //SWEEP
                                 new ParallelAction(
-                                    fromSubDropToSweep.build(),
-                                    new SequentialAction(
-                                            //SPIKE 1
-                                            autoActions.setGateOncePastAngle(220, true, 0),
-                                            //SPIKE 2
-                                            autoActions.waitTillPastAngle(140, false),
-                                            autoActions.setGateOncePastAngle(140, true, 1),
-                                            autoActions.setGateOncePastAngle(220, true, 0),
-                                            //SPIKE 3
-                                            autoActions.waitTillPastAngle(140, false),
-                                            autoActions.setGateOncePastAngle(140,  true, 1),
-                                            autoActions.waitTillPastY(26, false),
-                                            autoActions.closeGate(),
-                                            autoActions.waitTillPastY(36, true),
-                                            autoActions.fullyOpenGate(),
-                                            //autoActions.waitTillPastAngle(145, false),
-                                            autoActions.extendHoriz(0),
+                                        fromPreloadScoreToSweep.build(),
+                                        new SequentialAction(
+                                                //SPIKE 1
+                                                autoActions.waitTillPastX(-24, false),
+                                                autoActions.extendHoriz(13),
+                                                //SPIKE 2
+                                                autoActions.waitTillPastAngle(140, false),
+                                                autoActions.setGateOncePastAngle(140, true, 1),
+                                                autoActions.setGateOncePastAngle(220, true, 0),
+                                                //SPIKE 3
+                                                autoActions.waitTillPastAngle(140, false),
+                                                autoActions.setGateOncePastAngle(140,  true, 1),
+                                                autoActions.waitTillPastY(26, false),
+                                                autoActions.closeGate(),
+                                                autoActions.waitTillPastY(36, true),
+                                                autoActions.fullyOpenGate(),
+                                                //autoActions.waitTillPastAngle(145, false),
+                                                autoActions.extendHoriz(0),
 
-                                            autoActions.waitTillHorizIsRetracted(), autoActions.lowerToGrab()
+                                                autoActions.waitTillHorizIsRetracted(), autoActions.lowerToGrab()
 
-                                    )
+                                        )
                                 ),
 
 
@@ -449,25 +366,29 @@ public class BlueClipsInput extends LinearOpMode {
                                 new ParallelAction(
                                         autoActions.raiseToHighBarBackOnceAwayFromWall(),
                                         autoActions.closeGripperTightAfterDelay(),
+                                        autoActions.lowerIntakeAtEnd(),
                                         fromGrabToScoreCycle.build()
                                 ),
 
-                                //CYCLE CLIP 6
+                                //BUCKET
                                 //grab
                                 autoActions.openGripper(),
                                 //autoActions.moveWristOutOfWay(),
                                 //sleeper.sleep(timeToDropClipMilliseconds),
                                 autoActions.lowerToGrab(),
                                 sleeper.sleep(timeToDropClipMilliseconds),
-                                fromScoreCycleToGrab.build(),
-                                autoActions.closeGripperLoose(),
-                                sleeper.sleep(timeToGrabClipMilliseconds),
+                                fromScoreToSample.build(),
+                                autoActions.setIntakeArmPosition("grab"),
+                                //autoActions.closeGripper(),
+                                sleeper.sleep(200),
                                 //score
                                 new ParallelAction(
-                                        autoActions.raiseToHighBarBackOnceAwayFromWall(),
-                                        autoActions.closeGripperTightAfterDelay(),
-                                        autoActions.lowerIntakeAtEnd(),
-                                        fromGrabToScoreCycle.build()
+                                        new SequentialAction(
+                                                //autoActions.waitTillPastX(-24, true),
+                                                autoActions.transfer(),
+                                                autoActions.raiseToHighBucket()
+                                        ),
+                                        fromGrabToBucket.build()
                                 ),
 
                                 autoActions.openGripper(),
@@ -476,7 +397,7 @@ public class BlueClipsInput extends LinearOpMode {
                                 //sleeper.sleep(timeToDropClipMilliseconds),
 
 
-                                autoActions.moveWristOutOfWay(),
+                                //autoActions.moveWristOutOfWay(),
                                 //sleeper.sleep(150),
 
                                 //autoActions.lowerToPark(),

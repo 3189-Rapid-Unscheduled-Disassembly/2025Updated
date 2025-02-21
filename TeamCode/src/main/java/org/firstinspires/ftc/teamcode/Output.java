@@ -49,14 +49,16 @@ public class Output {
     //wrist length: 3.268
 
 
-    public Output(HardwareMap hardwareMap) {
+    public Output(HardwareMap hardwareMap, boolean resetEncoders) {
         DcMotorEx front = hardwareMap.get(DcMotorEx.class, "slideFront");
         DcMotorEx back = hardwareMap.get(DcMotorEx.class, "slideBack");
 
         front.setDirection(DcMotorSimple.Direction.FORWARD);
         back.setDirection(DcMotorSimple.Direction.FORWARD);
 
-        back.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        if (resetEncoders) {
+            back.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        }
         back.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         front.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -138,9 +140,6 @@ public class Output {
                 new OutputEndPoint(1, 20, 20, true)
         );
 
-        savedPositions.put("fight",
-                new OutputEndPoint(0, 20, 20, true)
-        );
 
         timer = new ElapsedTime();
         timer.reset();

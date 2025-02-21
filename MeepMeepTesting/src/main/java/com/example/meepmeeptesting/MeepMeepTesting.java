@@ -41,6 +41,11 @@ public class MeepMeepTesting {
         double grabAngleRad = Math.toRadians(90);
         Pose2d grabPose = new Pose2d(grabVector, grabAngleRad);
 
+        Pose2d scoreCycleClipsPose = new Pose2d(-5, 30.25, Math.toRadians(90));
+        Pose2d grabWallClipsPose = new Pose2d(-41, 61, Math.toRadians(90));
+        Pose2d clipsParkPose = shiftPoseByInputs(grabWallClipsPose, -6, -10, 0);
+
+
         MeepMeep meepMeep = new MeepMeep(600);
         System.setProperty("sun.java2d.opengl", "true");
 
@@ -50,7 +55,9 @@ public class MeepMeepTesting {
                 .build();
 
 
-        myBot.runAction(myBot.getDrive().actionBuilder(grabSpark3Pose)
+        myBot.runAction(myBot.getDrive().actionBuilder(grabWallClipsPose)
+                        /*.strafeToConstantHeading(shiftPoseByInputs(scoreCycleClipsPose, 0, 6, 0).position)
+                                .strafeToConstantHeading(clipsParkPose.position)(/
                 //.splineToLinearHeading(grabSpark3Pose, Math.toRadians(180)
 
                 //)
@@ -61,8 +68,8 @@ public class MeepMeepTesting {
                         )),
                         new ProfileAccelConstraint(sweepMinAccel, sweepMaxAccel)
                 )*/
-                .splineToSplineHeading(new Pose2d(grabSpark3Pose.position.x+1, grabSpark3Pose.position.y+6, Math.toRadians(160)), Math.toRadians(80)
-                                       )
+                //.splineToSplineHeading(new Pose2d(grabSpark3Pose.position.x+1, grabSpark3Pose.position.y+6, Math.toRadians(160)), Math.toRadians(80)
+                  //                     )
                 //.splineToSplineHeading(new Pose2d(grabSpark3Pose.position.x+4, grabSpark3Pose.position.y+10, Math.toRadians(135)), Math.toRadians(90)
 
                 //)
@@ -76,13 +83,21 @@ public class MeepMeepTesting {
                         )),
                         new ProfileAccelConstraint(sweepMinAccel, sweepMaxAccel)
                 )*/
-                .splineToSplineHeading(grabPose, Math.toRadians(90)//,
+                //.splineToSplineHeading(grabPose, Math.toRadians(90)//,
                         /*new MinVelConstraint(Arrays.asList(
                                 drive.kinematics.new WheelVelConstraint(sweepMaxWheelVel),
                                 new AngularVelConstraint(Math.PI * 1.5)
                         )),
                         new ProfileAccelConstraint(sweepMinAccel, sweepMaxAccel)*/
+                //)
+
+                /*.splineToSplineHeading(shiftPoseByInputs(grabWallClipsPose, 4, -4, 90), Math.toRadians(0)
+
                 )
+                .splineToSplineHeading(new Pose2d(48, 56.5, Math.toRadians(225)), Math.toRadians(0)*/
+                //)
+
+
                 .build());
 
         meepMeep.setBackground(MeepMeep.Background.FIELD_INTO_THE_DEEP_JUICE_DARK)
@@ -90,5 +105,11 @@ public class MeepMeepTesting {
                 .setBackgroundAlpha(0.95f)
                 .addEntity(myBot)
                 .start();
+    }
+
+    public static Pose2d shiftPoseByInputs(Pose2d original, double xShift, double yShift, double degShift) {
+        return new Pose2d(original.position.x+xShift,
+                original.position.y+yShift,
+                original.heading.toDouble()+Math.toRadians(degShift));
     }
 }
