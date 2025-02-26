@@ -51,6 +51,7 @@ public class IntakeArm {
         savedPositions.put("fight", new IntakeArmPosition(80, 80, 0, true));//0.233,-75
         savedPositions.put("limelight", new IntakeArmPosition(15, -15, 0, true));//0.233,-75
 
+        savedPositions.put("park", new IntakeArmPosition(60, 90, 0, true));//0.233,-75
 
     }
 

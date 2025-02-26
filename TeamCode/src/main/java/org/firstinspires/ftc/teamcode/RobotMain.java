@@ -6,6 +6,9 @@ import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -17,8 +20,8 @@ CONTROL
 MOTORS
 0 fl
 1 fr
-2 slideFront
-3 steve (this is for the roadrunner encoder)
+2 hooks
+3 slideFront
 SERVOS
 0 intakeGripper
 1 intakeRoll
@@ -51,6 +54,8 @@ public class RobotMain {
 
     Output output = null;
     Intake intake = null;
+    Hooks hooks;
+
 
     boolean robotCentric = true;
 
@@ -72,8 +77,9 @@ public class RobotMain {
 
         output = new Output(hardwareMap, true);
         intake = new Intake(hardwareMap, true);
-
+        hooks = new Hooks(hardwareMap);
     }
+
 
     public RobotMain(HardwareMap hardwareMap, Telemetry telemetry, boolean resetEncoders) {
         //Receive Hardware Map and telemetry
@@ -85,7 +91,7 @@ public class RobotMain {
 
         output = new Output(hardwareMap, resetEncoders);
         intake = new Intake(hardwareMap, resetEncoders);
-
+        hooks = new Hooks(hardwareMap);
     }
 
     public void switchDriveMode() {
@@ -97,22 +103,6 @@ public class RobotMain {
         intake.horizontalSlide.resetEncoder();
     }
 
-    //public void resetIMU() {
-    //imu.reset();
-    //}
-
-
-    /*public void drive(double strafeSpeed, double forwardSpeed, double turnSpeed) {
-        if (robotCentric) {
-            mecanaDruve.driveRobotCentric(strafeSpeed, forwardSpeed, turnSpeed);
-        } else {
-            mecanaDruve.driveFieldCentric(strafeSpeed, forwardSpeed, turnSpeed, imu.getHeading());
-        }
-
-        telemetry.addData("Forward Speed:", forwardSpeed);
-        telemetry.addData("Strafe Speed: ", strafeSpeed);
-        telemetry.addData("Turn Speed: ", turnSpeed);
-    }*/
 
     //this really just determines if we are doing a close or far transfer
     public void firstFrameOfTransfer() {
@@ -165,6 +155,7 @@ public class RobotMain {
     public void readHubs() {
         output.readAllComponents();
         intake.readAllComponents();
+        hooks.read();
     }
 
     public void resetGyro(double angleRobotIsAtDeg) {
@@ -200,5 +191,6 @@ public class RobotMain {
     public void writeAllComponents() {
         output.writeAllComponents();
         intake.writeAllComponents();
+        hooks.write();
     }
 }

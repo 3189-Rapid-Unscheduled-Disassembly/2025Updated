@@ -109,29 +109,36 @@ public class ATeleop extends LinearOpMode {
         }
 
         boolean isIntakeArmJank = false;
+        boolean isOutputArmJank = false;
         while (!isStarted()) {
             if (gamepad1.a || gamepad2.a) {
                 isIntakeArmJank = true;
             }
+            if (gamepad1.b || gamepad2.b) {
+                isOutputArmJank = true;
+            }
             telemetry.addData("isIntakeArmJank", isIntakeArmJank);
+            telemetry.addData("isOutputArmJank", isOutputArmJank);
             telemetry.update();
         }
 
         waitForStart();
         bart.readHubs();
 
-        if (!isIntakeArmJank) {
+        if (!isOutputArmJank) {
+            bart.output.setComponentPositionsFromSavedPosition("grab");
+        } else {
             bart.output.setTargetToCurrentPosition();
-            /*if (bart.output.verticalSlides.currentInches() > 9) {
-                bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(17, 0, 0, false));
-            } else {
-                bart.output.setComponentPositionsFromSavedPosition("straightOut");
-            }*/
+        }
+
+        if (!isIntakeArmJank) {
             bart.intake.intakeArm.setToSavedIntakeArmPosition("preGrab");
+            bart.intake.intakeArm.intakeGripper.close();
         } else {
             //ONLY USED WHEN INTAKE ARM ENDED JANKILY
-            bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, 45, 45, true));
-            bart.intake.intakeArm.setOnlySpecifiedValuesToSavedIntakeArmPosition("grabCheck", true, false, true, true);
+            if (!bart.output.verticalSlides.isAbovePositionInches(2)) {
+                bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, 45, 45, true));
+            }
         }
 
 
@@ -160,16 +167,21 @@ public class ATeleop extends LinearOpMode {
             manualControl();
 
             //WRITE
+            bart.hooks.goToTarget();
             bart.writeAllComponents();
             bart.mecanaDruve.updatePoseEstimate();
 
 
             /** TELEMETRY **/
             telemetry.addLine(bucketDrivingMode ? "BUCKET MODE" : "CLIP MODE");
-            telemetry.addData("vertInches", bart.output.verticalSlides.currentInches());
-            telemetry.addLine(bart.output.wrist.toString());
 
-            telemetry.addLine(bart.output.wrist.toStringServoPos());
+            telemetry.addData("hooksTicks", bart.hooks.currentTicks());
+            telemetry.addData("hooksTarget", bart.hooks.currentTarget());
+            telemetry.addData("hooksIsAtTarget", bart.hooks.isAtTarget());
+            //telemetry.addData("vertInches", bart.output.verticalSlides.currentInches());
+            //telemetry.addLine(bart.output.wrist.toString());
+
+            //telemetry.addLine(bart.output.wrist.toStringServoPos());
 
 
 
@@ -188,10 +200,10 @@ public class ATeleop extends LinearOpMode {
             totalLoops++;
             totalTime = elapsedTime.milliseconds();
             avgLoopTime = totalTime / totalLoops;
-            telemetry.addData("Loop Time", loopTime);
+            /*telemetry.addData("Loop Time", loopTime);
             telemetry.addData("Max Loop Time", maxLoopTime);
             telemetry.addData("Min Loop Time", minLoopTime);
-            telemetry.addData("Avg Loop Time", avgLoopTime);
+            telemetry.addData("Avg Loop Time", avgLoopTime);*/
 
 
             /*telemetry.addData("Angle", Math.toDegrees(bart.mecanaDruve.pose.heading.toDouble()));
@@ -206,7 +218,7 @@ public class ATeleop extends LinearOpMode {
             packet.put("horizAmps", bart.intake.horizontalSlide.getCurrent(CurrentUnit.AMPS));
             dashboardTelemetry.addData("horizAmps", bart.intake.horizontalSlide.getCurrent(CurrentUnit.AMPS));
             dashboardTelemetry.update();*/
-            telemetry.addData("Left X", playerOne.getLeftX());
+//            telemetry.addData("Left X", playerOne.getLeftX());
 
 
             telemetry.update();
@@ -395,13 +407,18 @@ public class ATeleop extends LinearOpMode {
 
         //HANG CODE
         if (playerOne.wasJustPressed(GamepadKeys.Button.Y)) {
-            bart.output.setComponentPositionsFromSavedPosition("preHang");
-            bart.intake.intakeArm.setToSavedIntakeArmPosition("rest");
+            //bart.output.setComponentPositionsFromSavedPosition("preHang");
+            //bart.intake.intakeArm.setToSavedIntakeArmPosition("rest");
+            bart.hooks.setTargetToPreHang();
         }
         if (playerOne.wasJustPressed(GamepadKeys.Button.B)) {
-            bart.output.setComponentPositionsFromSavedPosition("hang");
-            bart.intake.intakeArm.setToSavedIntakeArmPosition("rest");
+            //bart.output.setComponentPositionsFromSavedPosition("hang");
+            //bart.intake.intakeArm.setToSavedIntakeArmPosition("rest");
+            bart.hooks.setTargetToHang();
         }
+        /*if (playerOne.wasJustPressed(GamepadKeys.Button.A)) {
+            bart.hooks.setTarget(0);
+        }*/
 
         //reset the encoders for the two slide systems
         if (playerTwo.wasJustReleased(GamepadKeys.Button.LEFT_STICK_BUTTON)) {

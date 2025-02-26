@@ -54,8 +54,18 @@ public class MeepMeepTesting {
                 .setConstraints(50, 35, Math.toRadians(180), Math.toRadians(180), 10.82)
                 .build();
 
+        Pose2d dropSpark2ClipsPose = new Pose2d(-38, 40, Math.toRadians(160));
 
-        myBot.runAction(myBot.getDrive().actionBuilder(grabWallClipsPose)
+        Pose2d grabSpark3ClipsPose = new Pose2d(-45.5, 24, Math.toRadians(200));
+
+        Pose2d grabSpark3ClipsPoseFirst = new Pose2d(-40, 32, Math.toRadians(225));
+
+        Pose2d scoreBucketPose = new Pose2d(55, 57.5, Math.toRadians(225));//55.5, 57
+
+        Pose2d intakePose = new Pose2d(23, 6, Math.toRadians(180));
+
+
+        myBot.runAction(myBot.getDrive().actionBuilder(scoreBucketPose)
                         /*.strafeToConstantHeading(shiftPoseByInputs(scoreCycleClipsPose, 0, 6, 0).position)
                                 .strafeToConstantHeading(clipsParkPose.position)(/
                 //.splineToLinearHeading(grabSpark3Pose, Math.toRadians(180)
@@ -97,6 +107,48 @@ public class MeepMeepTesting {
                 .splineToSplineHeading(new Pose2d(48, 56.5, Math.toRadians(225)), Math.toRadians(0)*/
                 //)
 
+                /*.splineToLinearHeading(grabSpark3ClipsPoseFirst, Math.toRadians(270)
+                )*/
+                //.splineToConstantHeading(grabSpark3ClipsPoseFirst.position, Math.toRadians(270)
+                //)
+                /*.splineToSplineHeading(AutoPoses.shiftPoseByInputs(AutoPoses.grabSpark3ClipsPose, 3, -3, 0), Math.toRadians(180),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(AutoPoses.sweepMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(AutoPoses.sweepMinAccel, AutoPoses.sweepMaxAccel))*/
+                /*.splineToSplineHeading(grabSpark3ClipsPose, Math.toRadians(90)
+                )
+                .splineToSplineHeading(new Pose2d(grabSpark3ClipsPose.position.x+0.5, grabSpark3ClipsPose.position.y+6, Math.toRadians(160)), Math.toRadians(80)
+                )*/
+                /*.splineToLinearHeading(new Pose2d(48, 24, Math.toRadians(225+45/2)), Math.toRadians(225+45/2))
+                .splineToSplineHeading(new Pose2d(23, 12, Math.toRadians(180)), Math.toRadians(180))
+
+
+                .splineToLinearHeading(new Pose2d(48, 24, Math.toRadians(225+45/2)), Math.toRadians(225+45/2-180))
+                .splineToSplineHeading(scoreBucketPose, Math.toRadians(45))*/
+                //.splineToLinearHeading(new Pose2d(48, 42, Math.toRadians(247.5)), Math.toRadians(247.5)
+
+                //)
+                //.splineToSplineHeading(shiftPoseByInputs(intakePose, 6, 4, 0), Math.toRadians(180)
+                //)
+                        //.splineToLinearHeading(shiftPoseByInputs(intakePose, 4, 4, 0), Math.toRadians(180))
+//                .splineToSplineHeading(intakePose, Math.toRadians(180))
+                /*.splineToLinearHeading(shiftPoseByInputs(intakePose, 1, 0, 0), Math.toRadians(0))
+                .splineToSplineHeading(scoreBucketPose, Math.toRadians(60))*/
+                .splineToLinearHeading(shiftPoseByInputs(intakePose, 4, 0, 0), Math.toRadians(180)
+                )
+                .strafeToConstantHeading(intakePose.position)
+                /*.splineToSplineHeading(new Pose2d(grabSpark3Pose.position.x+8, grabSpark3Pose.position.y+10, Math.toRadians(135)), Math.toRadians(90),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(sweepMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(sweepMinAccel, sweepMaxAccel)
+                )*/
+                //.splineToSplineHeading(grabWallClipsPose, Math.toRadians(90)
+
+                //)
 
                 .build());
 

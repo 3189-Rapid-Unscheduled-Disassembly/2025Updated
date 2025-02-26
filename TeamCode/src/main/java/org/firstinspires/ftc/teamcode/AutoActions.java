@@ -6,11 +6,14 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 class AutoActions {
     RobotMain bart;
     MecanumDrive drive;
     Limelight limelight;
+
+    ElapsedTime llTimer;
 
     boolean endProgram = false;
 
@@ -23,6 +26,9 @@ class AutoActions {
         this.bart = bart;
         this.drive = drive;
         this.limelight = limelight;
+
+        llTimer = new ElapsedTime();
+        llTimer.reset();
     }
 
 
@@ -178,7 +184,7 @@ class AutoActions {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             //ACTION
-            if (drive.pose.position.y < 58) {
+            if (drive.pose.position.y < 55) {
                 bart.output.gripper.close();
                 return false;
             }
@@ -384,14 +390,21 @@ class AutoActions {
     class LineUpWithLimelight implements Action {
         boolean isNotLinedUp = true;
         AutoSamplePose inputtedPose;
+        boolean initialized = false;
+        int maxHuntingTimeMS;
 
 
-        public LineUpWithLimelight(AutoSamplePose inputtedPose) {
+        public LineUpWithLimelight(AutoSamplePose inputtedPose, int maxHuntingTimeMS) {
             this.inputtedPose = inputtedPose;
+            this.maxHuntingTimeMS = maxHuntingTimeMS;
         }
 
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            if (!initialized) {
+                llTimer.reset();
+                initialized = true;
+            }
             double desiredDistance;
             //striahgt: 4.3, -6
             //right: 4, -9
@@ -414,19 +427,28 @@ class AutoActions {
 
             double distanceError = limelight.getLastResultDistanceInches()-desiredDistance;
             double horizTarget = bart.intake.horizontalSlide.currentInches()+distanceError;
+
+            //drive if the slides can't reach it
+            double forwardPower = 0;
+            if (horizTarget > 14) {
+                forwardPower = 0.1;
+            } else if (horizTarget < 0) {
+                forwardPower = -0.1;
+            }
             bart.intake.horizontalSlide.setTargetInches(horizTarget);
 
             double errorTy = desiredTy - limelight.returnLastResultTY();
             drive.setDrivePowers(new PoseVelocity2d(
                     new Vector2d(
-                            0,
-                            -0.28 * Math.signum(errorTy)//0.045
+                            forwardPower,
+                            -0.25 * Math.signum(errorTy)//0.045
                     ),
                     0
             ));
             drive.updatePoseEstimate();
-            if (RobotMath.isAbsDiffWithinRange(limelight.getLastResultDistanceInches(),desiredDistance,0.25) &&
-                    RobotMath.isAbsDiffWithinRange(errorTy,0,1.5)) {
+            if ((RobotMath.isAbsDiffWithinRange(limelight.getLastResultDistanceInches(),desiredDistance,0.25) &&
+                    RobotMath.isAbsDiffWithinRange(errorTy,0,2)) ||//1.5
+                    llTimer.milliseconds() > maxHuntingTimeMS) {
                 isNotLinedUp = false;
                 drive.setDrivePowers(new PoseVelocity2d(
                         new Vector2d(
@@ -435,7 +457,7 @@ class AutoActions {
                         ),
                         0
                 ));
-
+                bart.intake.horizontalSlide.setTargetToCurrentPosition();
             }
 
             telemetryPacket.put("Result Exists?", limelight.isSeeingResult());
@@ -444,7 +466,25 @@ class AutoActions {
         }
     }
 
-    public Action lineUpWithLimelight(AutoSamplePose inputtedPose) {return new LineUpWithLimelight(inputtedPose);}
+    public Action lineUpWithLimelight(AutoSamplePose inputtedPose, int maxHuntingTimeMS) {return new LineUpWithLimelight(inputtedPose, maxHuntingTimeMS);}
+
+
+    class SwitchLimelightPipeline implements Action {
+        int pipelineNumber;
+
+        public SwitchLimelightPipeline(int pipelineNumber) {
+            this.pipelineNumber = pipelineNumber;
+        }
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            limelight.setPipeline(pipelineNumber);
+            return false;
+        }
+    }
+
+    public Action switchLimelightPipeline(int pipelineNumber) {return new SwitchLimelightPipeline(pipelineNumber);}
+
 
     public Action endProgram() {
         return new EndProgram();
@@ -753,6 +793,27 @@ class AutoActions {
     }
 
 
+    class WaitTillVerticalPastInches implements Action {
+        double targetInches;
+        boolean onceGreaterThan;
+
+        public WaitTillVerticalPastInches(double targetInches, boolean onceGreaterThan) {
+            this.targetInches = targetInches;
+            this.onceGreaterThan = onceGreaterThan;
+        }
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            return waitTillPastReturn(bart.output.verticalSlides.currentInches(), targetInches, onceGreaterThan);
+        }
+    }
+
+    public Action waitTillVerticalPastInches(double targetInches, boolean onceGreaterThan) {
+        return new WaitTillVerticalPastInches(targetInches, onceGreaterThan);
+    }
+
+
+
     class WaitTillSlidesArePartiallyUp implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
@@ -796,6 +857,29 @@ class AutoActions {
     public Action lowerToTransferOnceAway() {
         return new LowerToTransferOnceAway();
     }
+
+    class LowerToPrePark implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, 18, 0, true));
+            return false;
+        }
+    }
+    public Action lowerToPrePark() {
+        return new LowerToPrePark();
+    }
+
+    class RaiseToPark implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, 30, 30, true));
+            return false;
+        }
+    }
+    public Action raiseToPark() {
+        return new RaiseToPark();
+    }
+
 
 
 

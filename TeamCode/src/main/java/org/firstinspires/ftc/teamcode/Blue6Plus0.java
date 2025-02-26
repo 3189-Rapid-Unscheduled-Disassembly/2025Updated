@@ -75,7 +75,7 @@ public class Blue6Plus0 extends LinearOpMode {
 
 
         double yMax = 20;
-        double yMin = 4;
+        double yMin = 6;
         //previous yMax16, yMin
         inputtedPose = new AutoSamplePose(1, 0, 12, 0,
                 false, true, true, 5, -5, yMax, yMin, 90, -45);
@@ -106,11 +106,7 @@ public class Blue6Plus0 extends LinearOpMode {
 
 
         //LIMELIGHT STUFF
-        if (inputtedPose.getColor() == 1) {
-            limelight = new Limelight(hardwareMap, 1);
-        } else {
-            limelight = new Limelight(hardwareMap, 2);
-        }
+        limelight = new Limelight(hardwareMap, inputtedPose.getColor());
 
         autoActions = new AutoActions(bart, drive, limelight);
 
@@ -191,37 +187,32 @@ public class Blue6Plus0 extends LinearOpMode {
                         new ProfileAccelConstraint(AutoPoses.sweepMinAccel, AutoPoses.sweepMaxAccel)
                 )
                 //SPIKE 3
-                .splineToLinearHeading(AutoPoses.grabSpark3ClipsPose, Math.toRadians(180),
+                .splineToLinearHeading(AutoPoses.grabSpark3ClipsPoseFirst, Math.toRadians(270),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(AutoPoses.sweepMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(AutoPoses.sweepMinAccel, AutoPoses.sweepMaxAccel))
+                /*.splineToConstantHeading(AutoPoses.grabSpark3ClipsPoseFirst.position, Math.toRadians(270),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(AutoPoses.sweepMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(AutoPoses.sweepMinAccel, AutoPoses.sweepMaxAccel))*/
+                /*.splineToSplineHeading(AutoPoses.shiftPoseByInputs(AutoPoses.grabSpark3ClipsPose, 3, -3, 0), Math.toRadians(180),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(AutoPoses.sweepMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(AutoPoses.sweepMinAccel, AutoPoses.sweepMaxAccel))*/
+                .splineToSplineHeading(AutoPoses.grabSpark3ClipsPose, Math.toRadians(90),
                         new MinVelConstraint(Arrays.asList(
                                 drive.kinematics.new WheelVelConstraint(AutoPoses.sweepMaxWheelVel),
                                 new AngularVelConstraint(Math.PI * 1.5)
                         )),
                         new ProfileAccelConstraint(AutoPoses.sweepMinAccel, AutoPoses.sweepMaxAccel)
                 )
-                /*
-                .splineToSplineHeading(new Pose2d(grabSpark3Pose.position.x, grabSpark3Pose.position.y+6, grabSpark3Pose.heading.toDouble()), Math.toRadians(90),
-                        new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(sweepMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
-                        )),
-                        new ProfileAccelConstraint(sweepMinAccel, sweepMaxAccel)
-                )*/
-                /*
-                .splineToSplineHeading(new Pose2d(grabSpark3Pose.position.x, 40, Math.toRadians(90)), Math.toRadians(0),
-                        new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(sweepMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
-                        )),
-                        new ProfileAccelConstraint(sweepMinAccel, sweepMaxAccel)
-                )*/
-                /*.splineToSplineHeading(new Pose2d(grabVector.x-5, grabVector.y - 12, Math.toRadians(90)), Math.toRadians(90),
-                        new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(sweepMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
-                        )),
-                        new ProfileAccelConstraint(sweepMinAccel, sweepMaxAccel)
-                )*/
-                .splineToSplineHeading(new Pose2d(AutoPoses.grabSpark3ClipsPose.position.x+0.5, AutoPoses.grabSpark3ClipsPose.position.y+6, Math.toRadians(160)), Math.toRadians(80),
+                .splineToSplineHeading(new Pose2d(AutoPoses.grabSpark3ClipsPose.position.x+0.25, AutoPoses.grabSpark3ClipsPose.position.y+6, Math.toRadians(180)), Math.toRadians(80),
                         new MinVelConstraint(Arrays.asList(
                                 drive.kinematics.new WheelVelConstraint(AutoPoses.sweepMaxWheelVel),
                                 new AngularVelConstraint(Math.PI * 1.5)
@@ -235,9 +226,9 @@ public class Blue6Plus0 extends LinearOpMode {
                         )),
                         new ProfileAccelConstraint(sweepMinAccel, sweepMaxAccel)
                 )*/
-                .splineToSplineHeading(AutoPoses.grabWallClipsPose, Math.toRadians(90),
+                .splineToSplineHeading(AutoPoses.shiftPoseByInputs(AutoPoses.grabWallClipsPose, 0, 0, 0), Math.toRadians(90),
                         new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(AutoPoses.sweepMaxWheelVel-5),
+                                drive.kinematics.new WheelVelConstraint(AutoPoses.sweepMaxWheelVel-2),//-5
                                 new AngularVelConstraint(Math.PI * 1.5)
                         )),
                         new ProfileAccelConstraint(AutoPoses.sweepMinAccel+5, AutoPoses.sweepMaxAccel-5)
@@ -253,6 +244,23 @@ public class Blue6Plus0 extends LinearOpMode {
                         )),
                         new ProfileAccelConstraint(AutoPoses.scoreCycleMinAccel, AutoPoses.scoreCycleMaxAccel)
                 );//26.07 first grab
+
+        TrajectoryActionBuilder fromScoreCycleToPark = drive.actionBuilder(AutoPoses.scoreCycleClipsPose)
+                .splineToSplineHeading(AutoPoses.shiftPoseByInputs(AutoPoses.scoreCycleClipsPose, 0, 1, 0), Math.toRadians(90),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(AutoPoses.scoreCycleMaxWheelVel+20),
+                                new AngularVelConstraint(Math.PI * 1.5*3)
+                        )),
+                        new ProfileAccelConstraint(AutoPoses.scoreCycleMinAccel-20, AutoPoses.scoreCycleMaxAccel+20)
+                )
+                .splineToSplineHeading(new Pose2d(-27, 50, Math.toRadians(135)), Math.toRadians(135),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(AutoPoses.scoreCycleMaxWheelVel+20),
+                                new AngularVelConstraint(Math.PI * 1.5*3)
+                        )),
+                        new ProfileAccelConstraint(AutoPoses.scoreCycleMinAccel-20, AutoPoses.scoreCycleMaxAccel+20)
+                );
+
         //last score: 38.52
         //press play: 11.71
 
@@ -264,29 +272,7 @@ public class Blue6Plus0 extends LinearOpMode {
                         )),
                         new ProfileAccelConstraint(AutoPoses.scoreCycleGrabMinAccel, AutoPoses.scoreCycleGrabMaxAccel)
                 );
-                /*
-                .splineToConstantHeading(new Vector2d(scoreCycleVector.x, scoreCycleVector.y+2), Math.toRadians(90),
-                        new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(scoreCycleGrabMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
-                        )),
-                        new ProfileAccelConstraint(scoreCycleGrabMinAccel, scoreCycleMaxAccel)
-                )
-                .splineToConstantHeading(new Vector2d(grabVector.x+4, grabVector.y-5), Math.toRadians(90),
-                        new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(scoreCycleGrabMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
-                        )),
-                        new ProfileAccelConstraint(scoreCycleGrabMinAccel, scoreCycleMaxAccel)
-                )
-                .splineToConstantHeading(grabVector, Math.toRadians(90),
-                        new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(scoreCycleGrabMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
-                        )),
-                        new ProfileAccelConstraint(scoreCycleGrabMinAccel, scoreCycleMaxAccel)
-                );
-*/
+
 
 
         telemetry.addLine("READY TO START!\n");
@@ -315,10 +301,10 @@ public class Blue6Plus0 extends LinearOpMode {
                                 //fromStartToScore.build(),
                                 autoActions.setIntakeArmPosition("limelight"),
                                 autoActions.setIntakeRoll(inputtedPose.getRoll()),
+                                autoActions.extendHoriz(horizTargetSub),
 
                                 fromStartToScore.build(),
 
-                                autoActions.extendHoriz(horizTargetSub),
 
                                 autoActions.openGripper(),
                                 //sleeper.sleep(100),
@@ -326,7 +312,7 @@ public class Blue6Plus0 extends LinearOpMode {
                                 //sleeper.sleep(100),
                                 //grab the sub sample
 //                                fromScoreToNormalizedGrab.build(),
-                                autoActions.lineUpWithLimelight(inputtedPose),
+                                autoActions.lineUpWithLimelight(inputtedPose, 750),
                                 autoActions.setIntakeArmPosition("preGrab"),
                                 autoActions.setIntakeRoll(inputtedPose.getRoll()),
                                 sleeper.sleep(200),//200,150
@@ -360,13 +346,14 @@ public class Blue6Plus0 extends LinearOpMode {
                                             autoActions.setGateOncePastAngle(140, true, 1),
                                             autoActions.setGateOncePastAngle(220, true, 0),
                                             //SPIKE 3
-                                            autoActions.waitTillPastAngle(140, false),
-                                            autoActions.setGateOncePastAngle(140,  true, 1),
-                                            autoActions.waitTillPastY(26, false),
-                                            autoActions.closeGate(),
+                                            //autoActions.waitTillPastAngle(140, false),
+                                            //autoActions.setGateOncePastAngle(140,  true, 1),
+                                            //autoActions.waitTillPastY(26, false),
+                                            //autoActions.closeGate(),
+                                            autoActions.waitTillPastY(36, false),
                                             autoActions.waitTillPastY(36, true),
                                             autoActions.fullyOpenGate(),
-                                            //autoActions.waitTillPastAngle(145, false),
+                                            autoActions.waitTillPastY(40, true),
                                             autoActions.extendHoriz(0),
 
                                             autoActions.waitTillHorizIsRetracted(), autoActions.lowerToGrab()
@@ -457,7 +444,11 @@ public class Blue6Plus0 extends LinearOpMode {
                                 new ParallelAction(
                                         autoActions.raiseToHighBarBackOnceAwayFromWall(),
                                         autoActions.closeGripperTightAfterDelay(),
-                                        autoActions.lowerIntakeAtEnd(),
+                                        new SequentialAction(
+                                            autoActions.waitTillPastY(52, false),
+                                            autoActions.setIntakeArmPosition("park"),
+                                            autoActions.extendHoriz(14)
+                                        ),
                                         fromGrabToScoreCycle.build()
                                 ),
 
@@ -467,7 +458,11 @@ public class Blue6Plus0 extends LinearOpMode {
                                 //sleeper.sleep(timeToDropClipMilliseconds),
 
 
-                                autoActions.moveWristOutOfWay(),
+                                autoActions.lowerToGrab(),
+                                sleeper.sleep(timeToDropClipMilliseconds),
+
+                                fromScoreCycleToPark.build(),
+
                                 //sleeper.sleep(150),
 
                                 //autoActions.lowerToPark(),

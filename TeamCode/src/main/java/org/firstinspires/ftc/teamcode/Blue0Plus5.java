@@ -65,16 +65,8 @@ public class Blue0Plus5 extends LinearOpMode {
         //bart.intake.intakeArm.setRollDeg(45);
         bart.intake.fullyOpenGate();
         bart.writeAllComponents();
-        //bart.output.sendVerticalSlidesToTarget();
 
-        int timeToDropClipMilliseconds = 100;
-        int timeToGrabClipMilliseconds = 100;
         GamepadEx playerTwo = new GamepadEx(gamepad2);
-        int currentlyInputting = 0;//0=x, 1=y, 2=roll
-        //double inputtedX = 0;
-        //double inputtedY = 12;
-        //inputtedRoll = 0;
-
 
 
         double yMax = 14;
@@ -303,7 +295,7 @@ public class Blue0Plus5 extends LinearOpMode {
                                         autoActions.setIntakeRoll(inputtedPose.getRoll())
                                     )
                                 ),
-                                autoActions.lineUpWithLimelight(inputtedPose),
+                                autoActions.lineUpWithLimelight(inputtedPose, 1000),
                                 autoActions.setIntakeArmPosition("preGrab"),
                                 autoActions.setIntakeRoll(inputtedPose.getRoll()),
                                 sleeper.sleep(200),

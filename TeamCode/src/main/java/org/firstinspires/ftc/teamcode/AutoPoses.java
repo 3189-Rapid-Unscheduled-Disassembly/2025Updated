@@ -1,7 +1,13 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.roadrunner.AngularVelConstraint;
+import com.acmerobotics.roadrunner.MinVelConstraint;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.ProfileAccelConstraint;
+import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
+
+import java.util.Arrays;
 
 public class AutoPoses {
 
@@ -14,10 +20,12 @@ public class AutoPoses {
 
     static Pose2d grabSpark1ClipsPose = new Pose2d(-31, 40, Math.toRadians(240));//-36,36
     static Pose2d grabSpark2ClipsPose = new Pose2d(-42, 40, Math.toRadians(250));//-41, 40
-    static Pose2d grabSpark3ClipsPose = new Pose2d(-45.5, 24, Math.toRadians(200));
+    static Pose2d grabSpark3ClipsPose = new Pose2d(-50, 26, Math.toRadians(180));//24
+
+    static Pose2d grabSpark3ClipsPoseFirst = new Pose2d(-45, 32, Math.toRadians(235));
 
     static Pose2d dropSpark1ClipsPose = new Pose2d(grabSpark2ClipsPose.position, Math.toRadians(130));
-    static Pose2d dropSpark2ClipsPose = new Pose2d(-44, 40, Math.toRadians(160));
+    static Pose2d dropSpark2ClipsPose = new Pose2d(-43, 40, Math.toRadians(160));
 
     static Pose2d grabWallClipsPose = new Pose2d(-41, 61, Math.toRadians(90));
 
@@ -43,9 +51,11 @@ public class AutoPoses {
     static double sweepMinAccel = -40;
     static double sweepMaxAccel = 40;
 
-    static Pose2d beginBucketPose = new Pose2d(40, 66.5, Math.toRadians(180));
 
-    static Pose2d scoreBucketPose = new Pose2d(55.5, 57, Math.toRadians(225));
+
+    static Pose2d beginBucketPose = new Pose2d(39, 65.5, Math.toRadians(180));
+
+    static Pose2d scoreBucketPose = new Pose2d(55, 57.5, Math.toRadians(225));//55.5, 57
 
     static Pose2d firstSpikeBucketPose = new Pose2d(48.5, 43, Math.toRadians(270));
 
@@ -62,5 +72,57 @@ public class AutoPoses {
         return new Pose2d(original.position.x+xShift,
                 original.position.y+yShift,
                 original.heading.toDouble()+Math.toRadians(degShift));
+    }
+
+
+    static double intakeMaxWheelVel = 55;
+    static double intakeMinAccel = -60;
+    static double intakeMaxAccel = 45;
+
+    static double bucketMaxWheelVel = 60;
+    static double bucketMinAccel = -60;
+    static double bucketMaxAccel = 50;
+
+    public static TrajectoryActionBuilder fromBucketToIntake(MecanumDrive drive, Pose2d intakePose) {
+        return drive.actionBuilder(scoreBucketPose)
+                /*.splineToLinearHeading(new Pose2d(48, 42, Math.toRadians(247.5)), Math.toRadians(247.5),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(intakeMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(intakeMinAccel, intakeMaxAccel)
+                )
+                .splineToSplineHeading(shiftPoseByInputs(intakePose, 6, 4, 0), Math.toRadians(180),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(intakeMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(intakeMinAccel, intakeMaxAccel)
+                )*/
+                .splineToLinearHeading(shiftPoseByInputs(intakePose, 6, 0, 0), Math.toRadians(180),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(intakeMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(intakeMinAccel, intakeMaxAccel)
+                )
+                .strafeToConstantHeading(intakePose.position);
+    }
+
+    public static TrajectoryActionBuilder fromIntakeToBucket(MecanumDrive drive, Pose2d intakePose) {
+        return drive.actionBuilder(intakePose)
+                .splineToLinearHeading(shiftPoseByInputs(intakePose, 1, 0, 0), Math.toRadians(0),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(bucketMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(bucketMinAccel, bucketMaxAccel)
+                )
+                .splineToSplineHeading(scoreBucketPose, Math.toRadians(45),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(bucketMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(bucketMinAccel, bucketMaxAccel));
     }
 }
