@@ -133,8 +133,9 @@ public class ATeleop extends LinearOpMode {
 
         if (!isIntakeArmJank) {
             bart.intake.intakeArm.setToSavedIntakeArmPosition("preGrab");
-            bart.intake.intakeArm.intakeGripper.close();
+            //bart.intake.intakeArm.intakeGripper.close();
         } else {
+            bart.intake.intakeArm.intakeGripper.close();
             //ONLY USED WHEN INTAKE ARM ENDED JANKILY
             if (!bart.output.verticalSlides.isAbovePositionInches(2)) {
                 bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, 45, 45, true));
@@ -147,6 +148,8 @@ public class ATeleop extends LinearOpMode {
 
         elapsedTime = new ElapsedTime();
         elapsedTime.reset();
+
+
 
         TelemetryPacket packet = new TelemetryPacket();
         FtcDashboard dashboard = FtcDashboard.getInstance();
@@ -178,7 +181,12 @@ public class ATeleop extends LinearOpMode {
             telemetry.addData("hooksTicks", bart.hooks.currentTicks());
             telemetry.addData("hooksTarget", bart.hooks.currentTarget());
             telemetry.addData("hooksIsAtTarget", bart.hooks.isAtTarget());
-            //telemetry.addData("vertInches", bart.output.verticalSlides.currentInches());
+            telemetry.addData("vertInches", bart.output.verticalSlides.currentInches());
+            telemetry.addData("horizInches", bart.intake.horizontalSlide.currentInches());
+            telemetry.addData("hoirzIsAboveMax", bart.intake.horizontalSlide.isAboveMax());
+            telemetry.addData("intakeArmDeg", bart.intake.intakeArm.intakeWristPitch.currentAngleDegrees());
+
+
             //telemetry.addLine(bart.output.wrist.toString());
 
             //telemetry.addLine(bart.output.wrist.toStringServoPos());
@@ -392,9 +400,13 @@ public class ATeleop extends LinearOpMode {
             bart.output.sendVerticalSlidesToTarget();
         }
 
+        if (playerOne.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) {
+            bart.output.gripper.flipFlop();
+        }
         if (playerTwo.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) {
             bart.output.gripper.flipFlop();
         }
+
 
         //move intake out of way. time to fight
         if (playerOne.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) {

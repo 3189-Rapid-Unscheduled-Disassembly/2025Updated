@@ -13,12 +13,11 @@ import com.acmerobotics.roadrunner.ftc.Actions;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import java.util.Arrays;
 
-@Autonomous(name = "Blue 6+0")
-public class Blue6Plus0 extends LinearOpMode {
+@Autonomous(name = "Blue 6+0 Park")
+public class Blue6Plus0Park extends LinearOpMode {
     RobotMain bart;
     MecanumDrive drive;
     Limelight limelight;
@@ -75,7 +74,7 @@ public class Blue6Plus0 extends LinearOpMode {
 
 
         double yMax = 20;
-        double yMin = 6;
+        double yMin = 3;
         //previous yMax16, yMin
         inputtedPose = new AutoSamplePose(1, 0, 12, 0,
                 false, true, true, 5, -5, yMax, yMin, 90, -45);
@@ -327,13 +326,13 @@ public class Blue6Plus0 extends LinearOpMode {
                                   new SequentialAction(
                                           autoActions.extendHoriz(0),
                                           autoActions.waitTillPastAngle(180, false),
-                                          autoActions.extendHoriz(14)
+                                          autoActions.extendHoriz(11)
                                   )
                                 ),
                                 autoActions.setIntakeGripperOpen(true),
                                 sleeper.sleep(100),
                                 autoActions.setIntakeArmPosition("rest"),
-                                autoActions.extendHoriz(13),
+                                //autoActions.extendHoriz(11),
                                 
                                 //SWEEP
                                 new ParallelAction(
@@ -447,7 +446,7 @@ public class Blue6Plus0 extends LinearOpMode {
                                         new SequentialAction(
                                             autoActions.waitTillPastY(52, false),
                                             autoActions.setIntakeArmPosition("park"),
-                                            autoActions.extendHoriz(14)
+                                            autoActions.extendHoriz(17)
                                         ),
                                         fromGrabToScoreCycle.build()
                                 ),

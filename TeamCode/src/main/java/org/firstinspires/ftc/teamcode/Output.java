@@ -94,8 +94,8 @@ public class Output {
         savedPositions.put("aboveTransfer",
                 new OutputEndPoint(0, 0, -20, false)
         );
-        savedPositions.put("transfer",
-                new OutputEndPoint(2.8, -25.5, -95, true)
+        savedPositions.put("transfer",//2.8, -25.5
+                new OutputEndPoint(3.75, -25.5, -95, true)
         );
         savedPositions.put("rest",
                 new OutputEndPoint(0, -15, -90,false)

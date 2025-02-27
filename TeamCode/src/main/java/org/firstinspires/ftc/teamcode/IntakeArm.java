@@ -32,26 +32,26 @@ public class IntakeArm {
 
         Servo gripperServo = hardwareMap.get(Servo.class, "intakeGripper");
         gripperServo.setDirection(Servo.Direction.REVERSE);
-        intakeGripper = new Gripper(gripperServo, 0.75, 0.245, "Intake Gripper");
+        intakeGripper = new Gripper(gripperServo, 0.75, 0.3, "Intake Gripper");//0.245
 
         //SAVED POSITIONS
         savedPositions.put("rest", new IntakeArmPosition(120, 180, 0, true));
 
         savedPositions.put("straightOut", new IntakeArmPosition(0, 0, 0, true));
-        double transferRollDeg = 185;
+        double transferRollDeg = 185;//185
         savedPositions.put("preTransfer", new IntakeArmPosition(25, 110, transferRollDeg, false));
-        savedPositions.put("transfer", new IntakeArmPosition(35, 180, transferRollDeg, false));
+        savedPositions.put("transfer", new IntakeArmPosition(40, 180, transferRollDeg, false));//35
         savedPositions.put("drop", new IntakeArmPosition(0, -60,45, false));
-        savedPositions.put("preGrab", new IntakeArmPosition(0, -90, 0, true));//0.233,-75
-        savedPositions.put("grab", new IntakeArmPosition(-15, -90, 0, false));//0.233,-75
-        savedPositions.put("grabCheck", new IntakeArmPosition(15, -90, 0, false));//0.233,-75
-        savedPositions.put("postGrab", new IntakeArmPosition(30, 0, 0, false));//0.233,-75
-        savedPositions.put("stupidGrab", new IntakeArmPosition(38, 0, 90, true));//0.233,-75
-        savedPositions.put("lowBar", new IntakeArmPosition(18, 80, 90, false));//0.233,-75
-        savedPositions.put("fight", new IntakeArmPosition(80, 80, 0, true));//0.233,-75
-        savedPositions.put("limelight", new IntakeArmPosition(15, -15, 0, true));//0.233,-75
+        savedPositions.put("preGrab", new IntakeArmPosition(0, -90, 0, true));
+        savedPositions.put("grab", new IntakeArmPosition(-15, -90, 0, false));
+        savedPositions.put("grabCheck", new IntakeArmPosition(15, -90, 0, false));
+        savedPositions.put("postGrab", new IntakeArmPosition(30, 0, 0, false));
+        savedPositions.put("stupidGrab", new IntakeArmPosition(38, 0, 90, true));
+        savedPositions.put("lowBar", new IntakeArmPosition(18, 80, 90, false));
+        savedPositions.put("fight", new IntakeArmPosition(80, 80, 0, true));
+        savedPositions.put("limelight", new IntakeArmPosition(15, -15, 0, true));
 
-        savedPositions.put("park", new IntakeArmPosition(60, 90, 0, true));//0.233,-75
+        savedPositions.put("park", new IntakeArmPosition(60, 90, 0, true));
 
     }
 
@@ -91,6 +91,7 @@ public class IntakeArm {
     //this cycles between transfer, preGrab, grab, and then back to transfer
     //this allows us to quickly cycle to the desired pitch
     public void cycle() {
+
         if (isPitchEqualToSavedIntakePosition("preGrab")) {
             setOnlySpecifiedValuesToSavedIntakeArmPosition("grab", true, true, false, true);
         } else if (isPitchEqualToSavedIntakePosition("grab")){
@@ -98,8 +99,13 @@ public class IntakeArm {
         } else if (isPitchEqualToSavedIntakePosition("grabCheck")){
             setOnlySpecifiedValuesToSavedIntakeArmPosition("preGrab", true, true, false, true);
         } else {
-            //this is for going from preTransfer or whatever
-            setToSavedIntakeArmPosition("preGrab");
+            //used only for the start of teleop when we started with a sample already in grabber
+            if (intakeArm.isAngleEqualToGivenAngle(-3600)) {
+                setOnlySpecifiedValuesToSavedIntakeArmPosition("grabCheck", true, true, false, true);
+            } else {
+                //this is for going from preTransfer or whatever
+                setToSavedIntakeArmPosition("preGrab");
+            }
         }
     }
 

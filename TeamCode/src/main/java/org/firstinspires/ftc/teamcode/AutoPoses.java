@@ -99,14 +99,14 @@ public class AutoPoses {
                         )),
                         new ProfileAccelConstraint(intakeMinAccel, intakeMaxAccel)
                 )*/
-                .splineToLinearHeading(shiftPoseByInputs(intakePose, 6, 0, 0), Math.toRadians(180),
+                .splineToLinearHeading(shiftPoseByInputs(intakePose, 0, 0, 0), Math.toRadians(180),
                         new MinVelConstraint(Arrays.asList(
                                 drive.kinematics.new WheelVelConstraint(intakeMaxWheelVel),
                                 new AngularVelConstraint(Math.PI * 1.5)
                         )),
                         new ProfileAccelConstraint(intakeMinAccel, intakeMaxAccel)
-                )
-                .strafeToConstantHeading(intakePose.position);
+                );
+                //.strafeToConstantHeading(intakePose.position);
     }
 
     public static TrajectoryActionBuilder fromIntakeToBucket(MecanumDrive drive, Pose2d intakePose) {

@@ -405,6 +405,7 @@ class AutoActions {
                 llTimer.reset();
                 initialized = true;
             }
+
             double desiredDistance;
             //striahgt: 4.3, -6
             //right: 4, -9

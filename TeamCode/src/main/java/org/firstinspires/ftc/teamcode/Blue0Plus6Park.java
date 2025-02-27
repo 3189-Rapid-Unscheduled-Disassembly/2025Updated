@@ -70,11 +70,11 @@ public class Blue0Plus6Park extends LinearOpMode {
         GamepadEx playerTwo = new GamepadEx(gamepad2);
 
 
-        double yMax = 14;
+        double yMax = 12;
         double yMin = 0;
 
         double xMax = 10;//12
-        double xMin = -4;//-2
+        double xMin = -7;//-2
         //previous yMax16, yMin
         inputtedPose = new AutoSamplePose(0, 0, 12, 0,
                 true, true, true, xMax, xMin, yMax, yMin, 90, -45);
@@ -218,7 +218,7 @@ public class Blue0Plus6Park extends LinearOpMode {
 
         //static Pose2d scoreBucketPose = new Pose2d(55.5, 57, Math.toRadians(225));
         Pose2d spike1Short = new Pose2d(54, 53, Math.toRadians(250));//53.5x
-        Pose2d spike2Short = new Pose2d(57, 52, Math.toRadians(270));
+        Pose2d spike2Short = new Pose2d(57.5, 52, Math.toRadians(270));
         Pose2d spike3Short = new Pose2d(54, 49.5, Math.toRadians(300));
 
 
@@ -280,7 +280,7 @@ public class Blue0Plus6Park extends LinearOpMode {
                                 autoActions.raiseToHighBucket(),
 
                                 autoActions.waitTillVerticalPastInches(4, true),
-                                autoActions.extendHoriz(14),
+                                autoActions.extendHoriz(12),
 
                                 fromStartToScore.build(),
                                 autoActions.openGripper(),
@@ -304,7 +304,7 @@ public class Blue0Plus6Park extends LinearOpMode {
                                 sleeper.sleep(timeToGrabSampleMS),
                                 autoActions.transfer(),
                                 autoActions.setIntakeArmPosition("preGrab"),
-                                autoActions.extendHoriz(14),
+                                autoActions.extendHoriz(11),
                                 autoActions.raiseToHighBucket(),
                                 autoActions.waitTillSlidesArePartiallyUp(),
                                 fromFirstSampleToScore.build(),
@@ -329,7 +329,7 @@ public class Blue0Plus6Park extends LinearOpMode {
 
                                 autoActions.setIntakeArmPosition("preGrab"),
                                 autoActions.setIntakeRoll(-30),
-                                autoActions.extendHoriz(14),
+                                autoActions.extendHoriz(12),
                                 autoActions.raiseToHighBucket(),
                                 autoActions.waitTillSlidesArePartiallyUp(),
                                 fromSecondSampleToScore.build(),

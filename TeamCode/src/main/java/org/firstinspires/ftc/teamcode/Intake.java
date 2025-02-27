@@ -41,12 +41,12 @@ public class Intake {
         }
         horizontalSlideMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        horizontalSlide = new LinearSlide(horizontalSlideMotor, "horizontalSlide",
-                61.666667, 14, 0, 0.25,
+        horizontalSlide = new LinearSlide(horizontalSlideMotor, "horizontalSlide",//61.6667
+                51.94979, 17, 0, 0.25,
                 0.007, 0.17);
 
         savedPositions.put("transfer", 0.0);
-        savedPositions.put("max", 14.0);
+        savedPositions.put("max", 17.0);
 
 
         intakeArm = new IntakeArm(hardwareMap);
@@ -60,11 +60,11 @@ public class Intake {
     }
 
     public void closeGate() {
-        gate.setAngleDegrees(0);
+        gate.setAngleDegrees(-27);
     }
 
     public void partiallyOpenGate() {
-        gate.setAngleDegrees(60);
+        gate.setAngleDegrees(45);
     }
 
     public void fullyOpenGate() {
