@@ -257,6 +257,30 @@ class AutoActions {
         return new Transfer();
     }
 
+    class TransferAuto implements Action {
+        boolean intialized = false;
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            if (!intialized) {
+                bart.firstFrameOfTransfer();
+                intialized = true;
+            }
+
+            bart.transferAuto();
+            //we are done
+            if (!bart.output.gripper.isOpen() &&
+                    bart.intake.intakeArm.isPitchEqualToSavedIntakePosition("preTransfer")
+            ) {
+                return false;
+            }
+            return true;
+        }
+    }
+    public Action transferAuto() {
+        return new TransferAuto();
+    }
+
+
     class LowerIntakeAtEnd implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {

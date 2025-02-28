@@ -14,8 +14,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import java.util.Arrays;
 
-@Autonomous(name = "Blue 0+7")
-public class Blue0Plus7 extends LinearOpMode {
+@Autonomous(name = "Blue 0+7 Park")
+public class Blue0Plus7Park extends LinearOpMode {
     RobotMain bart;
     MecanumDrive drive;
     Limelight limelight;
@@ -139,6 +139,7 @@ public class Blue0Plus7 extends LinearOpMode {
         Pose2d intakePose2 = new Pose2d(intakeX, inputtedPose2.getY(), Math.toRadians(180));
         Pose2d intakePose3 = new Pose2d(intakeX, inputtedPose3.getY(), Math.toRadians(180));
 
+        Pose2d parkPose = new Pose2d(intakeX, 12, Math.toRadians(180));
 
         TrajectoryActionBuilder fromBucketToIntake1 = AutoPoses.fromBucketToIntake(drive, intakePose);
         TrajectoryActionBuilder fromIntakeToBucket1 = AutoPoses.fromIntakeToBucket(drive, intakePose);
@@ -149,6 +150,7 @@ public class Blue0Plus7 extends LinearOpMode {
         TrajectoryActionBuilder fromBucketToIntake3 = AutoPoses.fromBucketToIntake(drive, intakePose3);
         TrajectoryActionBuilder fromIntakeToBucket3 = AutoPoses.fromIntakeToBucket(drive, intakePose3);
 
+        TrajectoryActionBuilder fromBucketToPark = AutoPoses.fromBucketToIntake(drive, parkPose);
 
 
 /*
@@ -219,7 +221,7 @@ public class Blue0Plus7 extends LinearOpMode {
 
         //static Pose2d scoreBucketPose = new Pose2d(55.5, 57, Math.toRadians(225));
         Pose2d spike1Short = new Pose2d(54, 53, Math.toRadians(250));//53.5x
-        Pose2d spike2Short = new Pose2d(53.5, 52.75, Math.toRadians(270));
+        Pose2d spike2Short = new Pose2d(53.25, 53, Math.toRadians(270));//53.25, 52.75
         Pose2d spike3Short = new Pose2d(53.5, 49.5, Math.toRadians(300));
 
 
@@ -248,9 +250,9 @@ public class Blue0Plus7 extends LinearOpMode {
 
         TrajectoryActionBuilder fromScoreToThirdSample = drive.actionBuilder(AutoPoses.scoreBucketPose)
                 .strafeToLinearHeading(spike3Short.position, spike3Short.heading);
-        TrajectoryActionBuilder fromThirdSampleToScore = drive.actionBuilder(spike3Short)
+        TrajectoryActionBuilder fromThirdSampleToScoreCycle = drive.actionBuilder(spike3Short)
                 //.strafeToConstantHeading(AutoPoses.shiftPoseByInputs(AutoPoses.thirdSpikeBucketPose, -12, 0, 0).position)
-                .strafeToLinearHeading(AutoPoses.scoreBucketPose.position, AutoPoses.scoreBucketPose.heading);
+                .strafeToLinearHeading(AutoPoses.scoreBucketCycleForThirdSpikePose.position, AutoPoses.scoreBucketCycleForThirdSpikePose.heading);
 
         int timeToGrabSampleMS = 300;
 
@@ -380,7 +382,7 @@ public class Blue0Plus7 extends LinearOpMode {
                                                 autoActions.transfer(),
                                                 autoActions.raiseToHighBucket()
                                         ),
-                                        fromThirdSampleToScore.build()
+                                        fromThirdSampleToScoreCycle.build()
                                 ),
 
                                 autoActions.setIntakeArmPosition("preGrab"),
@@ -393,7 +395,7 @@ public class Blue0Plus7 extends LinearOpMode {
                                 new ParallelAction(
                                         fromBucketToIntake1.build(),
                                         new SequentialAction(
-                                                autoActions.waitTillPastY(50, false),
+                                                autoActions.waitTillPastY(44, false),
                                                 autoActions.lowerToTransfer(),
                                                 autoActions.waitTillPastY(36, false),//16
                                                 autoActions.extendHoriz(horizTargetSub),
@@ -413,7 +415,7 @@ public class Blue0Plus7 extends LinearOpMode {
                                 new ParallelAction(
                                         fromIntakeToBucket1.build(),
                                         new SequentialAction(
-                                                autoActions.transfer(),
+                                                autoActions.transferAuto(),
                                                 autoActions.raiseToHighBucket()
                                         )
                                 ),
@@ -429,7 +431,7 @@ public class Blue0Plus7 extends LinearOpMode {
                                 new ParallelAction(
                                         fromBucketToIntake2.build(),
                                         new SequentialAction(
-                                                autoActions.waitTillPastY(50, false),
+                                                autoActions.waitTillPastY(44, false),
                                                 autoActions.lowerToTransfer(),
                                                 autoActions.waitTillPastY(16, false),
                                                 autoActions.extendHoriz(horizTargetSub2),
@@ -450,7 +452,7 @@ public class Blue0Plus7 extends LinearOpMode {
                                 new ParallelAction(
                                         fromIntakeToBucket2.build(),
                                         new SequentialAction(
-                                                autoActions.transfer(),
+                                                autoActions.transferAuto(),
                                                 autoActions.raiseToHighBucket()
                                         )
                                 ),
@@ -466,7 +468,7 @@ public class Blue0Plus7 extends LinearOpMode {
                                 new ParallelAction(
                                         fromBucketToIntake3.build(),
                                         new SequentialAction(
-                                                autoActions.waitTillPastY(50, false),
+                                                autoActions.waitTillPastY(44, false),
                                                 autoActions.lowerToTransfer(),
                                                 autoActions.waitTillPastY(16, false),
                                                 autoActions.extendHoriz(horizTargetSub3),
@@ -487,19 +489,26 @@ public class Blue0Plus7 extends LinearOpMode {
                                 new ParallelAction(
                                         fromIntakeToBucket3.build(),
                                         new SequentialAction(
-                                                autoActions.transfer(),
-                                                autoActions.raiseToHighBucket(),
-                                                autoActions.setIntakeArmPosition("preGrab")
+                                                autoActions.transferAuto(),
+                                                autoActions.raiseToHighBucket()
                                         )
                                 ),
 
                                 autoActions.waitTillSlidesAreAllTheWayUp(),
-
                                 autoActions.openGripper(),
-
                                 sleeper.sleep(timeToDropMS),
+                                autoActions.setIntakeArmPosition("park"),
 
-
+                                //PARK
+                                new ParallelAction(
+                                        fromBucketToPark.build(),
+                                        new SequentialAction(
+                                                autoActions.waitTillPastY(36, false),
+                                                autoActions.raiseToPark(),
+                                                autoActions.waitTillPastY(16, false),
+                                                autoActions.extendHoriz(6)
+                                        )
+                                ),
 
 
 

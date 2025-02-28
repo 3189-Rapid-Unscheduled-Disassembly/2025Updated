@@ -118,6 +118,13 @@ public class RobotMain {
         }
     }
 
+    public void transferAuto() {
+        boolean outputIsReady = output.transfer();
+        boolean outputShouldGrab = intake.transferAuto(outputIsReady, output.gripper.isOpen());
+        if (outputShouldGrab) {
+            output.gripper.close();
+        }
+    }
 
 
     public void driveRobotRelative(double forwardSpeed, double strafeSpeed, double turnSpeed) {

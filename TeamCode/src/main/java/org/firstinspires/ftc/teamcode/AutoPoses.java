@@ -57,6 +57,10 @@ public class AutoPoses {
 
     static Pose2d scoreBucketPose = new Pose2d(55, 57.5, Math.toRadians(225));//55.5, 57
 
+    static Pose2d scoreBucketCyclePose = new Pose2d(58, 50, Math.toRadians(250));//59, 50, 250
+
+    static Pose2d scoreBucketCycleForThirdSpikePose = shiftPoseByInputs(scoreBucketCyclePose, 0, 0, 0);//59, 50, 250
+
     static Pose2d firstSpikeBucketPose = new Pose2d(48.5, 43, Math.toRadians(270));
 
     static Pose2d secondSpikeBucketPose = new Pose2d(57.25, 43, Math.toRadians(270));
@@ -84,7 +88,7 @@ public class AutoPoses {
     static double bucketMaxAccel = 55;
 
     public static TrajectoryActionBuilder fromBucketToIntake(MecanumDrive drive, Pose2d intakePose) {
-        return drive.actionBuilder(scoreBucketPose)
+        return drive.actionBuilder(scoreBucketCyclePose)
                 /*.splineToLinearHeading(new Pose2d(46, 36, Math.toRadians(270)), Math.toRadians(270),
                         new MinVelConstraint(Arrays.asList(
                                 drive.kinematics.new WheelVelConstraint(intakeMaxWheelVel),
@@ -92,13 +96,28 @@ public class AutoPoses {
                         )),
                         new ProfileAccelConstraint(intakeMinAccel, intakeMaxAccel)
                 )*/
-                .splineToLinearHeading(shiftPoseByInputs(intakePose, 6, 0, 0), Math.toRadians(180),
+                /*.splineToLinearHeading(shiftPoseByInputs(intakePose, 6, 0, 0), Math.toRadians(180),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(intakeMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(intakeMinAccel, intakeMaxAccel)
+                );*/
+                /*.splineToLinearHeading(new Pose2d(48, 24, Math.toRadians(250)), Math.toRadians(250),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(intakeMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(intakeMinAccel, intakeMaxAccel)
+                )*/
+                .splineToSplineHeading(shiftPoseByInputs(intakePose, 1, 0, 0), Math.toRadians(180),
                         new MinVelConstraint(Arrays.asList(
                                 drive.kinematics.new WheelVelConstraint(intakeMaxWheelVel),
                                 new AngularVelConstraint(Math.PI * 1.5)
                         )),
                         new ProfileAccelConstraint(intakeMinAccel, intakeMaxAccel)
                 );
+
     }
 
     public static TrajectoryActionBuilder fromIntakeToBucket(MecanumDrive drive, Pose2d intakePose) {
@@ -110,14 +129,14 @@ public class AutoPoses {
                         )),
                         new ProfileAccelConstraint(bucketMinAccel, bucketMaxAccel)
                 )
-                .splineToSplineHeading(new Pose2d(46, 28, Math.toRadians(270)), Math.toRadians(90),
+                .splineToSplineHeading(new Pose2d(50, 25, Math.toRadians(250)), Math.toRadians(70),
                         new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(intakeMaxWheelVel),
+                                drive.kinematics.new WheelVelConstraint(bucketMaxWheelVel),
                                 new AngularVelConstraint(Math.PI * 1.5)
                         )),
-                        new ProfileAccelConstraint(intakeMinAccel, intakeMaxAccel)
+                        new ProfileAccelConstraint(bucketMinAccel, bucketMaxAccel)
                 )
-                .splineToSplineHeading(scoreBucketPose, Math.toRadians(45),
+                .splineToSplineHeading(scoreBucketCyclePose, Math.toRadians(70),
                         new MinVelConstraint(Arrays.asList(
                                 drive.kinematics.new WheelVelConstraint(bucketMaxWheelVel),
                                 new AngularVelConstraint(Math.PI * 1.5)

@@ -42,10 +42,10 @@ public class Intake {
         horizontalSlideMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         horizontalSlide = new LinearSlide(horizontalSlideMotor, "horizontalSlide",//61.6667
-                51.94979, 12, 0, 0.25,
+                51.94979, 12, -1, 0.25,
                 0.007, 0.17);
 
-        savedPositions.put("transfer", 0.0);
+        savedPositions.put("transfer", 0.0);//-0.5
         savedPositions.put("max", 12.0);
 
 
@@ -145,6 +145,66 @@ public class Intake {
 
         //return false;
     }
+
+    public boolean transferAuto(boolean outputIsReady, boolean outputGripperIsOpen) {
+        if (timer.milliseconds() > 4000) {
+            timer.reset();
+        }
+
+        if (horizontalSlide.isAbovePositionInches(-0.5)) {
+            horizontalSlide.setPower(-0.8);
+        } else {
+            horizontalSlide.setPower(0);
+        }
+
+        //this is what happens after the output closes, making us open the intake gripper
+        if (!outputGripperIsOpen) {
+            //we are ready to open intake and get out of way
+            if (timer.milliseconds() > 200) {
+                if (timer.milliseconds() > 300) {
+                    intakeArm.setToSavedIntakeArmPosition("preTransfer");
+                }
+                intakeArm.intakeGripper.open();
+            }
+            return true;
+        } else {
+            if (!outputIsReady) {
+                intakeArm.setToSavedIntakeArmPosition("preTransfer");
+            } else {
+                intakeArm.setToSavedIntakeArmPosition("transfer");
+                if (!isHorizontalSlideAtSavedPos("transfer", 0.5)) {
+                    timer.reset();
+                } else {
+                    if (timer.milliseconds() > waitTimeMS) {
+                        timer.reset();
+                        horizontalSlide.setPower(-0.2);
+                        return true;
+                    }
+                }
+            }
+            return false;
+            /*if (!isHorizontalSlideAtSavedPos("transfer", 0.5)) {
+                intakeArm.setToSavedIntakeArmPosition("transfer");
+                timer.reset();
+            } else {
+                if (!outputIsReady) {
+                    intakeArm.setToSavedIntakeArmPosition("preTransfer");
+                    timer.reset();
+                } else {
+                    intakeArm.setToSavedIntakeArmPosition("transfer");
+
+                    if (timer.milliseconds() > waitTimeMS) {//500
+                        timer.reset();
+                        return true;
+                    }
+
+                }
+            }*/
+        }
+
+        //return false;
+    }
+
 
     public void setHorizontalSlideToSavedPosition(String key) {
         horizontalSlide.setTargetInches(savedPositions.get(key));
