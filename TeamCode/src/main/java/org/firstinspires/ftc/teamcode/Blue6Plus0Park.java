@@ -74,7 +74,7 @@ public class Blue6Plus0Park extends LinearOpMode {
 
 
         double yMax = 20;
-        double yMin = 3;
+        double yMin = 6;//can't reach without driving forward a little
         //previous yMax16, yMin
         inputtedPose = new AutoSamplePose(1, 0, 12, 0,
                 false, true, true, 5, -5, yMax, yMin, 90, -45);
@@ -446,7 +446,7 @@ public class Blue6Plus0Park extends LinearOpMode {
                                         new SequentialAction(
                                             autoActions.waitTillPastY(52, false),
                                             autoActions.setIntakeArmPosition("park"),
-                                            autoActions.extendHoriz(17)
+                                            autoActions.extendHoriz(12)
                                         ),
                                         fromGrabToScoreCycle.build()
                                 ),

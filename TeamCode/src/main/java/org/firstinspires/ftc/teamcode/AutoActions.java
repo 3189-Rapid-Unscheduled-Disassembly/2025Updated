@@ -824,7 +824,7 @@ class AutoActions {
     class WaitTillSlidesAreAllTheWayUp implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            return !bart.output.verticalSlides.isAbovePositionInches(17.25);
+            return !bart.output.verticalSlides.isAbovePositionInches(17.00);//17.25
         }
     }
 

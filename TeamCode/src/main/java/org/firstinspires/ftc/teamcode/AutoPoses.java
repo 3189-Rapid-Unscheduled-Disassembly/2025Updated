@@ -79,34 +79,26 @@ public class AutoPoses {
     static double intakeMinAccel = -60;
     static double intakeMaxAccel = 45;
 
-    static double bucketMaxWheelVel = 60;
-    static double bucketMinAccel = -60;
-    static double bucketMaxAccel = 50;
+    static double bucketMaxWheelVel = 70;
+    static double bucketMinAccel = -65;
+    static double bucketMaxAccel = 55;
 
     public static TrajectoryActionBuilder fromBucketToIntake(MecanumDrive drive, Pose2d intakePose) {
         return drive.actionBuilder(scoreBucketPose)
-                /*.splineToLinearHeading(new Pose2d(48, 42, Math.toRadians(247.5)), Math.toRadians(247.5),
-                        new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(intakeMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
-                        )),
-                        new ProfileAccelConstraint(intakeMinAccel, intakeMaxAccel)
-                )
-                .splineToSplineHeading(shiftPoseByInputs(intakePose, 6, 4, 0), Math.toRadians(180),
+                /*.splineToLinearHeading(new Pose2d(46, 36, Math.toRadians(270)), Math.toRadians(270),
                         new MinVelConstraint(Arrays.asList(
                                 drive.kinematics.new WheelVelConstraint(intakeMaxWheelVel),
                                 new AngularVelConstraint(Math.PI * 1.5)
                         )),
                         new ProfileAccelConstraint(intakeMinAccel, intakeMaxAccel)
                 )*/
-                .splineToLinearHeading(shiftPoseByInputs(intakePose, 0, 0, 0), Math.toRadians(180),
+                .splineToLinearHeading(shiftPoseByInputs(intakePose, 6, 0, 0), Math.toRadians(180),
                         new MinVelConstraint(Arrays.asList(
                                 drive.kinematics.new WheelVelConstraint(intakeMaxWheelVel),
                                 new AngularVelConstraint(Math.PI * 1.5)
                         )),
                         new ProfileAccelConstraint(intakeMinAccel, intakeMaxAccel)
                 );
-                //.strafeToConstantHeading(intakePose.position);
     }
 
     public static TrajectoryActionBuilder fromIntakeToBucket(MecanumDrive drive, Pose2d intakePose) {
@@ -117,6 +109,13 @@ public class AutoPoses {
                                 new AngularVelConstraint(Math.PI * 1.5)
                         )),
                         new ProfileAccelConstraint(bucketMinAccel, bucketMaxAccel)
+                )
+                .splineToSplineHeading(new Pose2d(46, 28, Math.toRadians(270)), Math.toRadians(90),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(intakeMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(intakeMinAccel, intakeMaxAccel)
                 )
                 .splineToSplineHeading(scoreBucketPose, Math.toRadians(45),
                         new MinVelConstraint(Arrays.asList(

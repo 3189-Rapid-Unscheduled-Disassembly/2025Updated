@@ -42,11 +42,11 @@ public class Intake {
         horizontalSlideMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         horizontalSlide = new LinearSlide(horizontalSlideMotor, "horizontalSlide",//61.6667
-                51.94979, 17, 0, 0.25,
+                51.94979, 12, 0, 0.25,
                 0.007, 0.17);
 
         savedPositions.put("transfer", 0.0);
-        savedPositions.put("max", 17.0);
+        savedPositions.put("max", 12.0);
 
 
         intakeArm = new IntakeArm(hardwareMap);
@@ -57,6 +57,12 @@ public class Intake {
 
         timer = new ElapsedTime();
         timer.reset();
+    }
+
+    public void changeSavedPositionByInches(String key, double inchChange) {
+        double newInches = savedPositions.get(key) + inchChange;
+        savedPositions.remove(key);
+        savedPositions.put(key, newInches);
     }
 
     public void closeGate() {
@@ -75,10 +81,11 @@ public class Intake {
     }
 
     public void firstFrameOfTransfer() {
+        double slideDistanceMultipllier = -40;//-36
         if (intakeArm.isPitchEqualToSavedIntakePosition("grabCheck")) {
-            waitTimeMS = -36*horizontalSlide.currentInches() + 800;
+            waitTimeMS = slideDistanceMultipllier*horizontalSlide.currentInches() + 300;//400
         } else {
-            waitTimeMS = -33.333 * horizontalSlide.currentInches() + 800;
+            waitTimeMS = slideDistanceMultipllier*horizontalSlide.currentInches() + 400;//450
         }
 
         setHorizontalSlideToSavedPosition("transfer");
@@ -96,16 +103,29 @@ public class Intake {
         if (!outputGripperIsOpen) {
             //we are ready to open intake and get out of way
             if (timer.milliseconds() > 200) {
-                if (timer.milliseconds() > 400) {
+                if (timer.milliseconds() > 300) {
                     intakeArm.setToSavedIntakeArmPosition("preTransfer");
                 }
                 intakeArm.intakeGripper.open();
             }
             return true;
         } else {
-            //the horizontal slide is NOT far enough away to begin moving the arm
-            if (!isHorizontalSlideAtSavedPos("transfer", 2)) {
+            if (!outputIsReady) {
                 intakeArm.setToSavedIntakeArmPosition("preTransfer");
+            } else {
+                intakeArm.setToSavedIntakeArmPosition("transfer");
+                if (!isHorizontalSlideAtSavedPos("transfer", 0.5)) {
+                    timer.reset();
+                } else {
+                    if (timer.milliseconds() > waitTimeMS) {
+                        timer.reset();
+                        return true;
+                    }
+                }
+            }
+            return false;
+            /*if (!isHorizontalSlideAtSavedPos("transfer", 0.5)) {
+                intakeArm.setToSavedIntakeArmPosition("transfer");
                 timer.reset();
             } else {
                 if (!outputIsReady) {
@@ -120,12 +140,10 @@ public class Intake {
                     }
 
                 }
-            }
+            }*/
         }
 
-        return false;
-
-        //tell the output to grab
+        //return false;
     }
 
     public void setHorizontalSlideToSavedPosition(String key) {

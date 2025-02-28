@@ -14,8 +14,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import java.util.Arrays;
 
-@Autonomous(name = "Blue 0+6 Park")
-public class Blue0Plus6Park extends LinearOpMode {
+@Autonomous(name = "Blue 0+7")
+public class Blue0Plus7 extends LinearOpMode {
     RobotMain bart;
     MecanumDrive drive;
     Limelight limelight;
@@ -131,7 +131,7 @@ public class Blue0Plus6Park extends LinearOpMode {
         autoActions = new AutoActions(bart, drive, limelight);
 
         int maxHuntingTimeMS = 750;
-        int timeToDropMS = 50;
+        int timeToDropMS = 0;
 
         double intakeX = 23;
 
@@ -147,6 +147,7 @@ public class Blue0Plus6Park extends LinearOpMode {
         TrajectoryActionBuilder fromIntakeToBucket2 = AutoPoses.fromIntakeToBucket(drive, intakePose2);
 
         TrajectoryActionBuilder fromBucketToIntake3 = AutoPoses.fromBucketToIntake(drive, intakePose3);
+        TrajectoryActionBuilder fromIntakeToBucket3 = AutoPoses.fromIntakeToBucket(drive, intakePose3);
 
 
 
@@ -218,7 +219,7 @@ public class Blue0Plus6Park extends LinearOpMode {
 
         //static Pose2d scoreBucketPose = new Pose2d(55.5, 57, Math.toRadians(225));
         Pose2d spike1Short = new Pose2d(54, 53, Math.toRadians(250));//53.5x
-        Pose2d spike2Short = new Pose2d(54, 52.75, Math.toRadians(270));
+        Pose2d spike2Short = new Pose2d(53.5, 52.75, Math.toRadians(270));
         Pose2d spike3Short = new Pose2d(53.5, 49.5, Math.toRadians(300));
 
 
@@ -230,7 +231,7 @@ public class Blue0Plus6Park extends LinearOpMode {
                                 new AngularVelConstraint(Math.PI * 1.5)
                         )),
                         new ProfileAccelConstraint(AutoPoses.sweepMinAccel, AutoPoses.sweepMaxAccel)
-            );
+                );
 
         TrajectoryActionBuilder fromScoreToFirstSample = drive.actionBuilder(AutoPoses.scoreBucketPose)
                 .strafeToLinearHeading(spike1Short.position, spike1Short.heading);
@@ -240,7 +241,7 @@ public class Blue0Plus6Park extends LinearOpMode {
 
         TrajectoryActionBuilder fromScoreToSecondSample = drive.actionBuilder(AutoPoses.scoreBucketPose)
                 .strafeToLinearHeading(spike2Short.position, spike2Short.heading);
-                //.turnTo(spike2Short.heading);
+        //.turnTo(spike2Short.heading);
         //.strafeToLinearHeading(spike2Short.position, spike2Short.heading);
         TrajectoryActionBuilder fromSecondSampleToScore = drive.actionBuilder(spike2Short)
                 .strafeToLinearHeading(AutoPoses.scoreBucketPose.position, AutoPoses.scoreBucketPose.heading);
@@ -307,12 +308,18 @@ public class Blue0Plus6Park extends LinearOpMode {
                                 //autoActions.setIntakeRoll(20),
                                 autoActions.extendHoriz(11),
                                 autoActions.raiseToHighBucket(),
-                                autoActions.waitTillSlidesArePartiallyUp(),
-                                fromFirstSampleToScore.build(),
-                                autoActions.waitTillSlidesAreAllTheWayUp(),
-                                autoActions.openGripper(),
 
-                                sleeper.sleep(timeToDropMS),
+                                //score spike 1
+                                autoActions.waitTillSlidesArePartiallyUp(),
+                                new ParallelAction(
+                                        fromFirstSampleToScore.build(),
+                                        new SequentialAction(
+                                                autoActions.waitTillSlidesAreAllTheWayUp(),
+                                                autoActions.openGripper(),
+
+                                                sleeper.sleep(timeToDropMS)
+                                        )
+                                ),
 
                                 //spike 2
                                 new ParallelAction(
@@ -333,12 +340,25 @@ public class Blue0Plus6Park extends LinearOpMode {
                                 autoActions.setIntakeRoll(-30),
                                 autoActions.extendHoriz(12),
                                 autoActions.raiseToHighBucket(),
+
+
+                                //score spike 2
                                 autoActions.waitTillSlidesArePartiallyUp(),
-                                fromSecondSampleToScore.build(),
+                                new ParallelAction(
+                                        fromSecondSampleToScore.build(),
+                                        new SequentialAction(
+                                                autoActions.waitTillSlidesAreAllTheWayUp(),
+                                                autoActions.openGripper(),
+
+                                                sleeper.sleep(timeToDropMS)
+                                        )
+                                ),
+
+                                /*fromSecondSampleToScore.build(),
                                 autoActions.waitTillSlidesAreAllTheWayUp(),
                                 autoActions.openGripper(),
 
-                                sleeper.sleep(timeToDropMS),
+                                sleeper.sleep(timeToDropMS),*/
 
                                 //spike 3
                                 new ParallelAction(
@@ -355,8 +375,8 @@ public class Blue0Plus6Park extends LinearOpMode {
                                 sleeper.sleep(200),
                                 new ParallelAction(
                                         new SequentialAction(
-                                                autoActions.extendHoriz(0),
-                                                autoActions.waitTillHorizPastInches(10, false),
+                                                //autoActions.extendHoriz(0),
+                                                //autoActions.waitTillHorizPastInches(10, false),
                                                 autoActions.transfer(),
                                                 autoActions.raiseToHighBucket()
                                         ),
@@ -442,13 +462,12 @@ public class Blue0Plus6Park extends LinearOpMode {
                                 sleeper.sleep(timeToDropMS),
                                 autoActions.setIntakeArmPosition("limelight"),
 
-                                //PARK
+                                //SUB INTAKE 3
                                 new ParallelAction(
                                         fromBucketToIntake3.build(),
                                         new SequentialAction(
                                                 autoActions.waitTillPastY(50, false),
-                                                //autoActions.lowerToPrePark(),
-                                                autoActions.raiseToPark(),
+                                                autoActions.lowerToTransfer(),
                                                 autoActions.waitTillPastY(16, false),
                                                 autoActions.extendHoriz(horizTargetSub3),
                                                 autoActions.setIntakeRoll(inputtedPose3.getRoll())
@@ -457,13 +476,29 @@ public class Blue0Plus6Park extends LinearOpMode {
 
                                 //autoActions.raiseToPark(),
 
-                                autoActions.lineUpWithLimelight(inputtedPose3, 2000),
+                                autoActions.lineUpWithLimelight(inputtedPose3, maxHuntingTimeMS),
                                 autoActions.setIntakeArmPosition("preGrab"),
                                 autoActions.setIntakeRoll(inputtedPose3.getRoll()),
-                                sleeper.sleep(300),
+                                sleeper.sleep(200),
                                 autoActions.setIntakeArmPosition("grab"),
                                 autoActions.setIntakeRoll(inputtedPose3.getRoll()),
                                 sleeper.sleep(timeToGrabSampleMS),
+
+                                new ParallelAction(
+                                        fromIntakeToBucket3.build(),
+                                        new SequentialAction(
+                                                autoActions.transfer(),
+                                                autoActions.raiseToHighBucket(),
+                                                autoActions.setIntakeArmPosition("preGrab")
+                                        )
+                                ),
+
+                                autoActions.waitTillSlidesAreAllTheWayUp(),
+
+                                autoActions.openGripper(),
+
+                                sleeper.sleep(timeToDropMS),
+
 
 
 

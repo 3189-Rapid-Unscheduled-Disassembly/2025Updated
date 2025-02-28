@@ -136,9 +136,20 @@ public class MeepMeepTesting {
 //                .splineToSplineHeading(intakePose, Math.toRadians(180))
                 /*.splineToLinearHeading(shiftPoseByInputs(intakePose, 1, 0, 0), Math.toRadians(0))
                 .splineToSplineHeading(scoreBucketPose, Math.toRadians(60))*/
-                .splineToLinearHeading(shiftPoseByInputs(intakePose, 4, 0, 0), Math.toRadians(180)
+                /*.splineToLinearHeading(shiftPoseByInputs(intakePose, 4, 0, 0), Math.toRadians(180)
                 )
-                .strafeToConstantHeading(intakePose.position)
+                .strafeToConstantHeading(intakePose.position)*/
+
+
+
+                .splineToLinearHeading(new Pose2d(46, 36, Math.toRadians(270)), Math.toRadians(270))
+                .splineToSplineHeading(shiftPoseByInputs(intakePose, 0, 0, 0), Math.toRadians(180))
+
+
+                .splineToLinearHeading(shiftPoseByInputs(intakePose, 1, 0, 0), Math.toRadians(0))
+                .splineToSplineHeading(new Pose2d(46, 36, Math.toRadians(270)), Math.toRadians(90))
+                .splineToSplineHeading(scoreBucketPose, Math.toRadians(45))
+
                 /*.splineToSplineHeading(new Pose2d(grabSpark3Pose.position.x+8, grabSpark3Pose.position.y+10, Math.toRadians(135)), Math.toRadians(90),
                         new MinVelConstraint(Arrays.asList(
                                 drive.kinematics.new WheelVelConstraint(sweepMaxWheelVel),

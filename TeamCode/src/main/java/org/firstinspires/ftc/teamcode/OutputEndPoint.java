@@ -95,7 +95,6 @@ public class OutputEndPoint {
         return calculateSlidePoint();
     }
 
-
     public boolean calculateSlidePoint() {
         double a = Math.pow(SLIDE_SLOPE, 2) + 1;
         double b = -2 * armPoint.x + 2 * SLIDE_SLOPE * (SLIDE_Y_INTERCEPT - armPoint.y);
@@ -131,6 +130,10 @@ public class OutputEndPoint {
     }
 
 
+    public void changeSlideTargetByInches(double inchChange) {
+        slideInches += inchChange;
+        calculatePoints();
+    }
 
     public String pointTelemetry() {
         return "\nWrist: " + wristPoint.toString() + "\nArm: " + armPoint.toString() + "\nSlide: " + slidePoint.toString();

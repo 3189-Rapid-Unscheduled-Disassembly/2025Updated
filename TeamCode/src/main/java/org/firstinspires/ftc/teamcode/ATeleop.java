@@ -28,6 +28,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @TeleOp
 public class ATeleop extends LinearOpMode {
@@ -127,6 +128,9 @@ public class ATeleop extends LinearOpMode {
 
         if (!isOutputArmJank) {
             bart.output.setComponentPositionsFromSavedPosition("grab");
+            if (bart.output.verticalSlides.isAbovePositionInches(2)) {
+                bart.output.setTargetToCurrentPosition();
+            }
         } else {
             bart.output.setTargetToCurrentPosition();
         }
@@ -184,7 +188,9 @@ public class ATeleop extends LinearOpMode {
             telemetry.addData("vertInches", bart.output.verticalSlides.currentInches());
             telemetry.addData("horizInches", bart.intake.horizontalSlide.currentInches());
             telemetry.addData("hoirzIsAboveMax", bart.intake.horizontalSlide.isAboveMax());
-            telemetry.addData("intakeArmDeg", bart.intake.intakeArm.intakeWristPitch.currentAngleDegrees());
+
+            telemetry.addData("transferVertInches", bart.output.savedPositions.get("transfer").slideInches);
+            telemetry.addData("transferHorizInches", bart.intake.savedPositions.get("transfer"));
 
 
             //telemetry.addLine(bart.output.wrist.toString());
@@ -315,13 +321,29 @@ public class ATeleop extends LinearOpMode {
 
         //INTAKE CONTROL
         if (playerTwo.wasJustPressed(GamepadKeys.Button.DPAD_UP)) {
-            bart.intake.intakeArm.cycle();
+            if (alternateControl) {
+                bart.intake.changeSavedPositionByInches("transfer", 0.25);
+            } else if (stupidControl) {
+                //move the transfer pose up quickly
+                Objects.requireNonNull(bart.output.savedPositions.get("transfer")).changeSlideTargetByInches(0.25);
+            } else {
+                bart.intake.intakeArm.cycle();
+            }
         }
+
         if (playerTwo.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) {
             bart.intake.intakeArm.moveRollPositive45();
         }
         if (playerTwo.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) {
             bart.intake.intakeArm.moveRollNegative45();
+        }
+
+        if (playerTwo.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) {
+            if (alternateControl) {
+                bart.intake.changeSavedPositionByInches("transfer", -0.25);
+            } else if (stupidControl) {
+                Objects.requireNonNull(bart.output.savedPositions.get("transfer")).changeSlideTargetByInches(-0.25);
+            }
         }
 
         if (playerTwo.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) {
@@ -442,15 +464,6 @@ public class ATeleop extends LinearOpMode {
                 bart.intake.horizontalSlide.resetEncoder();
             }
         }
-
-
-        //this is kinda jank, wanna find a better way
-        //honestly really shocked this even works at all
-        /*if (!alternateControl && playerTwo.getRightY() != 0) {
-            usingHorizManualControl = false;
-        }*/
-
-
     }
 }
 
