@@ -2,11 +2,14 @@ package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.AngularVelConstraint;
 import com.acmerobotics.roadrunner.MinVelConstraint;
+import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.ProfileAccelConstraint;
+import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
@@ -26,6 +29,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -34,6 +38,16 @@ import java.util.Objects;
 public class ATeleop extends LinearOpMode {
 
     RobotMain bart;
+
+
+    private FtcDashboard dash = FtcDashboard.getInstance();
+    private List<Action> runningActions = new ArrayList<>();
+
+    AutoActions autoActions;
+    Sleeper sleeper;
+
+    TrajectoryActionBuilder fromGrabToScoreCycle;
+    TrajectoryActionBuilder fromScoreCycleToGrab;
 
 
     /**
@@ -99,6 +113,10 @@ public class ATeleop extends LinearOpMode {
         //create robot
         bart = new RobotMain(hardwareMap, telemetry, false);
 
+        fromGrabToScoreCycle = AutoPoses.fromGrabToScoreCycleTeleop(bart.mecanaDruve);
+        fromScoreCycleToGrab = AutoPoses.fromScoreCycleToGrabTeleop(bart.mecanaDruve);
+
+
         //Create Gamepads
         playerOne = new GamepadEx(gamepad1);
         playerTwo = new GamepadEx(gamepad2);
@@ -108,6 +126,10 @@ public class ATeleop extends LinearOpMode {
         for (LynxModule hub : allHubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
+
+        autoActions = new AutoActions(bart, bart.mecanaDruve);
+        sleeper = new Sleeper();
+
 
         boolean isIntakeArmJank = false;
         boolean isOutputArmJank = false;
@@ -155,12 +177,13 @@ public class ATeleop extends LinearOpMode {
 
 
 
-        TelemetryPacket packet = new TelemetryPacket();
         FtcDashboard dashboard = FtcDashboard.getInstance();
         Telemetry dashboardTelemetry = dashboard.getTelemetry();
 
 
         while (opModeIsActive()) {
+            TelemetryPacket packet = new TelemetryPacket();
+
 
             //READ
             playerOne.readButtons();
@@ -169,14 +192,26 @@ public class ATeleop extends LinearOpMode {
 
 
 
+            if (playerOne.isDown(GamepadKeys.Button.LEFT_BUMPER)) {
+                autoControl(packet);
+            } else {
+                manualControl();
+            }
 
-            //UPDATE
-            manualControl();
+            if (playerOne.wasJustReleased(GamepadKeys.Button.LEFT_BUMPER)) {
+                runningActions.clear();
+            }
+            if (playerOne.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) {
+                bart.mecanaDruve.setPosFromOutside(AutoPoses.grabWallClipsPose);
+            }
+
 
             //WRITE
             bart.hooks.goToTarget();
             bart.writeAllComponents();
-            bart.mecanaDruve.updatePoseEstimate();
+            if (!playerOne.isDown(GamepadKeys.Button.LEFT_BUMPER)) {
+                bart.mecanaDruve.updatePoseEstimate();
+            }
 
 
             /** TELEMETRY **/
@@ -187,10 +222,11 @@ public class ATeleop extends LinearOpMode {
             telemetry.addData("hooksIsAtTarget", bart.hooks.isAtTarget());
             telemetry.addData("vertInches", bart.output.verticalSlides.currentInches());
             telemetry.addData("horizInches", bart.intake.horizontalSlide.currentInches());
+            telemetry.addData("horizTicks", bart.intake.horizontalSlide.currentTicks());
             telemetry.addData("hoirzIsAboveMax", bart.intake.horizontalSlide.isAboveMax());
 
-            telemetry.addData("transferVertInches", bart.output.savedPositions.get("transfer").slideInches);
-            telemetry.addData("transferHorizInches", bart.intake.savedPositions.get("transfer"));
+            //telemetry.addData("transferVertInches", bart.output.savedPositions.get("transfer").slideInches);
+            //telemetry.addData("transferHorizInches", bart.intake.savedPositions.get("transfer"));
 
 
             //telemetry.addLine(bart.output.wrist.toString());
@@ -227,11 +263,11 @@ public class ATeleop extends LinearOpMode {
 
             //telemetry.addData("Target Drive Angle", targetAngle);
 
-            /*telemetry.addData("horizInches", bart.intake.currentInches());
-            telemetry.addData("horizAmps", bart.intake.horizontalSlide.getCurrent(CurrentUnit.AMPS));
-            packet.put("horizAmps", bart.intake.horizontalSlide.getCurrent(CurrentUnit.AMPS));
-            dashboardTelemetry.addData("horizAmps", bart.intake.horizontalSlide.getCurrent(CurrentUnit.AMPS));
-            dashboardTelemetry.update();*/
+            //telemetry.addData("horizInches", bart.intake.currentInches());
+            //telemetry.addData("horizAmps", bart.intake.horizontalSlide.getCurrent(CurrentUnit.AMPS));
+            packet.put("horizAmps", bart.intake.horizontalSlide.motors.get(0).getCurrent(CurrentUnit.AMPS));
+            dashboardTelemetry.addData("horizAmps", bart.intake.horizontalSlide.motors.get(0).getCurrent(CurrentUnit.AMPS));
+            dashboardTelemetry.update();
 //            telemetry.addData("Left X", playerOne.getLeftX());
 
 
@@ -243,6 +279,46 @@ public class ATeleop extends LinearOpMode {
     }
 
 
+    public void autoControl(TelemetryPacket packet) {
+        if (playerOne.wasJustPressed(GamepadKeys.Button.A)) {
+            //drive.setPosFromOutside(grabPose);
+            runningActions.add(
+                    new SequentialAction(
+                            autoActions.closeGripperLoose(),
+                            sleeper.sleep(AutoPoses.timeToGrabClipMilliseconds),
+
+                            //SCORE THE CLIP
+                            new ParallelAction(
+                                    autoActions.raiseToHighBarBackOnceAwayFromWall(),
+                                    autoActions.closeGripperTightAfterDelay(),
+                                    fromGrabToScoreCycle.build()
+                            ),
+
+                            //CYCLE CLIP 3
+                            autoActions.openGripper(),
+                            //outputs.moveWristOutOfWay(),
+                            //sleeper.sleep(timeToDropClipMilliseconds),
+                            //grab
+                            autoActions.lowerToGrab(),
+                            sleeper.sleep(AutoPoses.timeToDropClipMilliseconds),
+                            fromScoreCycleToGrab.build()
+                    )
+            );
+        }
+
+        // update running actions
+        List<Action> newActions = new ArrayList<>();
+        for (Action action : runningActions) {
+            action.preview(packet.fieldOverlay());
+            if (action.run(packet)) {
+                newActions.add(action);
+            }
+        }
+        runningActions = newActions;
+
+        dash.sendTelemetryPacket(packet);
+
+    }
     public void manualControl() {
 
         double turnSpeed;
@@ -307,7 +383,11 @@ public class ATeleop extends LinearOpMode {
             }
         } else {
             if (playerTwo.isDown(GamepadKeys.Button.DPAD_DOWN)) {
-                bart.intake.setHorizontalSlideToSavedPosition("transfer");
+                if (!alternateControl) {
+                    if (!stupidControl) {
+                        bart.intake.setHorizontalSlideToSavedPosition("transfer");
+                    }
+                }
             //P2 is inputting nothing
             } else if (!playerTwo.isDown(GamepadKeys.Button.A)){
                 bart.intake.horizontalSlide.setTargetToCurrentPosition();
@@ -315,7 +395,10 @@ public class ATeleop extends LinearOpMode {
                     bart.intake.setHorizontalSlideToSavedPosition("max");
                 }
             }
+
+            //if (!playerTwo.isDown(GamepadKeys.Button.A)) {
             bart.intake.horizontalSlide.goToTargetAsync();
+            //}
         }
 
 
@@ -355,6 +438,12 @@ public class ATeleop extends LinearOpMode {
         if (playerTwo.getLeftY() != 0) {
             bart.output.verticalSlides.setPower(0.5 * playerTwo.getLeftY());
             bart.output.setTargetToCurrentPosition();
+        } else if (playerOne.isDown(GamepadKeys.Button.A)) {
+            //bart.output.setComponentPositionsFromSavedPosition("hangLevel3");
+            bart.output.level3Hang();
+            if (!bart.output.verticalSlides.isAbovePositionInches(10)) {
+                bart.hooks.depower();
+            }
         } else {
             //BUTTON CONTROL OF THE OUTPUT
             if (playerTwo.wasJustPressed(GamepadKeys.Button.Y)) {
@@ -419,6 +508,21 @@ public class ATeleop extends LinearOpMode {
                 }
             }
 
+            //ADJUST HIGH BUCKET SCORING
+            if (playerOne.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) >= 0.8) {
+                if (bucketDrivingMode) {
+                    if (bart.output.verticalSlides.isAbovePositionInches(10)) {
+                        bart.output.setComponentPositionsFromSavedPosition("highBucketVertical");
+                    }
+                }
+            }
+            if (playerOne.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) >= 0.8) {
+                if (bucketDrivingMode) {
+                    bart.output.setComponentPositionsFromSavedPosition("highBucketFlat");
+                }
+            }
+
+
             bart.output.sendVerticalSlidesToTarget();
         }
 
@@ -429,26 +533,48 @@ public class ATeleop extends LinearOpMode {
             bart.output.gripper.flipFlop();
         }
 
+        if (playerOne.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) >= 0.8) {
+            if (!bart.output.verticalSlides.isAbovePositionInches(10)) {
+                bart.intake.intakeArm.setToSavedIntakeArmPosition("fight");
+                if (!bucketDrivingMode) {
+                    bart.output.setComponentPositionsFromSavedPosition("fight");
+                }
+            }
+        }
+
+
 
         //move intake out of way. time to fight
         if (playerOne.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) {
-            bart.intake.intakeArm.setToSavedIntakeArmPosition("fight");
+            /*bart.intake.intakeArm.setToSavedIntakeArmPosition("fight");
             if (!bucketDrivingMode) {
                 bart.output.setComponentPositionsFromSavedPosition("fight");
-            }
+            }*/
         }
 
 
         //HANG CODE
         if (playerOne.wasJustPressed(GamepadKeys.Button.Y)) {
-            //bart.output.setComponentPositionsFromSavedPosition("preHang");
-            //bart.intake.intakeArm.setToSavedIntakeArmPosition("rest");
+            bart.output.setComponentPositionsFromSavedPosition("preLevel2");
+            bart.intake.intakeArm.setToSavedIntakeArmPosition("rest");
             bart.hooks.setTargetToPreHang();
         }
         if (playerOne.wasJustPressed(GamepadKeys.Button.B)) {
             //bart.output.setComponentPositionsFromSavedPosition("hang");
             //bart.intake.intakeArm.setToSavedIntakeArmPosition("rest");
             bart.hooks.setTargetToHang();
+        }
+
+        if (playerOne.isDown(GamepadKeys.Button.X)) {
+            if (!bart.output.verticalSlides.isAbovePositionInches(20)) {
+                bart.output.setComponentPositionsFromSavedPosition("preHangArmBackLevel3");
+            } else {
+                bart.output.setComponentPositionsFromSavedPosition("preHangLevel3");
+            }
+        }
+
+        if (playerOne.wasJustReleased(GamepadKeys.Button.A)) {
+            bart.output.verticalSlides.setTargetToCurrentPosition();
         }
         /*if (playerOne.wasJustPressed(GamepadKeys.Button.A)) {
             bart.hooks.setTarget(0);

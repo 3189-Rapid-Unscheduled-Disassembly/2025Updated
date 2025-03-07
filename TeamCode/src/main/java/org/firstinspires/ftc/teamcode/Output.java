@@ -68,9 +68,9 @@ public class Output {
         motors.add(back);
         motors.add(front);
 
-        verticalSlides = new LinearSlide(motors, "veticalSlide",
-                153.829, 18, 0, 0.25,
-                0.0085, 0.1);
+        verticalSlides = new LinearSlide(motors, "verticalSlide",
+                106.08896551724137931034482758621/*153.829*/, 27, 0, 0.25,
+                0.008, 0.18);
 
         Servo armLeft = hardwareMap.get(Servo.class, "armLeft");
         Servo armRight = hardwareMap.get(Servo.class, "armRight");
@@ -82,7 +82,7 @@ public class Output {
         arm = new Joint(armServos, 180, 0.28, "Arm");
 
         Servo wristServo = hardwareMap.get(Servo.class, "wrist");
-        wristServo.setDirection(Servo.Direction.REVERSE);
+        wristServo.setDirection(Servo.Direction.FORWARD);
         wrist = new Joint(wristServo, 300, 0.5, "Wrist Relative to Arm");
 
         Servo gripperServo = hardwareMap.get(Servo.class, "outputGripper");
@@ -95,7 +95,7 @@ public class Output {
                 new OutputEndPoint(0, 0, -20, false)
         );
         savedPositions.put("transfer",//2.8, -25.5
-                new OutputEndPoint(3.75, -25.5, -95, true)
+                new OutputEndPoint(4, -25.5, -95, true)
         );
         savedPositions.put("rest",
                 new OutputEndPoint(0, -15, -90,false)
@@ -130,15 +130,51 @@ public class Output {
         savedPositions.put("lowBucket",
                 new OutputEndPoint(0, 110, 150, false)
         );
+
         savedPositions.put("highBucket",
                 new OutputEndPoint(17.5, 110, 150, false)
         );
+        savedPositions.put("highBucketFlat",
+                OutputEndPoint.createNewBasedOffOldEndPoint(savedPositions.get("highBucket"),
+                        2, true,
+                        125, false,
+                        0, true,
+                        false)
+        );
+        savedPositions.put("highBucketVertical",
+                OutputEndPoint.createNewBasedOffOldEndPoint(savedPositions.get("highBucketFlat"),
+                        0, true,
+                        0, true,
+                        100, false,
+                        false)
+        );
+
+
         savedPositions.put("preHang",
                 new OutputEndPoint(14, 20, 20, true)
         );
         savedPositions.put("hang",
                 new OutputEndPoint(1, 20, 20, true)
         );
+
+        savedPositions.put("preLevel2",
+                new OutputEndPoint(4, 140, 165, true)
+        );
+
+        savedPositions.put("preHangArmBackLevel3",
+                new OutputEndPoint(24, 140, 165, true)
+        );
+        savedPositions.put("preHangLevel3",
+                new OutputEndPoint(24, 0, 0, true)
+        );
+        savedPositions.put("hangLevel3",
+                new OutputEndPoint(0, 0, 0, true)
+        );
+
+        savedPositions.put("fight",
+                new OutputEndPoint(0, 40, 40, true)
+        );
+
 
 
         timer = new ElapsedTime();
@@ -195,6 +231,14 @@ public class Output {
     }
 
 
+    public void level3Hang() {
+        if (verticalSlides.isAbovePositionInches(1)) {
+            verticalSlides.setPower(-1);
+        } else {
+            verticalSlides.setTargetInches(0);
+            sendVerticalSlidesToTarget();
+        }
+    }
 
     public void setComponentPositionsFromSavedPosition(String key) {
         setComponentPositionsFromOutputEndPoint(savedPositions.get(key));

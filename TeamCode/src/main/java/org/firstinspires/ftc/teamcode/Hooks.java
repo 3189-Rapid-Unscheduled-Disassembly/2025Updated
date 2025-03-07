@@ -9,6 +9,7 @@ public class Hooks {
 
     DcMotorEx motor;
 
+    private boolean depowered = false;
 
     private double currentTicks = -3600;
     private double targetTicks = -3600;
@@ -49,8 +50,12 @@ public class Hooks {
     }
 
     public void setTargetToHang() {
-        setTarget(480);
+        setTarget(400);
         currentP = hangP;
+    }
+
+    public void depower() {
+        depowered = true;
     }
 
     public double currentTicks() {
@@ -65,6 +70,9 @@ public class Hooks {
             currentPower = 0;
         } else {
             currentPower = (targetTicks - currentTicks) * currentP;
+        }
+        if (depowered) {
+            currentPower = 0;
         }
     }
 

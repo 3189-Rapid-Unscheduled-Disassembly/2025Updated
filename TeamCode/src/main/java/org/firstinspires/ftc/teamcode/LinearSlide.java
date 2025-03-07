@@ -5,6 +5,8 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,8 +23,13 @@ public class LinearSlide {
     double derivative;
 
 
+    boolean specialMode = false;
+
+
     private double currentTicks = -3600;
     private double targetTicks = -3600;
+
+    private double currentAmps = 0;
 
     private double currentPower = -3600;
     private double previousPower = -3600;
@@ -30,7 +37,6 @@ public class LinearSlide {
     final double SLIDE_POWER_SIGNIFICANT_DIFFERENCE = 0;
 
     final double DEFAULT_ERROR_INCHES;
-
 
     final double TICKS_PER_INCH;
     final double p, d;
@@ -122,21 +128,24 @@ public class LinearSlide {
         return RobotMath.isAbsDiffWithinRange(currentInches(), inches, allowedError);
     }
 
-
     public boolean isAbovePositionInches(double inches) {
         return isAbovePositionTicks(inchesToTicks(inches));
     }
+
     public boolean isAbovePositionTicks(double ticks) {
         return currentTicks() > ticks;
     }
-
     public boolean isAboveMax() {
         return isAbovePositionInches(MAX_INCHES);
     }
+
     public boolean isBellowMin() {
         return !isAbovePositionInches(MIN_INCHES);
     }
 
+    public void setSpecialMode(boolean specialMode) {
+        this.specialMode = specialMode;
+    }
 
     public void goToTargetAsync() {
         currentError = targetTicks - currentTicks();
@@ -146,7 +155,8 @@ public class LinearSlide {
         derivative = (currentError - previousError) / deltaTime;
         previousError = currentError;
         //we don't need to power when the slides are at zero
-        if (targetTicks > 10 || currentTicks() > 10) {
+
+        if (motors.size() == 1 || (targetTicks > 10 || currentTicks() > 10)) {
             //if (!isAtTarget()) {
             setPower((currentError * p) + (derivative * d));
             //} else {
@@ -182,14 +192,22 @@ public class LinearSlide {
         return currentTicks;
     }
 
+    public double currentAmps() {
+        return currentAmps;
+    }
+
 
     public void setPower(double power) {
         currentPower = power;
     }
 
-
     public void readCurrentPosition() {
         currentTicks = motors.get(0).getCurrentPosition();
+        //dumb, just needed for horiz transfer
+        //specialMode = false;
+    }
+    public void readCurrentAmps() {
+        currentAmps = motors.get(0).getCurrent(CurrentUnit.AMPS);
     }
     public void writeSlidePower() {
         if (Math.abs((previousPower - currentPower)) > SLIDE_POWER_SIGNIFICANT_DIFFERENCE) {

@@ -130,6 +130,35 @@ public class OutputEndPoint {
     }
 
 
+    public static OutputEndPoint createNewBasedOffOldEndPoint(OutputEndPoint oldEndPoint,
+                                                              double changeSlideInches, boolean changeSlideBasedOffOld,
+                                                              double changeArmAngle, boolean changeArmBasedOffOld,
+                                                              double changeWristAngle, boolean changeWristBasedOffOld,
+                                                              boolean newOpen) {
+        double newSlideInches, newArmAngle, newWristAngle;
+
+        if (changeSlideBasedOffOld) {
+            newSlideInches = oldEndPoint.slideInches + changeSlideInches;
+        } else {
+            newSlideInches = changeSlideInches;
+        }
+
+        if (changeArmBasedOffOld) {
+            newArmAngle = oldEndPoint.armDegrees + changeArmAngle;
+        } else {
+            newArmAngle = changeArmAngle;
+        }
+
+        if (changeWristBasedOffOld) {
+            newWristAngle = oldEndPoint.wristPitchRelativeToGroundDegrees + changeWristAngle;
+        } else {
+            newWristAngle = changeWristAngle;
+        }
+
+        return new OutputEndPoint(newSlideInches, newArmAngle, newWristAngle, newOpen);
+    }
+
+
     public void changeSlideTargetByInches(double inchChange) {
         slideInches += inchChange;
         calculatePoints();

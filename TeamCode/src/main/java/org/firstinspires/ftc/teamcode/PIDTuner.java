@@ -77,7 +77,7 @@ public class PIDTuner extends LinearOpMode {
             playerTwo.readButtons();
             bart.readHubs();
 
-            double currentTicks = bart.intake.horizontalSlide.currentTicks();
+            double currentTicks = bart.output.verticalSlides.currentTicks();
 
             deltaTime = timer.milliseconds() - previousTime;
             previousTime = timer.milliseconds();
@@ -91,7 +91,7 @@ public class PIDTuner extends LinearOpMode {
             if (summedError < 0) summedError = 0;
 
 
-            bart.intake.horizontalSlide.setPower(calculatedPower);
+            bart.output.verticalSlides.setPower(calculatedPower);
             bart.writeAllComponents();
 
 

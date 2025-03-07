@@ -46,7 +46,7 @@ public class AutoSamplePose {
     public void inputAutoSamplePose(GamepadEx gamepadEx) {
         //COLOR INPUT
         if (isYellowLegal && gamepadEx.wasJustPressed(GamepadKeys.Button.Y)) {
-            setColor(0);
+            setColor(7);
         }
         if (isBlueLegal && gamepadEx.wasJustPressed(GamepadKeys.Button.X)) {
             setColor(1);
@@ -144,7 +144,7 @@ public class AutoSamplePose {
     @Override
     public String toString() {
         String colorString = "BLANK";
-        if (color == 0) {
+        if (color == 7) {
             colorString = "YELLOW";
         } else if (color == 1) {
             colorString = "BLUE";
@@ -163,7 +163,7 @@ public class AutoSamplePose {
             rollString = "THOGGIN'";
         }
 
-        return colorString + "\nX: " + x + "\nY: " + y + "\nROLL: " + roll +"\n" + rollString;
+        return colorString + "\nX: " + x + "\nY: " + y + /*"\nROLL: " + roll +"\n" +*/ "\n" + rollString;
     }
 
 }

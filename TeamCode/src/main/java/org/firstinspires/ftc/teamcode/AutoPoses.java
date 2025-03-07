@@ -28,8 +28,12 @@ public class AutoPoses {
     static Pose2d dropSpark2ClipsPose = new Pose2d(-43, 40, Math.toRadians(160));
 
     static Pose2d grabWallClipsPose = new Pose2d(-41, 61, Math.toRadians(90));
-
     static Pose2d scoreCycleClipsPose = new Pose2d(-5, 30.25, Math.toRadians(90));
+
+
+    static Pose2d grabWallClipsTeleopPose = shiftPoseByInputs(grabWallClipsPose, 0, 0, 0);
+    static Pose2d scoreCycleClipsTeleopPose = shiftPoseByInputs(scoreCycleClipsPose, 0, 0, 0);
+
 
     static Pose2d clipsParkPose = shiftPoseByInputs(grabWallClipsPose, -6, -14, 0);
 
@@ -57,9 +61,9 @@ public class AutoPoses {
 
     static Pose2d scoreBucketPose = new Pose2d(55, 57.5, Math.toRadians(225));//55.5, 57
 
-    static Pose2d scoreBucketCyclePose = new Pose2d(58, 50, Math.toRadians(250));//59, 50, 250
+    static Pose2d scoreBucketCyclePose = new Pose2d(58, 46, Math.toRadians(250));//59, 50, 250
 
-    static Pose2d scoreBucketCycleForThirdSpikePose = shiftPoseByInputs(scoreBucketCyclePose, 0, 0, 0);//59, 50, 250
+    static Pose2d scoreBucketCycleForThirdSpikePose = shiftPoseByInputs(scoreBucketCyclePose, 0, 5, 0);//59, 50, 250
 
     static Pose2d firstSpikeBucketPose = new Pose2d(48.5, 43, Math.toRadians(270));
 
@@ -71,6 +75,8 @@ public class AutoPoses {
 
 
 
+    static int timeToDropClipMilliseconds = 100;
+    static int timeToGrabClipMilliseconds = 100;
 
     public static Pose2d shiftPoseByInputs(Pose2d original, double xShift, double yShift, double degShift) {
         return new Pose2d(original.position.x+xShift,
@@ -87,29 +93,50 @@ public class AutoPoses {
     static double bucketMinAccel = -65;
     static double bucketMaxAccel = 55;
 
+    public static TrajectoryActionBuilder fromGrabToScoreCycle(MecanumDrive drive) {
+        return drive.actionBuilder(AutoPoses.grabWallClipsPose)
+                .strafeToConstantHeading(AutoPoses.scoreCycleClipsPose.position,
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(AutoPoses.scoreCycleMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(AutoPoses.scoreCycleMinAccel, AutoPoses.scoreCycleMaxAccel)
+                );//26.07 first grab
+    }
+    public static TrajectoryActionBuilder fromGrabToScoreCycleTeleop(MecanumDrive drive) {
+        return drive.actionBuilder(grabWallClipsTeleopPose)
+                .strafeToConstantHeading(scoreCycleClipsTeleopPose.position,
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(AutoPoses.scoreCycleMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(AutoPoses.scoreCycleMinAccel, AutoPoses.scoreCycleMaxAccel)
+                );//26.07 first grab
+    }
+
+    public static TrajectoryActionBuilder fromScoreCycleToGrab(MecanumDrive drive) {
+        return drive.actionBuilder(AutoPoses.scoreCycleClipsPose)
+                .strafeToConstantHeading(AutoPoses.grabWallClipsPose.position,
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(AutoPoses.scoreCycleGrabMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(AutoPoses.scoreCycleGrabMinAccel, AutoPoses.scoreCycleGrabMaxAccel)
+                );
+    }
+    public static TrajectoryActionBuilder fromScoreCycleToGrabTeleop(MecanumDrive drive) {
+        return drive.actionBuilder(scoreCycleClipsTeleopPose)
+                .strafeToConstantHeading(grabWallClipsTeleopPose.position,
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(AutoPoses.scoreCycleGrabMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(AutoPoses.scoreCycleGrabMinAccel, AutoPoses.scoreCycleGrabMaxAccel)
+                );
+    }
+
     public static TrajectoryActionBuilder fromBucketToIntake(MecanumDrive drive, Pose2d intakePose) {
         return drive.actionBuilder(scoreBucketCyclePose)
-                /*.splineToLinearHeading(new Pose2d(46, 36, Math.toRadians(270)), Math.toRadians(270),
-                        new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(intakeMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
-                        )),
-                        new ProfileAccelConstraint(intakeMinAccel, intakeMaxAccel)
-                )*/
-                /*.splineToLinearHeading(shiftPoseByInputs(intakePose, 6, 0, 0), Math.toRadians(180),
-                        new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(intakeMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
-                        )),
-                        new ProfileAccelConstraint(intakeMinAccel, intakeMaxAccel)
-                );*/
-                /*.splineToLinearHeading(new Pose2d(48, 24, Math.toRadians(250)), Math.toRadians(250),
-                        new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(intakeMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
-                        )),
-                        new ProfileAccelConstraint(intakeMinAccel, intakeMaxAccel)
-                )*/
                 .splineToSplineHeading(shiftPoseByInputs(intakePose, 1, 0, 0), Math.toRadians(180),
                         new MinVelConstraint(Arrays.asList(
                                 drive.kinematics.new WheelVelConstraint(intakeMaxWheelVel),

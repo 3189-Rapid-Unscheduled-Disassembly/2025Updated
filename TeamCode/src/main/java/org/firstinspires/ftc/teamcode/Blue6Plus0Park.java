@@ -77,7 +77,7 @@ public class Blue6Plus0Park extends LinearOpMode {
         double yMin = 6;//can't reach without driving forward a little
         //previous yMax16, yMin
         inputtedPose = new AutoSamplePose(1, 0, 12, 0,
-                false, true, true, 5, -5, yMax, yMin, 90, -45);
+                true, true, true, 5, -5, yMax, yMin, 90, -45);
 
         while (inputtedPose.stillInputting && opModeInInit() && !isStopRequested()) {
             playerTwo.readButtons();
@@ -279,6 +279,7 @@ public class Blue6Plus0Park extends LinearOpMode {
         telemetry.addData("Y", inputtedY);
         telemetry.addData("ROLL", inputtedRoll);*/
         telemetry.addLine(inputtedPose.toString());
+        telemetry.addData("pipeline", limelight.getPipeline());
         telemetry.addData("horizTargetSub", horizTargetSub);
         telemetry.update();
 

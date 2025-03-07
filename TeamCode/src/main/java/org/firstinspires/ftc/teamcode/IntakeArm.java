@@ -20,7 +20,7 @@ public class IntakeArm {
 
         Servo armServo = hardwareMap.get(Servo.class,"intakeArmPitch");
         armServo.setDirection(Servo.Direction.FORWARD);
-        intakeArm = new Joint(armServo, 200, 0.21, "Intake Arm Pitch");
+        intakeArm = new Joint(armServo, 200, 0.190, "Intake Arm Pitch");
 
         Servo intakeWristPitchServo = hardwareMap.get(Servo.class, "intakeWristPitch");
         intakeWristPitchServo.setDirection(Servo.Direction.FORWARD);//34/16
@@ -32,17 +32,17 @@ public class IntakeArm {
 
         Servo gripperServo = hardwareMap.get(Servo.class, "intakeGripper");
         gripperServo.setDirection(Servo.Direction.REVERSE);
-        intakeGripper = new Gripper(gripperServo, 0.75, 0.3, "Intake Gripper");//0.245
+        intakeGripper = new Gripper(gripperServo, 0.75, 0.4, "Intake Gripper");//0.245
 
         //SAVED POSITIONS
         savedPositions.put("rest", new IntakeArmPosition(120, 180, 0, true));
 
         savedPositions.put("straightOut", new IntakeArmPosition(0, 0, 0, true));
         double transferRollDeg = 185;//185
-        savedPositions.put("preTransfer", new IntakeArmPosition(25, 110, transferRollDeg, false));
-        savedPositions.put("transfer", new IntakeArmPosition(40, 180, transferRollDeg, false));//35
+        savedPositions.put("preTransfer", new IntakeArmPosition(30, 110, transferRollDeg, false));
+        savedPositions.put("transfer", new IntakeArmPosition(43, 180, transferRollDeg, false));//35
         savedPositions.put("drop", new IntakeArmPosition(0, -60,45, false));
-        savedPositions.put("preGrab", new IntakeArmPosition(0, -90, 0, true));
+        savedPositions.put("preGrab", new IntakeArmPosition(0, -80, 0, true));
         savedPositions.put("grab", new IntakeArmPosition(-15, -90, 0, false));
         savedPositions.put("grabCheck", new IntakeArmPosition(15, -90, 0, false));
         savedPositions.put("postGrab", new IntakeArmPosition(30, 0, 0, false));
@@ -150,8 +150,8 @@ public class IntakeArm {
 
 
     public void writeServoPositions() {
-        intakeArm.write();
         intakeWristPitch.write();
+        intakeArm.write();
         intakeWristRoll.write();
         intakeGripper.writePosition();
     }

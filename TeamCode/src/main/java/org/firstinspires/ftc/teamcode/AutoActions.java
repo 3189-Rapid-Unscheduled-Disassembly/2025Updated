@@ -15,6 +15,7 @@ class AutoActions {
 
     ElapsedTime llTimer;
 
+    boolean isTransfering = false;
     boolean endProgram = false;
 
     public AutoActions(RobotMain bart, MecanumDrive drive) {
@@ -197,7 +198,9 @@ class AutoActions {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             bart.output.sendVerticalSlidesToTarget();
-            bart.intake.horizontalSlide.goToTargetAsync();
+            //if (!isTransfering) {
+                bart.intake.horizontalSlide.goToTargetAsync();
+            //}
             return !endProgram;
         }
     }
@@ -241,6 +244,7 @@ class AutoActions {
             if (!intialized) {
                 bart.firstFrameOfTransfer();
                 intialized = true;
+                isTransfering = true;
             }
 
             bart.transfer();
@@ -248,6 +252,7 @@ class AutoActions {
             if (!bart.output.gripper.isOpen() &&
                     bart.intake.intakeArm.isPitchEqualToSavedIntakePosition("preTransfer")
             ) {
+                isTransfering = false;
                 return false;
             }
             return true;
@@ -412,30 +417,22 @@ class AutoActions {
     }
 
     class LineUpWithLimelight implements Action {
-        boolean isNotLinedUp = true;
+        boolean isLinedUp = false;
         AutoSamplePose inputtedPose;
         boolean initialized = false;
         int maxHuntingTimeMS;
 
+        double horizTarget;
 
-        public LineUpWithLimelight(AutoSamplePose inputtedPose, int maxHuntingTimeMS) {
-            this.inputtedPose = inputtedPose;
+        double desiredDistance;
+        double desiredTy;
+
+
+        public LineUpWithLimelight(AutoSamplePose inputtedPoseParameter, int maxHuntingTimeMS) {
+            this.inputtedPose = inputtedPoseParameter;
             this.maxHuntingTimeMS = maxHuntingTimeMS;
-        }
+            this.horizTarget = bart.intake.horizontalSlide.currentInches();
 
-        @Override
-        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            if (!initialized) {
-                llTimer.reset();
-                initialized = true;
-            }
-
-            double desiredDistance;
-            //striahgt: 4.3, -6
-            //right: 4, -9
-            //left: 4, -1
-            //thog: 4, -1
-            double desiredTy;
             if (inputtedPose.getRoll() == 0) {
                 desiredDistance = 4.3;
                 desiredTy = -6;
@@ -449,9 +446,36 @@ class AutoActions {
                 desiredDistance = 4;
                 desiredTy = -1;//7
             }
+        }
 
-            double distanceError = limelight.getLastResultDistanceInches()-desiredDistance;
-            double horizTarget = bart.intake.horizontalSlide.currentInches()+distanceError;
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            limelight.updateLastLimelightResult(desiredDistance);
+
+            if (!initialized) {
+                if (limelight.getPipeline() == 7) {
+                    if (limelight.resultExists) {
+                        double distanceError = limelight.getLastResultDistanceInches() - desiredDistance;
+                        horizTarget = bart.intake.horizontalSlide.currentInches() + distanceError;
+                    }
+                }
+                llTimer.reset();
+                initialized = true;
+                limelight.limelight.captureSnapshot("init");
+            }
+
+
+            if (limelight.resultExists) {
+                if (limelight.getPipeline() != 7) {
+                    double distanceError = limelight.getLastResultDistanceInches()-desiredDistance;
+                    horizTarget = bart.intake.horizontalSlide.currentInches() + distanceError;
+                }
+            } else {
+                horizTarget = bart.intake.horizontalSlide.currentInches();
+            }
+            bart.intake.horizontalSlide.setTargetInches(horizTarget);
+
+
 
             //drive if the slides can't reach it
             double forwardPower = 0;
@@ -460,7 +484,6 @@ class AutoActions {
             } else if (horizTarget < 0) {
                 forwardPower = -0.1;
             }
-            bart.intake.horizontalSlide.setTargetInches(horizTarget);
 
             double errorTy = desiredTy - limelight.returnLastResultTY();
             drive.setDrivePowers(new PoseVelocity2d(
@@ -471,10 +494,25 @@ class AutoActions {
                     0
             ));
             drive.updatePoseEstimate();
-            if ((RobotMath.isAbsDiffWithinRange(limelight.getLastResultDistanceInches(),desiredDistance,0.25) &&
-                    RobotMath.isAbsDiffWithinRange(errorTy,0,2)) ||//1.5
-                    llTimer.milliseconds() > maxHuntingTimeMS) {
-                isNotLinedUp = false;
+
+            if (limelight.getPipeline() == 7) {
+                if (bart.intake.horizontalSlide.isAtTarget() &&
+                        RobotMath.isAbsDiffWithinRange(errorTy,0,2)) {
+                    isLinedUp = true;
+                }
+            } else {
+                if (RobotMath.isAbsDiffWithinRange(limelight.getLastResultDistanceInches(),desiredDistance,0.25) &&
+                        RobotMath.isAbsDiffWithinRange(errorTy,0,2)) {
+                    isLinedUp = true;
+                }
+            }
+
+            if (llTimer.milliseconds() > maxHuntingTimeMS) {
+                isLinedUp = true;
+            }
+
+
+            if (isLinedUp) {
                 drive.setDrivePowers(new PoseVelocity2d(
                         new Vector2d(
                                 0,
@@ -483,11 +521,12 @@ class AutoActions {
                         0
                 ));
                 bart.intake.horizontalSlide.setTargetToCurrentPosition();
+                //limelight.limelight.captureSnapshot("end");
+                return false;
             }
+            return true;
 
-            telemetryPacket.put("Result Exists?", limelight.isSeeingResult());
-            limelight.updateLastLimelightResult();
-            return isNotLinedUp;
+            //telemetryPacket.put("Result Exists?", limelight.isSeeingResult());
         }
     }
 
@@ -809,6 +848,7 @@ class AutoActions {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             bart.output.setComponentPositionsFromSavedPosition("highBucket");
+
             //return !bart.output.isAtPosition();
             return false;
         }
@@ -897,7 +937,7 @@ class AutoActions {
     class RaiseToPark implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, 30, 30, true));
+            bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, 35, 35, true));
             return false;
         }
     }

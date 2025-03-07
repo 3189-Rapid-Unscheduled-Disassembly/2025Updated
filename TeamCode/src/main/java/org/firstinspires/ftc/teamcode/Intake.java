@@ -22,6 +22,8 @@ public class Intake {
     IntakeArm intakeArm;
     Joint gate;
 
+    boolean hasAmpsTriggered = false;
+
 
     ElapsedTime dTimer;
 
@@ -39,13 +41,15 @@ public class Intake {
         if (resetEncoders) {
             horizontalSlideMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         }
+
         horizontalSlideMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        horizontalSlideMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        horizontalSlide = new LinearSlide(horizontalSlideMotor, "horizontalSlide",//61.6667
-                51.94979, 12, -1, 0.25,
-                0.007, 0.17);
+        horizontalSlide = new LinearSlide(horizontalSlideMotor, "horizontalSlide",//61.6667, 51.94979
+                45.6, 12, -1, 0.25,
+                0.006, 0.18);
 
-        savedPositions.put("transfer", 0.0);//-0.5
+        savedPositions.put("transfer", -0.25);//-0.5
         savedPositions.put("max", 12.0);
 
 
@@ -78,6 +82,7 @@ public class Intake {
     }
     public void readAllComponents() {
        horizontalSlide.readCurrentPosition();
+       horizontalSlide.readCurrentAmps();
     }
 
     public void firstFrameOfTransfer() {
@@ -90,6 +95,8 @@ public class Intake {
 
         setHorizontalSlideToSavedPosition("transfer");
 
+        hasAmpsTriggered = false;
+
         //reset timer to eliminate weird stuff
         timer.reset();
     }
@@ -98,6 +105,23 @@ public class Intake {
         if (timer.milliseconds() > 4000) {
             timer.reset();
         }
+
+        //horizontalSlide.setPower(-0.8);
+
+        //we haven't reached the location, so we need to keep pulling back
+        /*if (!hasAmpsTriggered) {
+            if (horizontalSlide.isAbovePositionInches(3)) {
+                horizontalSlide.setPower(-1);
+            } else {
+                horizontalSlide.setPower(-0.6);
+            }
+            if (horizontalSlide.currentAmps() > 4) {
+                hasAmpsTriggered = true;
+                horizontalSlide.setPower(-0.1);
+            }
+        } else {
+            horizontalSlide.setPower(-0.1);
+        }*/
 
         //this is what happens after the output closes, making us open the intake gripper
         if (!outputGripperIsOpen) {
@@ -119,6 +143,7 @@ public class Intake {
                 } else {
                     if (timer.milliseconds() > waitTimeMS) {
                         timer.reset();
+                        horizontalSlide.setPower(0);
                         return true;
                     }
                 }
@@ -151,7 +176,7 @@ public class Intake {
             timer.reset();
         }
 
-        if (horizontalSlide.isAbovePositionInches(-0.5)) {
+        if (horizontalSlide.isAbovePositionInches(-1)) {
             horizontalSlide.setPower(-0.8);
         } else {
             horizontalSlide.setPower(0);
