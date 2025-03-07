@@ -249,9 +249,7 @@ class AutoActions {
 
             bart.transfer();
             //we are done
-            if (!bart.output.gripper.isOpen() &&
-                    bart.intake.intakeArm.isPitchEqualToSavedIntakePosition("preTransfer")
-            ) {
+            if (bart.isTransferDone()) {
                 isTransfering = false;
                 return false;
             }

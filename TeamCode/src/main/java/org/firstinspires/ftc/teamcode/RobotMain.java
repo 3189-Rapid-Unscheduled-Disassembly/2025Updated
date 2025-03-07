@@ -118,6 +118,11 @@ public class RobotMain {
         }
     }
 
+    public boolean isTransferDone() {
+        return !output.gripper.isOpen() &&
+                intake.intakeArm.isPitchEqualToSavedIntakePosition("preTransfer");
+    }
+
     public void transferAuto() {
         boolean outputIsReady = output.transfer();
         boolean outputShouldGrab = intake.transferAuto(outputIsReady, output.gripper.isOpen());

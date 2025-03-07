@@ -3,12 +3,8 @@ package org.firstinspires.ftc.teamcode;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
-import com.acmerobotics.roadrunner.AngularVelConstraint;
-import com.acmerobotics.roadrunner.MinVelConstraint;
 import com.acmerobotics.roadrunner.ParallelAction;
-import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
-import com.acmerobotics.roadrunner.ProfileAccelConstraint;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
@@ -17,7 +13,6 @@ import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -30,7 +25,6 @@ import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -38,6 +32,15 @@ import java.util.Objects;
 public class ATeleop extends LinearOpMode {
 
     RobotMain bart;
+
+
+    boolean isTransferring = false;
+    boolean hasSentComponentsToBucket = false;
+
+    boolean isp1ltDownThisFrame = false;
+    boolean wasp1ltDownLastFrame = false;
+    boolean wasp1ltJustPressed = false;
+
 
 
     private FtcDashboard dash = FtcDashboard.getInstance();
@@ -150,9 +153,9 @@ public class ATeleop extends LinearOpMode {
 
         if (!isOutputArmJank) {
             bart.output.setComponentPositionsFromSavedPosition("grab");
-            if (bart.output.verticalSlides.isAbovePositionInches(2)) {
-                bart.output.setTargetToCurrentPosition();
-            }
+//            if (bart.output.verticalSlides.isAbovePositionInches(2)) {
+//                bart.output.setTargetToCurrentPosition();
+//            }
         } else {
             bart.output.setTargetToCurrentPosition();
         }
@@ -162,10 +165,6 @@ public class ATeleop extends LinearOpMode {
             //bart.intake.intakeArm.intakeGripper.close();
         } else {
             bart.intake.intakeArm.intakeGripper.close();
-            //ONLY USED WHEN INTAKE ARM ENDED JANKILY
-            if (!bart.output.verticalSlides.isAbovePositionInches(2)) {
-                bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, 45, 45, true));
-            }
         }
 
 
@@ -190,6 +189,13 @@ public class ATeleop extends LinearOpMode {
             playerTwo.readButtons();
             bart.readHubs();
 
+
+            //allow trigger presses, basiclly one frame
+            isp1ltDownThisFrame = playerOne.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) >= 0.8;
+
+            wasp1ltJustPressed = isp1ltDownThisFrame && !wasp1ltDownLastFrame;
+
+            wasp1ltDownLastFrame = isp1ltDownThisFrame;
 
 
             if (playerOne.isDown(GamepadKeys.Button.LEFT_BUMPER)) {
@@ -356,18 +362,72 @@ public class ATeleop extends LinearOpMode {
         if (playerTwo.wasJustPressed(GamepadKeys.Button.A)) {
             if (bucketDrivingMode) {
                 bart.firstFrameOfTransfer();
+                isTransferring = true;
+                hasSentComponentsToBucket = false;
             }
         }
 
 
-        //HORIZONTAL SLIDE
-        //transfer when a is held
+        //transfer when a is held, then go to high bucket once done transferring
         if (playerTwo.isDown(GamepadKeys.Button.A)) {
             if (bucketDrivingMode) {
-                bart.transfer();
+                //transfer, and then flag it as done once it is completed
+                if (isTransferring) {
+                    bart.transfer();
+                    if (bart.isTransferDone()) {
+                        isTransferring = false;
+                    }
+                    hasSentComponentsToBucket = false;
+                } else {
+                    //we are done transferring, so we can raise to bucket
+                    //if p2 holds down the right trigger, then we will delay the bucket
+                    //we can also change the target with other inputs
+                    //we also don't want to set them each frame, so that way we can manually control, for stuff like drop
+                    if (!hasSentComponentsToBucket) {
+                        if (!stupidControl) {
+                            if (alternateControl) {
+                                bart.output.setComponentPositionsFromSavedPosition("lowBucket");
+                            } else if (playerOne.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) >= 0.8) {
+                                bart.output.setComponentPositionsFromSavedPosition("highBucketFlat");
+                            } else {
+                                bart.output.setComponentPositionsFromSavedPosition("highBucket");
+                            }
+                            //we just sent the slides, so we don't need to send them each frame
+                            //or else we couldn't manually change slide position or open the grabber
+                            hasSentComponentsToBucket = true;
+                            bart.intake.intakeArm.setToSavedIntakeArmPosition("preGrab");
+                        }
+                    } else {
+                        if (alternateControl) {
+                            bart.output.setComponentPositionsFromSavedPosition("lowBucket");
+                        } else if (playerOne.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) >= 0.8) {
+                            //keep the slides in the same spot
+                            double currentSlideInches = bart.output.verticalSlides.currentInches();
+                            bart.output.setComponentPositionsFromSavedPosition("highBucketFlat");
+                            bart.output.verticalSlides.setTargetInches(currentSlideInches);
+                        } else if (wasp1ltJustPressed) {
+                            if (bart.output.verticalSlides.isAbovePositionInches(bart.output.savedPositions.get("highBucket").slideInches-1)) {
+                                bart.output.verticalSlides.setTargetInches(bart.output.verticalSlides.currentInches()+2);
+                            } else {
+                                bart.output.verticalSlides.setTargetInches(bart.output.savedPositions.get("highBucket").slideInches+2);
+                            }
+                        }
+                    }
+                }
             } else {
                 bart.intake.intakeArm.setToSavedIntakeArmPosition("postGrab");
                 bart.intake.setHorizontalSlideToSavedPosition("transfer");
+            }
+        }
+
+        //on the let go of A, we want to bring everything back down to the transfer position
+        //this will allow for easier control of the output. (only needs one button for p2)
+        // and p2 can instantly send the slides back if we have a bad transfer
+        if (playerTwo.wasJustReleased(GamepadKeys.Button.A)) {
+            if (bucketDrivingMode) {
+                bart.output.setComponentPositionsFromSavedPosition("transfer");
+                isTransferring = false;
+                //hasSentComponentsToBucket = false;
             }
         }
 
@@ -389,7 +449,7 @@ public class ATeleop extends LinearOpMode {
                     }
                 }
             //P2 is inputting nothing
-            } else if (!playerTwo.isDown(GamepadKeys.Button.A)){
+            } else if (!isTransferring){
                 bart.intake.horizontalSlide.setTargetToCurrentPosition();
                 if (bart.intake.horizontalSlide.isAboveMax()) {
                     bart.intake.setHorizontalSlideToSavedPosition("max");
@@ -506,19 +566,27 @@ public class ATeleop extends LinearOpMode {
                 if (!bucketDrivingMode) {
                     bart.output.setComponentPositionsFromSavedPosition("straightOut");
                 }
+
+                //don't think this is really necessary, but it should remove any weird left over stuff
+                isTransferring = false;
+                hasSentComponentsToBucket = false;
             }
 
             //ADJUST HIGH BUCKET SCORING
-            if (playerOne.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) >= 0.8) {
+            /*if (playerOne.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) >= 0.8) {
                 if (bucketDrivingMode) {
                     if (bart.output.verticalSlides.isAbovePositionInches(10)) {
                         bart.output.setComponentPositionsFromSavedPosition("highBucketVertical");
                     }
                 }
-            }
-            if (playerOne.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) >= 0.8) {
-                if (bucketDrivingMode) {
-                    bart.output.setComponentPositionsFromSavedPosition("highBucketFlat");
+            }*/
+            if (bucketDrivingMode) {
+                if (playerOne.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) >= 0.8) {
+                    if (bucketDrivingMode) {
+                        if (bart.output.verticalSlides.isAbovePositionInches(10)) {
+                            //bart.output.setComponentPositionsFromSavedPosition("highBucketFlat");
+                        }
+                    }
                 }
             }
 
@@ -534,10 +602,12 @@ public class ATeleop extends LinearOpMode {
         }
 
         if (playerOne.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) >= 0.8) {
-            if (!bart.output.verticalSlides.isAbovePositionInches(10)) {
+            if (!bucketDrivingMode) {
                 bart.intake.intakeArm.setToSavedIntakeArmPosition("fight");
-                if (!bucketDrivingMode) {
-                    bart.output.setComponentPositionsFromSavedPosition("fight");
+                bart.output.setComponentPositionsFromSavedPosition("fight");
+            } else {
+                if (!playerTwo.isDown(GamepadKeys.Button.A)) {
+                    bart.intake.intakeArm.setToSavedIntakeArmPosition("fight");
                 }
             }
         }
