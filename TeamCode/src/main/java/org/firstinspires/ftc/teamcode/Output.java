@@ -113,7 +113,7 @@ public class Output {
                 new OutputEndPoint(0, -3, -90, false)
         );
         savedPositions.put("highBarFront",
-                new OutputEndPoint(7.75, 10, -20, false)
+                new OutputEndPoint(7.75, 10, -10, false)
         );
         savedPositions.put("highBarBack",
                 new OutputEndPoint(0, 140, 165, false)
@@ -209,11 +209,11 @@ public class Output {
 //            timer.reset();
         //}
 
-        if (!verticalSlides.isAtTarget()) {
-            timer.reset();
-        }
+        //if (!verticalSlides.isAtTarget()) {
+            //timer.reset();
+        //}
         //should check to see if slides are at spot
-        return (verticalSlides.isAtTarget());// && timer.milliseconds() > 800);
+        return (verticalSlides.isAtTarget(0.5));// && timer.milliseconds() > 800);
         /*if (gripper.isOpen()) {
             if (timer.milliseconds() > 1500) {
                 gripper.close();

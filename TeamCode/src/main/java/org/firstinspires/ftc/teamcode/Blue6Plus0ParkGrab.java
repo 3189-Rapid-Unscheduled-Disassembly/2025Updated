@@ -16,8 +16,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import java.util.Arrays;
 
-@Autonomous(name = "Blue 6+0 Park")
-public class Blue6Plus0Park extends LinearOpMode {
+@Autonomous(name = "Blue 6+0 Park Grab")
+public class Blue6Plus0ParkGrab extends LinearOpMode {
     RobotMain bart;
     MecanumDrive drive;
     Limelight limelight;
@@ -129,13 +129,13 @@ public class Blue6Plus0Park extends LinearOpMode {
         }*/
         TrajectoryActionBuilder fromStartToScore = drive.actionBuilder(AutoPoses.beginPoseClips)
 
-            .splineToConstantHeading(scorePoseWithInput.position, Math.toRadians(270),
-                    new MinVelConstraint(Arrays.asList(
-                            drive.kinematics.new WheelVelConstraint(AutoPoses.preloadMaxWheelVel),
-                            new AngularVelConstraint(Math.PI * 1.5)
-                    )),
-                    new ProfileAccelConstraint(AutoPoses.preloadMinAccel, AutoPoses.preloadMaxAccel)
-            );
+                .splineToConstantHeading(scorePoseWithInput.position, Math.toRadians(270),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(AutoPoses.preloadMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(AutoPoses.preloadMinAccel, AutoPoses.preloadMaxAccel)
+                );
 
         /*TrajectoryActionBuilder fromScoreToNormalizedGrab = drive.actionBuilder(scorePose)
                 .strafeToConstantHeading(normalizedGrabPose.position);
@@ -157,89 +157,64 @@ public class Blue6Plus0Park extends LinearOpMode {
                         new ProfileAccelConstraint(AutoPoses.scoreCycleMinAccel, AutoPoses.scoreCycleMaxAccel)
                 );
 
-        TrajectoryActionBuilder fromSubDropToSweep = drive.actionBuilder(AutoPoses.dropSubClipsPose)
+
+        TrajectoryActionBuilder fromSubDropToSpike1 = drive.actionBuilder(AutoPoses.dropSubClipsPose)
                 //SPIKE 1
-                .strafeToLinearHeading(AutoPoses.grabSpark1ClipsPose.position, AutoPoses.grabSpark1ClipsPose.heading,
+                .turnTo(AutoPoses.grabFrSpark1ClipsPose.heading,
+                        new TurnConstraints(2.5*Math.PI, -1.5*Math.PI, 1.5*Math.PI)
+                );
+
+        TrajectoryActionBuilder fromSpike1ToDrop = drive.actionBuilder(AutoPoses.grabFrSpark1ClipsPose)
+                //SPIKE 1
+                .strafeToLinearHeading(AutoPoses.dropFrSpark1ClipsPose.position, AutoPoses.dropFrSpark1ClipsPose.heading,
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(AutoPoses.sweepMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 2)
+                        )),
+                        new ProfileAccelConstraint(AutoPoses.sweepMinAccel, AutoPoses.sweepMaxAccel)
+                );
+
+        TrajectoryActionBuilder fromDropToSpike2 = drive.actionBuilder(AutoPoses.dropFrSpark1ClipsPose)
+                //SPIKE 2
+                .turnTo(AutoPoses.grabFrSpark2ClipsPose.heading,
+                        new TurnConstraints(2.5*Math.PI, -1.5*Math.PI, 1.5*Math.PI)
+                );
+
+        TrajectoryActionBuilder fromSpike2ToDrop = drive.actionBuilder(AutoPoses.grabFrSpark2ClipsPose)
+                //SPIKE 2
+                .strafeToLinearHeading(AutoPoses.dropFrSpark2ClipsPose.position, AutoPoses.dropFrSpark2ClipsPose.heading,
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(AutoPoses.sweepMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 2)
+                        )),
+                        new ProfileAccelConstraint(AutoPoses.sweepMinAccel, AutoPoses.sweepMaxAccel)
+                );
+
+        TrajectoryActionBuilder fromDropToSpike3 = drive.actionBuilder(AutoPoses.dropFrSpark2ClipsPose)
+                //SPIKE 3
+                .strafeToLinearHeading(AutoPoses.grabFrSpark3ClipsPose.position, AutoPoses.grabFrSpark3ClipsPose.heading,new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(AutoPoses.scoreCycleMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 2)
+                        )),
+                        new ProfileAccelConstraint(AutoPoses.scoreCycleMinAccel, AutoPoses.scoreCycleMaxAccel)
+                );
+
+        TrajectoryActionBuilder fromSpike3ToWallGrab = drive.actionBuilder(AutoPoses.grabFrSpark3ClipsPose)
+                //SPIKE 3
+                .splineToSplineHeading(AutoPoses.shiftPoseByInputs(AutoPoses.grabFrSpark3ClipsPose, 2, 2, 0), Math.toRadians(45),
                         new MinVelConstraint(Arrays.asList(
                                 drive.kinematics.new WheelVelConstraint(AutoPoses.sweepMaxWheelVel),
                                 new AngularVelConstraint(Math.PI * 2)
                         )),
                         new ProfileAccelConstraint(AutoPoses.sweepMinAccel, AutoPoses.sweepMaxAccel)
                 )
-                /*.turnTo(grabSpark1Pose.heading.toDouble(),
-                        new TurnConstraints(Math.PI*1.5, -Math.PI*1.8, Math.PI*1.8)
-                )*/
-                .strafeToLinearHeading(AutoPoses.dropSpark1ClipsPose.position, AutoPoses.dropSpark1ClipsPose.heading,
+                .splineToSplineHeading(AutoPoses.grabWallClipsPose, Math.toRadians(90),
                         new MinVelConstraint(Arrays.asList(
                                 drive.kinematics.new WheelVelConstraint(AutoPoses.sweepMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
+                                new AngularVelConstraint(Math.PI * 2)
                         )),
                         new ProfileAccelConstraint(AutoPoses.sweepMinAccel, AutoPoses.sweepMaxAccel)
-                )
-                //SPIKE 2
-                .strafeToLinearHeading(AutoPoses.grabSpark2ClipsPose.position, AutoPoses.grabSpark2ClipsPose.heading,
-                        new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(AutoPoses.sweepMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
-                        )),
-                        new ProfileAccelConstraint(AutoPoses.sweepMinAccel, AutoPoses.sweepMaxAccel)
-                )
-                .strafeToLinearHeading(AutoPoses.dropSpark2ClipsPose.position, AutoPoses.dropSpark2ClipsPose.heading,
-                        new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(AutoPoses.sweepMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
-                        )),
-                        new ProfileAccelConstraint(AutoPoses.sweepMinAccel, AutoPoses.sweepMaxAccel)
-                )
-                //SPIKE 3
-                .splineToLinearHeading(AutoPoses.grabSpark3ClipsPoseFirst, Math.toRadians(270),
-                        new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(AutoPoses.sweepMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
-                        )),
-                        new ProfileAccelConstraint(AutoPoses.sweepMinAccel, AutoPoses.sweepMaxAccel))
-                /*.splineToConstantHeading(AutoPoses.grabSpark3ClipsPoseFirst.position, Math.toRadians(270),
-                        new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(AutoPoses.sweepMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
-                        )),
-                        new ProfileAccelConstraint(AutoPoses.sweepMinAccel, AutoPoses.sweepMaxAccel))*/
-                /*.splineToSplineHeading(AutoPoses.shiftPoseByInputs(AutoPoses.grabSpark3ClipsPose, 3, -3, 0), Math.toRadians(180),
-                        new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(AutoPoses.sweepMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
-                        )),
-                        new ProfileAccelConstraint(AutoPoses.sweepMinAccel, AutoPoses.sweepMaxAccel))*/
-                .splineToSplineHeading(AutoPoses.grabSpark3ClipsPose, Math.toRadians(90),
-                        new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(AutoPoses.sweepMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
-                        )),
-                        new ProfileAccelConstraint(AutoPoses.sweepMinAccel, AutoPoses.sweepMaxAccel)
-                )
-                .splineToSplineHeading(new Pose2d(AutoPoses.grabSpark3ClipsPose.position.x+0.25, AutoPoses.grabSpark3ClipsPose.position.y+6, Math.toRadians(180)), Math.toRadians(80),
-                        new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(AutoPoses.sweepMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
-                        )),
-                        new ProfileAccelConstraint(AutoPoses.sweepMinAccel, AutoPoses.sweepMaxAccel)
-                )
-                /*.splineToSplineHeading(new Pose2d(grabSpark3Pose.position.x+8, grabSpark3Pose.position.y+10, Math.toRadians(135)), Math.toRadians(90),
-                        new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(sweepMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
-                        )),
-                        new ProfileAccelConstraint(sweepMinAccel, sweepMaxAccel)
-                )*/
-                .splineToSplineHeading(AutoPoses.shiftPoseByInputs(AutoPoses.grabWallClipsPose, 0, 0, 0), Math.toRadians(90),
-                        new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(AutoPoses.sweepMaxWheelVel-2),//-5
-                                new AngularVelConstraint(Math.PI * 1.5)
-                        )),
-                        new ProfileAccelConstraint(AutoPoses.sweepMinAccel+5, AutoPoses.sweepMaxAccel-5)
                 );
-
-
 
         TrajectoryActionBuilder fromGrabToScoreCycle = drive.actionBuilder(AutoPoses.grabWallClipsPose)
                 .strafeToConstantHeading(AutoPoses.scoreCycleClipsPose.position,
@@ -307,13 +282,13 @@ public class Blue6Plus0Park extends LinearOpMode {
                                 //fromStartToScore.build(),
 
                                 new ParallelAction(
-                                    fromStartToScore.build(),
-                                    new SequentialAction(
-                                            autoActions.waitTillVerticalPastInches(4, true),
-                                            autoActions.setIntakeArmPosition("limelight"),
-                                            autoActions.setIntakeRoll(inputtedPose.getRoll()),
-                                            autoActions.extendHoriz(horizTargetSub)
-                                    )
+                                        fromStartToScore.build(),
+                                        new SequentialAction(
+                                                autoActions.waitTillVerticalPastInches(4, true),
+                                                autoActions.setIntakeArmPosition("limelight"),
+                                                autoActions.setIntakeRoll(inputtedPose.getRoll()),
+                                                autoActions.extendHoriz(horizTargetSub)
+                                        )
                                 ),
 
 
@@ -334,44 +309,86 @@ public class Blue6Plus0Park extends LinearOpMode {
                                 autoActions.setIntakeArmPosition("postGrab"),
                                 //drop the sub sample
                                 new ParallelAction(
-                                  fromScoreToDrop.build(),
-                                  new SequentialAction(
-                                          autoActions.extendHoriz(0),
-                                          autoActions.waitTillPastAngle(180, false),
-                                          autoActions.partiallyOpenGate(),
-                                          autoActions.extendHoriz(11)
-                                  )
+                                        fromScoreToDrop.build(),
+                                        new SequentialAction(
+                                                autoActions.extendHoriz(0),
+                                                autoActions.waitTillPastAngle(180, false),
+                                                //autoActions.partiallyOpenGate(),
+                                                autoActions.extendHoriz(11)
+                                        )
                                 ),
                                 autoActions.setIntakeGripperOpen(true),
                                 sleeper.sleep(100),
-                                autoActions.setIntakeArmPosition("rest"),
+                                autoActions.setIntakeArmPosition("limelight"),
+                                autoActions.setIntakeRoll(45),
                                 //autoActions.extendHoriz(11),
-                                
-                                //SWEEP
+
+                                //spike 1
+                                fromSubDropToSpike1.build(),
+
+                                autoActions.lineUpWithLimelight(inputtedPose, 250),
+                                autoActions.setIntakeArmPosition("preGrab"),
+                                autoActions.setIntakeRoll(45),
+                                sleeper.sleep(200),//200,150
+                                autoActions.setIntakeArmPosition("grab"),
+                                autoActions.setIntakeRoll(45),
+                                sleeper.sleep(300),//500,200
+                                autoActions.setIntakeArmPosition("postGrab"),
+
+                                fromSpike1ToDrop.build(),
+
+                                autoActions.setIntakeGripperOpen(true),
+                                sleeper.sleep(100),
+                                autoActions.setIntakeArmPosition("limelight"),
+                                autoActions.setIntakeRoll(45),
+
+                                //spike 2
+                                fromDropToSpike2.build(),
+
+                                autoActions.lineUpWithLimelight(inputtedPose, 250),
+                                autoActions.setIntakeArmPosition("preGrab"),
+                                autoActions.setIntakeRoll(45),
+                                sleeper.sleep(200),//200,150
+                                autoActions.setIntakeArmPosition("grab"),
+                                autoActions.setIntakeRoll(45),
+                                sleeper.sleep(300),//500,200
+                                autoActions.setIntakeArmPosition("postGrab"),
+
+                                fromSpike2ToDrop.build(),
+
+                                autoActions.setIntakeGripperOpen(true),
+                                sleeper.sleep(100),
+                                autoActions.setIntakeArmPosition("limelight"),
+                                autoActions.setIntakeRoll(45),
+
+                                //spike 3
+                                fromDropToSpike3.build(),
+
+                                autoActions.lineUpWithLimelight(inputtedPose, 250),
+                                autoActions.setIntakeArmPosition("preGrab"),
+                                autoActions.setIntakeRoll(45),
+                                sleeper.sleep(200),//200,150
+                                autoActions.setIntakeArmPosition("grab"),
+                                autoActions.setIntakeRoll(45),
+                                sleeper.sleep(300),//500,200
+                                autoActions.setIntakeArmPosition("postGrab"),
+
                                 new ParallelAction(
-                                    fromSubDropToSweep.build(),
-                                    new SequentialAction(
-                                            //SPIKE 1
-                                            autoActions.setGateOncePastAngle(200, true, 0),
-                                            //SPIKE 2
-                                            autoActions.waitTillPastAngle(140, false),
-                                            autoActions.setGateOncePastAngle(140, true, 1),
-                                            autoActions.setGateOncePastAngle(215, true, 0),
-                                            //SPIKE 3
-                                            //autoActions.waitTillPastAngle(140, false),
-                                            //autoActions.setGateOncePastAngle(140,  true, 1),
-                                            //autoActions.waitTillPastY(26, false),
-                                            //autoActions.closeGate(),
-                                            autoActions.waitTillPastY(38, false),
-                                            autoActions.waitTillPastY(38, true),
-                                            autoActions.fullyOpenGate(),
-                                            autoActions.waitTillPastY(40, true),
-                                            autoActions.extendHoriz(0),
+                                        fromSpike3ToWallGrab.build(),
+                                        new SequentialAction(
+                                                autoActions.extendHoriz(6),
+                                                autoActions.waitTillPastAngle(200, false),
+                                                autoActions.setIntakeGripperOpen(true),
+                                                //sleeper.sleep(100),
+                                                autoActions.setIntakeArmPosition("rest"),
+                                                sleeper.sleep(100),
+                                                autoActions.extendHoriz(0),
 
-                                            autoActions.waitTillHorizIsRetracted(), autoActions.lowerToGrab()
-
-                                    )
+                                                autoActions.waitTillHorizIsRetracted(), autoActions.lowerToGrab()
+                                        )
                                 ),
+
+
 
 
 
@@ -457,9 +474,9 @@ public class Blue6Plus0Park extends LinearOpMode {
                                         autoActions.raiseToHighBarBackOnceAwayFromWall(),
                                         autoActions.closeGripperTightAfterDelay(),
                                         new SequentialAction(
-                                            autoActions.waitTillPastY(52, false),
-                                            autoActions.setIntakeArmPosition("park"),
-                                            autoActions.extendHoriz(12)
+                                                autoActions.waitTillPastY(52, false),
+                                                autoActions.setIntakeArmPosition("parkClips"),
+                                                autoActions.extendHoriz(12)
                                         ),
                                         fromGrabToScoreCycle.build()
                                 ),
@@ -483,7 +500,8 @@ public class Blue6Plus0Park extends LinearOpMode {
 
 
                                 //3.58, 4.61
-                                //1.03, 36 in
+                                //1.03, 36 i
+
 
 
                                 sleeper.sleep(1000),

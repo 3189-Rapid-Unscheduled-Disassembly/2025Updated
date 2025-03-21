@@ -369,7 +369,9 @@ public class ATeleop extends LinearOpMode {
 
 
         //transfer when a is held, then go to high bucket once done transferring
-        if (playerTwo.isDown(GamepadKeys.Button.A)) {
+        //idk why but maybe we need to do the press thing for some reason
+        if (playerTwo.isDown(GamepadKeys.Button.A) && !playerTwo.wasJustPressed(GamepadKeys.Button.A)) {
+            //idk maybe we need to do this
             if (bucketDrivingMode) {
                 //transfer, and then flag it as done once it is completed
                 if (isTransferring) {

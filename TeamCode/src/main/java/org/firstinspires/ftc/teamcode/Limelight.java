@@ -49,6 +49,7 @@ public class Limelight {
     //9 red
 
     LLResult result;
+    List<List<Double>> corners;
     double tx = 0;
     double ty = 0;
     double distance = 0;
@@ -102,12 +103,72 @@ public class Limelight {
                 }
             }
 
+            corners = bestDetection.getTargetCorners();
+
             tx = bestDetection.getTargetXDegrees();
             ty = bestDetection.getTargetYDegrees();
 
         } else {
             resultExists = false;
         }
+    }
+
+    public String pointDistance() {
+        if (!corners.isEmpty()) {
+
+            Point2d pointA = Point2d.fromList(corners.get(0));
+            Point2d pointB = Point2d.fromList(corners.get(1));
+            Point2d pointC = Point2d.fromList(corners.get(2));
+            Point2d pointD = Point2d.fromList(corners.get(3));
+
+            double distToB =  pointA.distanceToOtherPoint(pointB);
+            double distToC =  pointA.distanceToOtherPoint(pointC);
+            double distToD =  pointA.distanceToOtherPoint(pointD);
+
+            //make this the x line if angle is 0
+            double xDist;
+            if (pointA.angleBetweenPoints0To180(pointB) == 0) {
+                xDist = distToB;
+            } else if (pointA.angleBetweenPoints0To180(pointC) == 0) {
+                xDist = distToC;
+            } else {
+                xDist = distToD;
+            }
+
+            double yDist;
+            if (pointA.angleBetweenPoints0To180(pointB) == 90) {
+                yDist = distToB;
+            } else if (pointA.angleBetweenPoints0To180(pointC) == 90) {
+                yDist = distToC;
+            } else {
+                yDist = distToD;
+            }
+
+            /*if ((distToB >= distToC && distToB <= distToD) ||
+                    (distToB <= distToC && distToB >= distToD)) {
+                chosenPoint = pointB;
+            } else if ((distToC >= distToB && distToC <= distToD) ||
+                    (distToC <= distToB && distToC >= distToD)) {
+                chosenPoint = pointC;
+            } else {
+                chosenPoint = pointD;
+            }*/
+
+
+
+            return "A " + pointA.toString() +
+                    "\nB " + pointB.toString() +
+                    "\nC " + pointC.toString() +
+                    "\nD " + pointD.toString() +
+                    "\ndistToB " + distToB +
+                    "\ndistToC " + distToC +
+                    "\ndistToD " + distToD +
+                    "\nxDist " +  xDist+
+                    "\nyDist " + yDist +
+                    "\nx/y " + xDist/yDist;
+
+        }
+        return "NO CORNERS";
     }
 
     public String telemetryOfAll() {

@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 
 import com.acmerobotics.roadrunner.Vector2d;
 
+import java.util.List;
+
 public class Point2d {
     public double x, y;
 
@@ -51,7 +53,12 @@ public class Point2d {
         return angle;
     }
 
+
     public Vector2d toVector2d() {
         return new Vector2d(x, y);
+    }
+
+    static public Point2d fromList(List<Double> list) {
+        return new Point2d(list.get(0), list.get(1));
     }
 }

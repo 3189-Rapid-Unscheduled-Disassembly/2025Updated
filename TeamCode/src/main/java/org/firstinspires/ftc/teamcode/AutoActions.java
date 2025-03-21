@@ -109,7 +109,7 @@ class AutoActions {
     class LowerOutOfWay implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            bart.output.setComponentPositionsFromSavedPosition("straightOut");
+            bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, 20, 20, true));
             return false;
         }
     }
@@ -484,10 +484,17 @@ class AutoActions {
             }
 
             double errorTy = desiredTy - limelight.returnLastResultTY();
+            double horizPower;
+            //if we're close, we want to have a slower speed, but allow for faster movement when far away
+            if (RobotMath.isAbsDiffWithinRange(errorTy, 0, 6)) {
+                horizPower = -0.25 * Math.signum(errorTy);
+            } else {
+                horizPower = -0.35 * Math.signum(errorTy);
+            }
             drive.setDrivePowers(new PoseVelocity2d(
                     new Vector2d(
                             forwardPower,
-                            -0.25 * Math.signum(errorTy)//0.045
+                            horizPower
                     ),
                     0
             ));
@@ -853,6 +860,19 @@ class AutoActions {
     }
     public Action raiseToHighBucket() {
         return new RaiseToHighBucket();
+    }
+
+    class RaiseToHighBucketFlat implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            bart.output.setComponentPositionsFromSavedPosition("highBucketFlat");
+
+            //return !bart.output.isAtPosition();
+            return false;
+        }
+    }
+    public Action raiseToHighBucketFlat() {
+        return new RaiseToHighBucketFlat();
     }
 
 

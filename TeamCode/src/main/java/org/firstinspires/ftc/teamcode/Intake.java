@@ -56,7 +56,7 @@ public class Intake {
         intakeArm = new IntakeArm(hardwareMap);
 
         Servo gateServo = hardwareMap.get(Servo.class, "gate");
-        gateServo.setDirection(Servo.Direction.REVERSE);
+        gateServo.setDirection(Servo.Direction.FORWARD);
         gate = new Joint(gateServo, 270, 0.1, "gate");
 
         timer = new ElapsedTime();
@@ -78,7 +78,7 @@ public class Intake {
     }
 
     public void fullyOpenGate() {
-        gate.setAngleDegrees(210);
+        gate.setAngleDegrees(150);
     }
     public void readAllComponents() {
        horizontalSlide.readCurrentPosition();
@@ -88,9 +88,9 @@ public class Intake {
     public void firstFrameOfTransfer() {
         double slideDistanceMultipllier = -40;//-36
         if (intakeArm.isPitchEqualToSavedIntakePosition("grabCheck")) {
-            waitTimeMS = slideDistanceMultipllier*horizontalSlide.currentInches() + 300;//400
+            waitTimeMS = slideDistanceMultipllier*horizontalSlide.currentInches() + 400;//300
         } else {
-            waitTimeMS = slideDistanceMultipllier*horizontalSlide.currentInches() + 400;//450
+            waitTimeMS = slideDistanceMultipllier*horizontalSlide.currentInches() + 500;//400
         }
 
         setHorizontalSlideToSavedPosition("transfer");
@@ -126,8 +126,8 @@ public class Intake {
         //this is what happens after the output closes, making us open the intake gripper
         if (!outputGripperIsOpen) {
             //we are ready to open intake and get out of way
-            if (timer.milliseconds() > 200) {
-                if (timer.milliseconds() > 300) {
+            if (timer.milliseconds() > 300) {//200
+                if (timer.milliseconds() > 400) {//300
                     intakeArm.setToSavedIntakeArmPosition("preTransfer");
                 }
                 intakeArm.intakeGripper.open();

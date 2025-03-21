@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @TeleOp
-public class LimelightTelemetry extends LinearOpMode {
+public class LimelightSampleTracking extends LinearOpMode {
 
     private static final Logger log = LoggerFactory.getLogger(LimelightTelemetry.class);
     Limelight limelight;
@@ -62,11 +62,7 @@ public class LimelightTelemetry extends LinearOpMode {
 
 
             if (playerOne.wasJustPressed(GamepadKeys.Button.A)) {
-                if (limelight.isUsingColor()) {
-                    limelight.limelight.captureSnapshot("color");
-                } else {
-                    limelight.limelight.captureSnapshot("ai");
-                }
+                limelight.limelight.captureSnapshot("inputted");
             }
 
 
@@ -93,19 +89,30 @@ public class LimelightTelemetry extends LinearOpMode {
             }
 
             //if (limelight.resultExists) {
-                //if (playerOne.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) {
-                    //double distanceError = limelight.getLastResultDistanceInches() - desiredDistance;
-                    //horizTarget = bart.intake.horizontalSlide.currentInches() + distanceError;
-                //}
+            //if (playerOne.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) {
+            //double distanceError = limelight.getLastResultDistanceInches() - desiredDistance;
+            //horizTarget = bart.intake.horizontalSlide.currentInches() + distanceError;
+            //}
             //}
             //bart.intake.horizontalSlide.setTargetInches(horizTarget);
             //bart.intake.horizontalSlide.goToTargetAsync();
 
+            limelight.updateLastLimelightResult(4.3);
 
+            double currentInches = bart.intake.horizontalSlide.currentInches();
+            if (limelight.resultExists) {
+                double distanceError = limelight.getLastResultDistanceInches()-desiredDistance;
+                horizTarget = currentInches + distanceError;
+            } else {
+                horizTarget = currentInches;
+            }
+            horizTarget = RobotMath.maxAndMin(horizTarget, currentInches+3, currentInches-3);
+            bart.intake.horizontalSlide.setTargetInches(horizTarget);
+
+            bart.intake.horizontalSlide.goToTargetAsync();
             bart.writeAllComponents();
 
 
-            limelight.updateLastLimelightResult(4.3);
             //telemetry.addLine(limelight.telemetry());
             /*telemetry.addData("pipeline", limelight.getPipeline());
             telemetry.addData("resultExists", limelight.resultExists);
@@ -118,8 +125,8 @@ public class LimelightTelemetry extends LinearOpMode {
             //telemetry.addLine(limelight.telemetryOfAll());
             telemetry.addData("BEST", limelight.telemetryLast());
 
-            telemetry.addData("# of corner", limelight.corners.size());
-            telemetry.addLine(limelight.pointDistance());
+            //telemetry.addData("# of corner", limelight.corners.size());
+            //telemetry.addLine(limelight.pointDistance());
 
             telemetry.addData("\n\nlast ty", limelight.returnLastResultTY());
             telemetry.update();

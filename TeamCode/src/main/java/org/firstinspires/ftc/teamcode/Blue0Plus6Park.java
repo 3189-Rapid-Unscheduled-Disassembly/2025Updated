@@ -140,13 +140,13 @@ public class Blue0Plus6Park extends LinearOpMode {
         Pose2d intakePose3 = new Pose2d(intakeX, inputtedPose3.getY(), Math.toRadians(180));
 
 
-        TrajectoryActionBuilder fromBucketToIntake1 = AutoPoses.fromBucketToIntake(drive, intakePose);
+        TrajectoryActionBuilder fromBucketToIntake1 = AutoPoses.fromBucketToIntake(drive, AutoPoses.scoreBucketCycleForThirdSpikePose, intakePose);
         TrajectoryActionBuilder fromIntakeToBucket1 = AutoPoses.fromIntakeToBucket(drive, intakePose);
 
-        TrajectoryActionBuilder fromBucketToIntake2 = AutoPoses.fromBucketToIntake(drive, intakePose2);
+        TrajectoryActionBuilder fromBucketToIntake2 = AutoPoses.fromBucketToIntake(drive, AutoPoses.scoreBucketCyclePose, intakePose2);
         TrajectoryActionBuilder fromIntakeToBucket2 = AutoPoses.fromIntakeToBucket(drive, intakePose2);
 
-        TrajectoryActionBuilder fromBucketToIntake3 = AutoPoses.fromBucketToIntake(drive, intakePose3);
+        TrajectoryActionBuilder fromBucketToIntake3 = AutoPoses.fromBucketToIntake(drive, AutoPoses.scoreBucketCyclePose, intakePose3);
 
 
 

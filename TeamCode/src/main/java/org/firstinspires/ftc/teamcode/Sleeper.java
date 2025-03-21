@@ -25,7 +25,7 @@ class Sleeper {
             }
 
 
-            return !(timer.milliseconds() > sleepTimeMs);
+            return !(timer.milliseconds() >= sleepTimeMs);
         }
     }
 

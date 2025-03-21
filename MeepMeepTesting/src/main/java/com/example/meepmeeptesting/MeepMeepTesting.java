@@ -54,18 +54,20 @@ public class MeepMeepTesting {
                 .setConstraints(50, 35, Math.toRadians(180), Math.toRadians(180), 10.82)
                 .build();
 
-        Pose2d dropSpark2ClipsPose = new Pose2d(-38, 40, Math.toRadians(160));
-
-        Pose2d grabSpark3ClipsPose = new Pose2d(-45.5, 24, Math.toRadians(200));
+       Pose2d grabSpark3ClipsPose = new Pose2d(-45.5, 24, Math.toRadians(200));
 
         Pose2d grabSpark3ClipsPoseFirst = new Pose2d(-40, 32, Math.toRadians(225));
 
-        Pose2d scoreBucketCyclePose = new Pose2d(59, 50, Math.toRadians(250));//55.5, 57
+        Pose2d scoreBucketCyclePose = new Pose2d(58, 44, Math.toRadians(250));//59, 50, 250
 
-        Pose2d intakePose = new Pose2d(23, 6, Math.toRadians(180));
+        Pose2d intakePose = new Pose2d(23, 12, Math.toRadians(180));
+
+        Pose2d dropSpark2ClipsPose = new Pose2d(-43, 40, Math.toRadians(120));
+
+        Pose2d grabFrSpark3ClipsPose = new Pose2d(-51, 45, Math.toRadians(225));//24
 
 
-        myBot.runAction(myBot.getDrive().actionBuilder(scoreBucketCyclePose)
+        myBot.runAction(myBot.getDrive().actionBuilder(dropSpark2ClipsPose)
                         /*.strafeToConstantHeading(shiftPoseByInputs(scoreCycleClipsPose, 0, 6, 0).position)
                                 .strafeToConstantHeading(clipsParkPose.position)(/
                 //.splineToLinearHeading(grabSpark3Pose, Math.toRadians(180)
@@ -143,12 +145,15 @@ public class MeepMeepTesting {
 
 
                 //.splineToLinearHeading(new Pose2d(48, 24, Math.toRadians(250)), Math.toRadians(250))
-                .splineToSplineHeading(shiftPoseByInputs(intakePose, 0, 0, 0), Math.toRadians(180))
+                //.splineToSplineHeading(new Pose2d(46, 19, Math.toRadians(225)), Math.toRadians(225))
+
+                //.splineToSplineHeading(shiftPoseByInputs(intakePose, 0, 0, 0), Math.toRadians(180))
 
 
-                .splineToLinearHeading(shiftPoseByInputs(intakePose, 1, 0, 0), Math.toRadians(0))
-                .splineToSplineHeading(new Pose2d(50, 25, Math.toRadians(250)), Math.toRadians(70))
-                .splineToSplineHeading(scoreBucketCyclePose, Math.toRadians(70))
+                //.splineToLinearHeading(shiftPoseByInputs(intakePose, 1, 0, 0), Math.toRadians(0))
+                //.splineToSplineHeading(new Pose2d(40, 14, Math.toRadians(270-45)), Math.toRadians(45))
+                //.splineToSplineHeading(new Pose2d(50, 24, Math.toRadians(250)), Math.toRadians(70))
+                //.splineToSplineHeading(scoreBucketCyclePose, Math.toRadians(45))
 
                 /*.splineToSplineHeading(new Pose2d(grabSpark3Pose.position.x+8, grabSpark3Pose.position.y+10, Math.toRadians(135)), Math.toRadians(90),
                         new MinVelConstraint(Arrays.asList(
@@ -160,6 +165,11 @@ public class MeepMeepTesting {
                 //.splineToSplineHeading(grabWallClipsPose, Math.toRadians(90)
 
                 //)
+
+
+                .splineToSplineHeading(new Pose2d(-43, 41, Math.toRadians(225)), Math.toRadians(90))
+
+                .splineToSplineHeading(grabFrSpark3ClipsPose, Math.toRadians(180))
 
                 .build());
 
