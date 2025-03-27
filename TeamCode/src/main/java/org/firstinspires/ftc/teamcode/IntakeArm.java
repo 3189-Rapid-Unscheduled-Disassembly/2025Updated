@@ -3,7 +3,9 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 //this holds the pitches, roll, and gripper for the intake
 public class IntakeArm {
@@ -18,13 +20,19 @@ public class IntakeArm {
 
     public IntakeArm(HardwareMap hardwareMap) {
 
-        Servo armServo = hardwareMap.get(Servo.class,"intakeArmPitch");
-        armServo.setDirection(Servo.Direction.FORWARD);
-        intakeArm = new Joint(armServo, 200, 0.200, "Intake Arm Pitch");
+        Servo armLeftServo = hardwareMap.get(Servo.class,"intakeArmPitchLeft");
+        Servo armRightServo = hardwareMap.get(Servo.class,"intakeArmPitchRight");
+        armLeftServo.setDirection(Servo.Direction.FORWARD);
+        armRightServo.setDirection(Servo.Direction.REVERSE);
+
+        List<Servo> armServos = new ArrayList<>();
+        armServos.add(armLeftServo);
+        armServos.add(armRightServo);
+        intakeArm = new Joint(armServos, 200, 0.200, "Intake Arm Pitch");
 
         Servo intakeWristPitchServo = hardwareMap.get(Servo.class, "intakeWristPitch");
-        intakeWristPitchServo.setDirection(Servo.Direction.FORWARD);//34/16
-        intakeWristPitch = new Joint(intakeWristPitchServo, 637.5, 0.484, "Intake Wrist Pitch");
+        intakeWristPitchServo.setDirection(Servo.Direction.FORWARD);
+        intakeWristPitch = new Joint(intakeWristPitchServo, 637.5, 0.489, "Intake Wrist Pitch");
 
         Servo intakeRollServo = hardwareMap.get(Servo.class, "intakeRoll");
         intakeRollServo.setDirection(Servo.Direction.FORWARD);
@@ -32,7 +40,7 @@ public class IntakeArm {
 
         Servo gripperServo = hardwareMap.get(Servo.class, "intakeGripper");
         gripperServo.setDirection(Servo.Direction.REVERSE);
-        intakeGripper = new Gripper(gripperServo, 0.85, 0.4, "Intake Gripper");//0.245
+        intakeGripper = new Gripper(gripperServo, 0.85, 0.47, "Intake Gripper");//0.245
 
         //SAVED POSITIONS
         savedPositions.put("rest", new IntakeArmPosition(125, 180, 0, true));
@@ -52,7 +60,7 @@ public class IntakeArm {
         savedPositions.put("limelight", new IntakeArmPosition(15, -15, 0, true));
 
         savedPositions.put("park", new IntakeArmPosition(80, 125, 0, true));
-        savedPositions.put("parkClips", new IntakeArmPosition(60, 125, 0, true));
+        savedPositions.put("parkClips", new IntakeArmPosition(60, 100, 0, true));
 
 
     }
@@ -70,15 +78,20 @@ public class IntakeArm {
             targetRoll = 45;
         } else if (currentRoll < 90) {
             targetRoll = 90;
-        } else {
+        } else if (currentRoll == 90){
             targetRoll = -45;
+        } else {
+            targetRoll = 45;
         }
         intakeWristRoll.setAngleDegrees(targetRoll);
     }
     public void moveRollNegative45() {
         double currentRoll = intakeWristRoll.currentAngleDegrees();
         double targetRoll;
-        if (currentRoll > 45) {
+        //this is for weird transfer pre rolling
+        if (currentRoll > 90) {
+            targetRoll = -45;
+        } else if (currentRoll == 90) {
             targetRoll = 45;
         } else if (currentRoll > 0) {
             targetRoll = 0;

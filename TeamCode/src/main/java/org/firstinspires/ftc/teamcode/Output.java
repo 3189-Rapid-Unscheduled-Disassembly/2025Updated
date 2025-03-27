@@ -94,7 +94,7 @@ public class Output {
         savedPositions.put("aboveTransfer",
                 new OutputEndPoint(0, 0, -20, false)
         );
-        savedPositions.put("transfer",//2.8, -25.5
+        savedPositions.put("transfer",
                 new OutputEndPoint(4, -25.5, -95, true)
         );
         savedPositions.put("rest",
@@ -184,6 +184,7 @@ public class Output {
 
     public void readAllComponents() {
         verticalSlides.readCurrentPosition();
+        verticalSlides.readCurrentAmps();
         //arm.readServoPositions();
         //wrist.readServoPositions();
         //gripper.readPosition();
@@ -232,10 +233,10 @@ public class Output {
 
 
     public void level3Hang() {
-        if (verticalSlides.isAbovePositionInches(1)) {
+        if (verticalSlides.isAbovePositionInches(0.2)) {
             verticalSlides.setPower(-1);
         } else {
-            verticalSlides.setTargetInches(0);
+            verticalSlides.setTargetInches(-1);
             sendVerticalSlidesToTarget();
         }
     }
@@ -257,13 +258,33 @@ public class Output {
         verticalSlides.setTargetInches(slideTargetInches);
     }
 
+    public void setOnlySpecifiedValues(String key,
+                                       boolean setSlides, boolean setArm, boolean setWrist, boolean setGripper) {
+        setOnlySpecifiedValues(savedPositions.get(key), setSlides, setArm, setWrist, setGripper);
+    }
+
+    public void setOnlySpecifiedValues(OutputEndPoint outputEndPoint,
+                                                          boolean setSlides, boolean setArm, boolean setWrist, boolean setGripper) {
+        if (setSlides) {
+            slideTargetInches = outputEndPoint.slideInches;
+            verticalSlides.setTargetInches(slideTargetInches);
+        }
+        if (setArm) {
+            armTargetPitchDegrees = outputEndPoint.armDegrees;
+            arm.setAngleDegrees(armTargetPitchDegrees);
+        }
+        if (setWrist) {
+            wristTargetPitchRelativeToGroundDegrees = outputEndPoint.wristPitchRelativeToGroundDegrees;
+            wrist.setAngleDegreesMinusOtherAngle(wristTargetPitchRelativeToGroundDegrees, armTargetPitchDegrees);
+        }
+        if (setGripper) {
+            open = outputEndPoint.open;
+            gripper.setPosition(outputEndPoint.open);
+        }
+    }
+
     public void sendVerticalSlidesToTarget() {
-        //slide per frame
         verticalSlides.goToTargetAsync();
-        //arm
-        //arm.goToAngle(armTargetPitchDegrees);
-        //wrist
-        //wrist.setWristToTarget(wristTargetPitchRelativeToGroundDegrees, wristTargetRollDegrees, armTargetPitchDegrees);
     }
 
     public boolean isAtPosition() {

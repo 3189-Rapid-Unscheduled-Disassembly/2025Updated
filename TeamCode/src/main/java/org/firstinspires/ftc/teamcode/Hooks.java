@@ -19,9 +19,9 @@ public class Hooks {
 
     final double POWER_SIGNIFICANT_DIFFERENCE = 0;
 
-    private double preHangP = 0.008;
-    private double hangP = 0.035;
-    private double currentP = preHangP;
+    private final double PRE_HANG_P = 0.008;
+    private final double HANG_P = 0.035;
+    private double currentP = PRE_HANG_P;
 
 
 
@@ -31,7 +31,9 @@ public class Hooks {
 
         motor.setDirection(DcMotorSimple.Direction.FORWARD);
 
-        motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //if (resetEncoders) {
+            motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //}
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -46,12 +48,12 @@ public class Hooks {
 
     public void setTargetToPreHang() {
         setTarget(1200);
-        currentP = preHangP;
+        currentP = PRE_HANG_P;
     }
 
     public void setTargetToHang() {
         setTarget(400);
-        currentP = hangP;
+        currentP = HANG_P;
     }
 
     public void depower() {

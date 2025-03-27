@@ -25,9 +25,9 @@ MOTORS
 SERVOS
 0 intakeGripper
 1 intakeRoll
-2 intakeWristPitch
-3 (armLeft was in here, but it didn't work, maybe it's the port's problem)
-4 intakeArmPitch
+2
+3 intakeArmPitchRight
+4 intakeArmPitchLeft
 5
 
 EXPANSION
@@ -41,7 +41,7 @@ SERVOS
 1 wrist
 2 armRight
 3 armLeft
-4
+4 intakeWristPitch
 5 gate
 */
 
@@ -131,6 +131,12 @@ public class RobotMain {
         }
     }
 
+    //this is used to reset both slides at the start of teleop
+    //it'll send both down until the voltage spikes
+    //then return true once both are done
+    //public boolean voltageResetEncoders() {
+        //boolean isHorizDone =
+    //}
 
     public void driveRobotRelative(double forwardSpeed, double strafeSpeed, double turnSpeed) {
         mecanaDruve.setDrivePowers(new PoseVelocity2d(

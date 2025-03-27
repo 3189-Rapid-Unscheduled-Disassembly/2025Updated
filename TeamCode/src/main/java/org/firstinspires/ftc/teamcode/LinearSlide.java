@@ -25,6 +25,9 @@ public class LinearSlide {
 
     boolean specialMode = false;
 
+    boolean hasAmpsTriggeredForEncoderReset = false;
+    double timeWhenAmpsTriggeredMS = 0;
+
 
     private double currentTicks = -3600;
     private double targetTicks = -3600;
@@ -196,6 +199,29 @@ public class LinearSlide {
         return currentAmps;
     }
 
+
+    //this is used to reset both slides at the start of teleop
+    //it'll send both down until the voltage spikes
+    //then return true once both are done
+    public boolean voltageResetEncoder() {
+        if (!hasAmpsTriggeredForEncoderReset) {
+            setPower(-0.6);
+            if (currentAmps > 4) {
+                hasAmpsTriggeredForEncoderReset = true;
+                setPower(0);
+                timeWhenAmpsTriggeredMS = pidTimer.milliseconds();
+            }
+            return false;
+        } else {
+            setPower(0);
+            double timeDifferenceMS = pidTimer.milliseconds() - timeWhenAmpsTriggeredMS;
+            if (timeDifferenceMS > 500) {
+                resetEncoder();
+                return true;
+            }
+            return false;
+        }
+    }
 
     public void setPower(double power) {
         currentPower = power;

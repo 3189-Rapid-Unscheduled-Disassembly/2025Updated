@@ -34,7 +34,13 @@ public class ATeleop extends LinearOpMode {
     RobotMain bart;
 
 
+    boolean isVoltageResettingEncoders = true;
+
+    boolean doesHorizNeedVoltageResetEncoders = false;
+
+
     boolean isTransferring = false;
+    boolean weirdDoubleCheck = true;
     boolean hasSentComponentsToBucket = false;
 
     boolean isp1ltDownThisFrame = false;
@@ -143,8 +149,13 @@ public class ATeleop extends LinearOpMode {
             if (gamepad1.b || gamepad2.b) {
                 isOutputArmJank = true;
             }
+
+            if (gamepad2.left_stick_button) {
+                doesHorizNeedVoltageResetEncoders = true;
+            }
             telemetry.addData("isIntakeArmJank", isIntakeArmJank);
             telemetry.addData("isOutputArmJank", isOutputArmJank);
+            telemetry.addData("doesHorizNeedVoltageResetEncoders", doesHorizNeedVoltageResetEncoders);
             telemetry.update();
         }
 
@@ -166,6 +177,8 @@ public class ATeleop extends LinearOpMode {
         } else {
             bart.intake.intakeArm.intakeGripper.close();
         }
+
+        bart.writeAllComponents();
 
 
         //visionPortal.stopStreaming();
@@ -198,7 +211,16 @@ public class ATeleop extends LinearOpMode {
             wasp1ltDownLastFrame = isp1ltDownThisFrame;
 
 
-            if (playerOne.isDown(GamepadKeys.Button.LEFT_BUMPER)) {
+            if (isVoltageResettingEncoders) {
+                boolean isVerticalDone = bart.output.verticalSlides.voltageResetEncoder();
+                if (doesHorizNeedVoltageResetEncoders) {
+                    boolean isHorizDone = bart.intake.horizontalSlide.voltageResetEncoder();
+                    boolean areTheEncodersReset = isVerticalDone && isHorizDone;
+                    isVoltageResettingEncoders = !areTheEncodersReset;
+                } else {
+                    isVoltageResettingEncoders = !isVerticalDone;
+                }
+            } else if (playerOne.isDown(GamepadKeys.Button.LEFT_BUMPER)) {
                 autoControl(packet);
             } else {
                 manualControl();
@@ -363,6 +385,7 @@ public class ATeleop extends LinearOpMode {
             if (bucketDrivingMode) {
                 bart.firstFrameOfTransfer();
                 isTransferring = true;
+                weirdDoubleCheck = true;
                 hasSentComponentsToBucket = false;
             }
         }
@@ -374,12 +397,13 @@ public class ATeleop extends LinearOpMode {
             //idk maybe we need to do this
             if (bucketDrivingMode) {
                 //transfer, and then flag it as done once it is completed
-                if (isTransferring) {
+                if (isTransferring || weirdDoubleCheck) {
                     bart.transfer();
                     if (bart.isTransferDone()) {
                         isTransferring = false;
+                        weirdDoubleCheck = false;
                     }
-                    hasSentComponentsToBucket = false;
+                    //hasSentComponentsToBucket = false;
                 } else {
                     //we are done transferring, so we can raise to bucket
                     //if p2 holds down the right trigger, then we will delay the bucket
@@ -397,7 +421,7 @@ public class ATeleop extends LinearOpMode {
                             //we just sent the slides, so we don't need to send them each frame
                             //or else we couldn't manually change slide position or open the grabber
                             hasSentComponentsToBucket = true;
-                            bart.intake.intakeArm.setToSavedIntakeArmPosition("preGrab");
+                            //bart.intake.intakeArm.setToSavedIntakeArmPosition("preGrab");
                         }
                     } else {
                         if (alternateControl) {
@@ -427,9 +451,26 @@ public class ATeleop extends LinearOpMode {
         // and p2 can instantly send the slides back if we have a bad transfer
         if (playerTwo.wasJustReleased(GamepadKeys.Button.A)) {
             if (bucketDrivingMode) {
-                bart.output.setComponentPositionsFromSavedPosition("transfer");
+                //if we early cancel, we don't wanna cook the wrist servo
+                //avoid whiplash
+                if (!bart.output.gripper.isOpen() &&
+                        !bart.output.verticalSlides.isAbovePositionInches(15)) {
+                        bart.output.setOnlySpecifiedValues("transfer", true,
+                                false, false, false);
+                } else {
+                    bart.output.setComponentPositionsFromSavedPosition("transfer");
+                }
+                //this allows for early rolling,
+                if (bart.intake.intakeArm.intakeWristRoll.isAngleEqualToGivenAngle(185)) {
+                    bart.intake.intakeArm.setToSavedIntakeArmPosition("preGrab");
+                } else {
+                    bart.intake.intakeArm.setOnlySpecifiedValuesToSavedIntakeArmPosition("preGrab",
+                            true, true, false, true);
+                }
+
                 isTransferring = false;
-                //hasSentComponentsToBucket = false;
+                weirdDoubleCheck = true;
+                hasSentComponentsToBucket = true;
             }
         }
 
@@ -458,9 +499,9 @@ public class ATeleop extends LinearOpMode {
                 }
             }
 
-            //if (!playerTwo.isDown(GamepadKeys.Button.A)) {
-            bart.intake.horizontalSlide.goToTargetAsync();
-            //}
+            if (!playerTwo.isDown(GamepadKeys.Button.A) || !bucketDrivingMode) {
+                bart.intake.horizontalSlide.goToTargetAsync();
+            }
         }
 
 
@@ -571,6 +612,7 @@ public class ATeleop extends LinearOpMode {
 
                 //don't think this is really necessary, but it should remove any weird left over stuff
                 isTransferring = false;
+                weirdDoubleCheck = true;
                 hasSentComponentsToBucket = false;
             }
 
@@ -638,7 +680,7 @@ public class ATeleop extends LinearOpMode {
         }
 
         if (playerOne.isDown(GamepadKeys.Button.X)) {
-            if (!bart.output.verticalSlides.isAbovePositionInches(20)) {
+            if (!bart.output.verticalSlides.isAbovePositionInches(18)) {
                 bart.output.setComponentPositionsFromSavedPosition("preHangArmBackLevel3");
             } else {
                 bart.output.setComponentPositionsFromSavedPosition("preHangLevel3");
@@ -655,11 +697,12 @@ public class ATeleop extends LinearOpMode {
         //reset the encoders for the two slide systems
         if (playerTwo.wasJustReleased(GamepadKeys.Button.LEFT_STICK_BUTTON)) {
             //reset vertical and horiz
-            if (!alternateControl) {
-                bart.resetEncoders();
-            } else {
-                //reset only the horiz
+            if (stupidControl) {
+                bart.output.verticalSlides.resetEncoder();
+            } else if (alternateControl) {
                 bart.intake.horizontalSlide.resetEncoder();
+            } else {
+                bart.resetEncoders();
             }
         }
     }

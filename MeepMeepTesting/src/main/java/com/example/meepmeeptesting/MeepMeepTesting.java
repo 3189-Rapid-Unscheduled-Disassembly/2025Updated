@@ -17,21 +17,6 @@ public class MeepMeepTesting {
     public static void main(String[] args) {
 
 
-        Pose2d dropSubPose = new Pose2d(-30, 40, Math.toRadians(120));
-
-        Pose2d grabSpark1Pose = new Pose2d(-32, 40, Math.toRadians(240));//-36,36
-        Pose2d grabSpark2Pose = new Pose2d(-42, 40, Math.toRadians(240));//-41, 40
-        Pose2d grabSpark3Pose = new Pose2d(-46, 26, Math.toRadians(200));
-
-
-
-
-        Pose2d dropSpark1Pose = new Pose2d(grabSpark2Pose.position, Math.toRadians(130));
-
-        Pose2d dropSpark2Pose = new Pose2d(-44, 40, Math.toRadians(150));
-
-
-
 
         Vector2d scoreCycleVector = new Vector2d(-3, 32.5);
         double scoreCycleAngleRad = Math.toRadians(90);
@@ -64,7 +49,7 @@ public class MeepMeepTesting {
 
         Pose2d dropSpark2ClipsPose = new Pose2d(-43, 40, Math.toRadians(120));
 
-        Pose2d grabFrSpark3ClipsPose = new Pose2d(-51, 45, Math.toRadians(225));//24
+        Pose2d grabFrSpark3ClipsPose = new Pose2d(-52, 45, Math.toRadians(225));//24
 
 
         myBot.runAction(myBot.getDrive().actionBuilder(dropSpark2ClipsPose)
@@ -167,7 +152,7 @@ public class MeepMeepTesting {
                 //)
 
 
-                .splineToSplineHeading(new Pose2d(-43, 41, Math.toRadians(225)), Math.toRadians(90))
+                .splineToSplineHeading(new Pose2d(-45, 45, grabFrSpark3ClipsPose.heading.toDouble()), Math.toRadians(180))
 
                 .splineToSplineHeading(grabFrSpark3ClipsPose, Math.toRadians(180))
 

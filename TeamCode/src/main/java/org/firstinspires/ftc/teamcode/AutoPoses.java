@@ -20,13 +20,16 @@ public class AutoPoses {
     static Pose2d dropSubClipsPose = new Pose2d(-31, 45, Math.toRadians(140));
 
     static Pose2d grabSpark1ClipsPose = new Pose2d(-31, 40, Math.toRadians(220));//-36,36
-    static Pose2d grabSpark2ClipsPose = new Pose2d(-42, 40, Math.toRadians(240));//-41, 40
+    static Pose2d grabSpark2ClipsPose = new Pose2d(-42, 40, Math.toRadians(220));//-41, 40
     static Pose2d grabSpark3ClipsPose = new Pose2d(-46, 26, Math.toRadians(180));//24
 
     static Pose2d grabSpark3ClipsPoseFirst = new Pose2d(-45, 32, Math.toRadians(225));//235
 
     static Pose2d dropSpark1ClipsPose = new Pose2d(grabSpark2ClipsPose.position.x, 43, Math.toRadians(120));
-    static Pose2d dropSpark2ClipsPose = new Pose2d(-43, 40, Math.toRadians(120));
+
+    static Pose2d dropSpark1ClipsPoseSpecial = new Pose2d(grabSpark2ClipsPose.position.x, 46, Math.toRadians(120));
+
+    static Pose2d dropSpark2ClipsPose = new Pose2d(-43, 42, Math.toRadians(140));
 
     static Pose2d dropSpark2ClipsPoseSpecial = new Pose2d(-31, 42, Math.toRadians(120));
 
@@ -39,10 +42,10 @@ public class AutoPoses {
     static Pose2d dropFrSpark1ClipsPose = new Pose2d(grabFrSpark2ClipsPose.position, Math.toRadians(140));
     static Pose2d dropFrSpark2ClipsPose = new Pose2d(-31, 45, Math.toRadians(140));
 
-    static Pose2d grabWallClipsPose = new Pose2d(-41, 61, Math.toRadians(90));
+    static Pose2d grabWallClipsPose = new Pose2d(-41, 61.5, Math.toRadians(90));//61
     static Pose2d scoreCycleClipsPose = new Pose2d(-5, 30.25, Math.toRadians(90));
 
-    static Pose2d scoreCycleClipsPoseSpecial = new Pose2d(-5, 42, Math.toRadians(90));
+    static Pose2d scoreCycleClipsPoseSpecial = new Pose2d(-5, 31, Math.toRadians(90));
 
     static Pose2d grabWallClipsTeleopPose = shiftPoseByInputs(grabWallClipsPose, -1, 1, 0);
     static Pose2d scoreCycleClipsTeleopPose = shiftPoseByInputs(scoreCycleClipsPose, 0, 0, 0);

@@ -93,7 +93,7 @@ public class Intake {
             waitTimeMS = slideDistanceMultipllier*horizontalSlide.currentInches() + 500;//400
         }
 
-        setHorizontalSlideToSavedPosition("transfer");
+        //setHorizontalSlideToSavedPosition("transfer");
 
         hasAmpsTriggered = false;
 
@@ -109,26 +109,30 @@ public class Intake {
         //horizontalSlide.setPower(-0.8);
 
         //we haven't reached the location, so we need to keep pulling back
-        /*if (!hasAmpsTriggered) {
+        if (!hasAmpsTriggered) {
             if (horizontalSlide.isAbovePositionInches(3)) {
                 horizontalSlide.setPower(-1);
             } else {
                 horizontalSlide.setPower(-0.6);
+                if (horizontalSlide.currentAmps() > 4) {
+                    hasAmpsTriggered = true;
+                    horizontalSlide.setPower(-0.2);
+                }
             }
-            if (horizontalSlide.currentAmps() > 4) {
-                hasAmpsTriggered = true;
-                horizontalSlide.setPower(-0.1);
-            }
+
         } else {
-            horizontalSlide.setPower(-0.1);
-        }*/
+            horizontalSlide.setPower(-0.2);
+        }
 
         //this is what happens after the output closes, making us open the intake gripper
         if (!outputGripperIsOpen) {
             //we are ready to open intake and get out of way
-            if (timer.milliseconds() > 300) {//200
-                if (timer.milliseconds() > 400) {//300
+            if (timer.milliseconds() > 200) {//200
+                if (timer.milliseconds() > 300) {//300
+                    //intakeArm.setOnlySpecifiedValuesToSavedIntakeArmPosition("preTransfer",
+                      //      false, true, false, false);
                     intakeArm.setToSavedIntakeArmPosition("preTransfer");
+                    horizontalSlide.setTargetInches(1);
                 }
                 intakeArm.intakeGripper.open();
             }
@@ -137,13 +141,17 @@ public class Intake {
             if (!outputIsReady) {
                 intakeArm.setToSavedIntakeArmPosition("preTransfer");
             } else {
+                //intakeArm.setOnlySpecifiedValuesToSavedIntakeArmPosition("transfer",
+                  //      false, true, false, false);
                 intakeArm.setToSavedIntakeArmPosition("transfer");
-                if (!isHorizontalSlideAtSavedPos("transfer", 0.5)) {
+
+                //if (!isHorizontalSlideAtSavedPos("transfer", 0.5)) {
+                if (!hasAmpsTriggered) {
                     timer.reset();
                 } else {
                     if (timer.milliseconds() > waitTimeMS) {
                         timer.reset();
-                        horizontalSlide.setPower(0);
+                        //horizontalSlide.setPower(0);
                         return true;
                     }
                 }

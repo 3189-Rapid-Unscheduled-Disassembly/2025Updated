@@ -895,6 +895,24 @@ class AutoActions {
         return new WaitTillVerticalPastInches(targetInches, onceGreaterThan);
     }
 
+    class SetHooks implements Action {
+        int ticks;
+
+        public SetHooks(int ticks) {
+            this.ticks = ticks;
+        }
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            bart.hooks.setTarget(ticks);
+            return false;
+        }
+    }
+
+    public Action setHooks(int ticks) {
+        return new SetHooks(ticks);
+    }
+
 
 
     class WaitTillSlidesArePartiallyUp implements Action {
