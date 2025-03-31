@@ -395,7 +395,26 @@ class AutoActions {
 
     public Action extendHoriz(double target) {return new ExtendHoriz(target);}
 
+    class CheckIfClipsWallGrabChangedAndRebuildTrajectoriesIfNeeded implements Action {
+        double currentX;
+        boolean wasXChanged;
 
+        public CheckIfClipsWallGrabChangedAndRebuildTrajectoriesIfNeeded(double currentX, double previousX) {
+            this.currentX = currentX;
+            wasXChanged = this.currentX != previousX;
+        }
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            if (!wasXChanged) {
+                //x did NOT change, so we don't need to shift anything and can just move on
+                return false;
+            } else {
+
+
+                return false;
+            }
+        }
+    }
 
     class ReadComponents implements Action {
         @Override

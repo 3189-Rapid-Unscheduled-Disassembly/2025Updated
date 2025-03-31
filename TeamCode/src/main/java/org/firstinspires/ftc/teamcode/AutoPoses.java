@@ -113,9 +113,16 @@ public class AutoPoses {
     static double bucketMinAccel = -50;//-65
     static double bucketMaxAccel = 55;//55
 
+
+    //this is what we will use for all autos and stuff. we only need the the other one to deal with player inputted x shifts
     public static TrajectoryActionBuilder fromGrabToScoreCycle(MecanumDrive drive) {
-        return drive.actionBuilder(AutoPoses.grabWallClipsPose)
-                .strafeToConstantHeading(AutoPoses.scoreCycleClipsPose.position,
+        return fromGrabToScoreCycle(drive,0);
+    }
+    public static TrajectoryActionBuilder fromGrabToScoreCycle(MecanumDrive drive, double grabWallClipsXShift) {
+        Pose2d grabWallClipsNow = shiftPoseByInputs(grabWallClipsPose, grabWallClipsXShift, 0, 0);
+        Pose2d scoreCycleClipsPoseNow = shiftPoseByInputs(scoreCycleClipsPose, grabWallClipsXShift, 0, 0);
+        return drive.actionBuilder(grabWallClipsNow)
+                .strafeToConstantHeading(scoreCycleClipsPoseNow.position,
                         new MinVelConstraint(Arrays.asList(
                                 drive.kinematics.new WheelVelConstraint(AutoPoses.scoreCycleMaxWheelVel),
                                 new AngularVelConstraint(Math.PI * 1.5)
@@ -123,7 +130,7 @@ public class AutoPoses {
                         new ProfileAccelConstraint(AutoPoses.scoreCycleMinAccel, AutoPoses.scoreCycleMaxAccel)
                 );//26.07 first grab
     }
-    public static TrajectoryActionBuilder fromGrabToScoreCycleTeleop(MecanumDrive drive) {
+    /*public static TrajectoryActionBuilder fromGrabToScoreCycleTeleop(MecanumDrive drive) {
         return drive.actionBuilder(grabWallClipsTeleopPose)
                 .strafeToConstantHeading(scoreCycleClipsTeleopPose.position,
                         new MinVelConstraint(Arrays.asList(
@@ -132,11 +139,16 @@ public class AutoPoses {
                         )),
                         new ProfileAccelConstraint(AutoPoses.scoreCycleMinAccel, AutoPoses.scoreCycleMaxAccel)
                 );//26.07 first grab
-    }
+    }*/
 
     public static TrajectoryActionBuilder fromScoreCycleToGrab(MecanumDrive drive) {
-        return drive.actionBuilder(AutoPoses.scoreCycleClipsPose)
-                .strafeToConstantHeading(AutoPoses.grabWallClipsPose.position,
+        return fromScoreCycleToGrab(drive, 0);
+    }
+    public static TrajectoryActionBuilder fromScoreCycleToGrab(MecanumDrive drive, double grabWallClipsXShift) {
+        Pose2d grabWallClipsNow = shiftPoseByInputs(grabWallClipsPose, grabWallClipsXShift, 0, 0);
+        Pose2d scoreCycleClipsPoseNow = shiftPoseByInputs(scoreCycleClipsPose, grabWallClipsXShift, 0, 0);
+        return drive.actionBuilder(scoreCycleClipsPoseNow)
+                .strafeToConstantHeading(grabWallClipsNow.position,
                         new MinVelConstraint(Arrays.asList(
                                 drive.kinematics.new WheelVelConstraint(AutoPoses.scoreCycleGrabMaxWheelVel),
                                 new AngularVelConstraint(Math.PI * 1.5)
@@ -144,7 +156,7 @@ public class AutoPoses {
                         new ProfileAccelConstraint(AutoPoses.scoreCycleGrabMinAccel, AutoPoses.scoreCycleGrabMaxAccel)
                 );
     }
-    public static TrajectoryActionBuilder fromScoreCycleToGrabTeleop(MecanumDrive drive) {
+    /*public static TrajectoryActionBuilder fromScoreCycleToGrabTeleop(MecanumDrive drive) {
         return drive.actionBuilder(scoreCycleClipsTeleopPose)
                 .strafeToConstantHeading(grabWallClipsTeleopPose.position,
                         new MinVelConstraint(Arrays.asList(
@@ -153,7 +165,7 @@ public class AutoPoses {
                         )),
                         new ProfileAccelConstraint(AutoPoses.scoreCycleGrabMinAccel, AutoPoses.scoreCycleGrabMaxAccel)
                 );
-    }
+    }*/
 
     public static TrajectoryActionBuilder fromBucketToIntake(MecanumDrive drive, Pose2d bucketPose, Pose2d intakePose) {
         return drive.actionBuilder(bucketPose)

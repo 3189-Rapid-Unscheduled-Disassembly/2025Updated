@@ -233,12 +233,12 @@ public class Output {
 
 
     public void level3Hang() {
-        if (verticalSlides.isAbovePositionInches(0.2)) {
+        //if (verticalSlides.isAbovePositionInches(0.2)) {
             verticalSlides.setPower(-1);
-        } else {
-            verticalSlides.setTargetInches(-1);
-            sendVerticalSlidesToTarget();
-        }
+        //} else {
+            //verticalSlides.setTargetInches(-1);
+            //sendVerticalSlidesToTarget();
+        //}
     }
 
     public void setComponentPositionsFromSavedPosition(String key) {

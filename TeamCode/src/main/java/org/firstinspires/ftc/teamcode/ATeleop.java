@@ -34,6 +34,13 @@ public class ATeleop extends LinearOpMode {
     RobotMain bart;
 
 
+    //double clipsWallGrabX = AutoPoses.grabWallClipsPose.position.x;
+    double previousClipsWallGrabX = AutoPoses.grabWallClipsPose.position.x;
+    double clipsWallGrabXShift = 0;
+
+    boolean hasClipsWallGrabXChangeBeenCheckedFor = false;
+
+
     boolean isVoltageResettingEncoders = true;
 
     boolean doesHorizNeedVoltageResetEncoders = false;
@@ -122,8 +129,8 @@ public class ATeleop extends LinearOpMode {
         //create robot
         bart = new RobotMain(hardwareMap, telemetry, false);
 
-        fromGrabToScoreCycle = AutoPoses.fromGrabToScoreCycleTeleop(bart.mecanaDruve);
-        fromScoreCycleToGrab = AutoPoses.fromScoreCycleToGrabTeleop(bart.mecanaDruve);
+        fromGrabToScoreCycle = AutoPoses.fromGrabToScoreCycle(bart.mecanaDruve);
+        fromScoreCycleToGrab = AutoPoses.fromScoreCycleToGrab(bart.mecanaDruve);
 
 
         //Create Gamepads
@@ -163,19 +170,20 @@ public class ATeleop extends LinearOpMode {
         bart.readHubs();
 
         if (!isOutputArmJank) {
-            bart.output.setComponentPositionsFromSavedPosition("grab");
+            //bart.output.setComponentPositionsFromSavedPosition("grab");
+
 //            if (bart.output.verticalSlides.isAbovePositionInches(2)) {
 //                bart.output.setTargetToCurrentPosition();
 //            }
         } else {
-            bart.output.setTargetToCurrentPosition();
+            //bart.output.setTargetToCurrentPosition();
         }
 
         if (!isIntakeArmJank) {
-            bart.intake.intakeArm.setToSavedIntakeArmPosition("preGrab");
+            //bart.intake.intakeArm.setToSavedIntakeArmPosition("preGrab");
             //bart.intake.intakeArm.intakeGripper.close();
         } else {
-            bart.intake.intakeArm.intakeGripper.close();
+            //bart.intake.intakeArm.intakeGripper.close();
         }
 
         bart.writeAllComponents();
@@ -220,6 +228,19 @@ public class ATeleop extends LinearOpMode {
                 } else {
                     isVoltageResettingEncoders = !isVerticalDone;
                 }
+
+                //we are done, so we can set the servos
+                if (!isVoltageResettingEncoders) {
+                    bart.output.setComponentPositionsFromSavedPosition("grab");
+                    bart.intake.intakeArm.setToSavedIntakeArmPosition("preGrab");
+                }
+
+                //EMERGENCY ESCAPE
+                //used if the voltages aren't triggering for some reason
+                if (playerTwo.wasJustPressed(GamepadKeys.Button.RIGHT_STICK_BUTTON)) {
+                    isVoltageResettingEncoders = false;
+                }
+
             } else if (playerOne.isDown(GamepadKeys.Button.LEFT_BUMPER)) {
                 autoControl(packet);
             } else {
@@ -252,6 +273,8 @@ public class ATeleop extends LinearOpMode {
             telemetry.addData("horizInches", bart.intake.horizontalSlide.currentInches());
             telemetry.addData("horizTicks", bart.intake.horizontalSlide.currentTicks());
             telemetry.addData("hoirzIsAboveMax", bart.intake.horizontalSlide.isAboveMax());
+
+            telemetry.addData("\nxShift", clipsWallGrabXShift);
 
             //telemetry.addData("transferVertInches", bart.output.savedPositions.get("transfer").slideInches);
             //telemetry.addData("transferHorizInches", bart.intake.savedPositions.get("transfer"));
@@ -310,6 +333,10 @@ public class ATeleop extends LinearOpMode {
     public void autoControl(TelemetryPacket packet) {
         if (playerOne.wasJustPressed(GamepadKeys.Button.A)) {
             //drive.setPosFromOutside(grabPose);
+
+            //update this here so we can know if it gets changed by dpad input
+            hasClipsWallGrabXChangeBeenCheckedFor = false;
+
             runningActions.add(
                     new SequentialAction(
                             autoActions.closeGripperLoose(),
@@ -329,6 +356,7 @@ public class ATeleop extends LinearOpMode {
                             //grab
                             autoActions.lowerToGrab(),
                             sleeper.sleep(AutoPoses.timeToDropClipMilliseconds),
+
                             fromScoreCycleToGrab.build()
                     )
             );
@@ -342,7 +370,29 @@ public class ATeleop extends LinearOpMode {
                 newActions.add(action);
             }
         }
+
+        //check if we need to rebuild the trajectories
         runningActions = newActions;
+
+        //shift the grab position on the wall w/ the dpad
+        if (playerOne.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) {
+            clipsWallGrabXShift += 2;
+        } else if (playerOne.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) {
+            clipsWallGrabXShift -= 2;
+        }
+
+        //do only one check to change wall x
+        if (!hasClipsWallGrabXChangeBeenCheckedFor && bart.mecanaDruve.pose.position.y < 33) {
+            //do this so that we only do this once per cycle
+            hasClipsWallGrabXChangeBeenCheckedFor = true;
+            //the value changed so we need to adjust trajectories accordingly
+            //otherwise, don't do anything
+            if (previousClipsWallGrabX != AutoPoses.grabWallClipsPose.position.x + clipsWallGrabXShift) {
+                fromGrabToScoreCycle = AutoPoses.fromGrabToScoreCycle(bart.mecanaDruve, clipsWallGrabXShift);
+                fromScoreCycleToGrab = AutoPoses.fromScoreCycleToGrab(bart.mecanaDruve, clipsWallGrabXShift);
+            }
+            previousClipsWallGrabX = AutoPoses.grabWallClipsPose.position.x + clipsWallGrabXShift;
+        }
 
         dash.sendTelemetryPacket(packet);
 
