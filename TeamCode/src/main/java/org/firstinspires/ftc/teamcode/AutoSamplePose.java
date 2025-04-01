@@ -14,7 +14,7 @@ public class AutoSamplePose {
 
     private final boolean isYellowLegal, isBlueLegal, isRedLegal;
 
-    private final double xMax, xMin, yMax, yMin, rollMax, rollMin;
+    final double xMax, xMin, yMax, yMin, rollMax, rollMin;
 
     boolean stillInputting = true;
 
@@ -46,7 +46,7 @@ public class AutoSamplePose {
     public void inputAutoSamplePose(GamepadEx gamepadEx) {
         //COLOR INPUT
         if (isYellowLegal && gamepadEx.wasJustPressed(GamepadKeys.Button.Y)) {
-            setColor(7);
+            setColor(0);
         }
         if (isBlueLegal && gamepadEx.wasJustPressed(GamepadKeys.Button.X)) {
             setColor(1);

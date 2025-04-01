@@ -8,6 +8,8 @@ import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+
 import java.util.Arrays;
 
 public class AutoPoses {
@@ -185,6 +187,28 @@ public class AutoPoses {
                 );
     }
 
+    //currently assume 6 inches off sub
+    public static TrajectoryActionBuilder fromBucketToIntakeOffSub(MecanumDrive drive, Pose2d bucketPose, AutoSamplePose samplePose) {
+        double intakeX = intakeXFromSamplePoseOffSub(samplePose);
+        Pose2d intakePose = new Pose2d(intakeX, samplePose.getY(), Math.toRadians(180));
+        return drive.actionBuilder(bucketPose)
+                /*.splineToSplineHeading(new Pose2d(49, 23, Math.toRadians(180)), Math.toRadians(225),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(intakeMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(intakeMinAccel, intakeMaxAccel)
+                )*/
+                .splineToSplineHeading(intakePose, Math.toRadians(180),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(intakeMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(intakeMinAccel, intakeMaxAccel)
+                );
+    }
+
+
     public static TrajectoryActionBuilder fromIntakeToBucket(MecanumDrive drive, Pose2d intakePose) {
         return drive.actionBuilder(intakePose)
                 .splineToLinearHeading(shiftPoseByInputs(intakePose, 1, 0, 0), Math.toRadians(0),
@@ -207,5 +231,40 @@ public class AutoPoses {
                                 new AngularVelConstraint(Math.PI * 1.5)
                         )),
                         new ProfileAccelConstraint(bucketMinAccel, bucketMaxAccel));
+    }
+
+    public static TrajectoryActionBuilder fromIntakeToBucketOffSub(MecanumDrive drive, AutoSamplePose samplePose) {
+        double intakeX = intakeXFromSamplePoseOffSub(samplePose);
+        Pose2d intakePose = new Pose2d(intakeX, samplePose.getY(), Math.toRadians(180));
+
+        return drive.actionBuilder(intakePose)
+                .splineToLinearHeading(intakePose, Math.toRadians(0),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(bucketMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(bucketMinAccel, bucketMaxAccel)
+                )
+                /*.splineToSplineHeading(new Pose2d(50, 25, Math.toRadians(250)), Math.toRadians(70),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(bucketMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(bucketMinAccel, bucketMaxAccel)
+                )*/
+                .splineToSplineHeading(scoreBucketCyclePose, Math.toRadians(70),
+                        new MinVelConstraint(Arrays.asList(
+                                drive.kinematics.new WheelVelConstraint(bucketMaxWheelVel),
+                                new AngularVelConstraint(Math.PI * 1.5)
+                        )),
+                        new ProfileAccelConstraint(bucketMinAccel, bucketMaxAccel));
+    }
+
+    private static double intakeXFromSamplePoseOffSub(AutoSamplePose samplePose) {
+        double sampleX = samplePose.getX();
+        double sampleXMax = samplePose.xMax;
+        double xDiff = sampleXMax - sampleX;
+        double maxGrabX = 23+6;
+        return maxGrabX - xDiff;
     }
 }

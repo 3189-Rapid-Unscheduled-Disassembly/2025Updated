@@ -17,6 +17,8 @@ public class Limelight {
 
     ElapsedTime timer;
 
+    double[] outputs;
+
 
     Double[] previousSampleLockAngles = new Double[5];
 
@@ -59,7 +61,11 @@ public class Limelight {
         limelightPipeline = pipelineNumber;
 
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        limelight.setPollRateHz(100); // This sets how often we ask Limelight for data (100 times per second)
+        if (pipelineNumber == 4) {
+            limelight.setPollRateHz(20); // This sets how often we ask Limelight for data (100 times per second)
+        } else {
+            limelight.setPollRateHz(100);
+        }
         limelight.start(); // This tells Limelight to start looking!
 
 
@@ -81,13 +87,41 @@ public class Limelight {
     }
 
     public void updateForColor(double desiredDistance) {
-        if ( result != null && result.isValid() ) {
+        if (result != null && result.isValid() ) {
             tx = result.getTx();
             ty = result.getTy();
             resultExists = true;
         } else {
             resultExists = false;
         }
+    }
+
+    public void updateLastLimelightResultEdgeDetection() {
+        result = limelight.getLatestResult();
+        outputs = result.getPythonOutput();
+        //we found something, so update the stuff
+        if (outputs[0] != 1000) {
+            tx = outputs[0];
+            ty = outputs[1];
+            resultExists = true;
+        } else {
+            resultExists = false;
+        }
+        distance = distanceToTx(tx);
+        /*LLResultTypes.DetectorResult bestDetection = detections.get(0);
+        tx = bestDetection.getTargetXDegrees();
+        ty = bestDetection.getTargetYDegrees();
+        if (result != null && result.isValid() && !result.getDetectorResults().isEmpty()) {
+            //LLResultTypes.DetectorResult bestDetection = detections.get(0);
+
+            tx = bestDetection.getTargetXDegrees();
+            ty = bestDetection.getTargetYDegrees();
+            resultExists = true;
+        } else {
+            resultExists = false;
+        }
+
+        distance = distanceToTx(tx);*/
     }
 
     public void updateForAI(double desiredDistance) {

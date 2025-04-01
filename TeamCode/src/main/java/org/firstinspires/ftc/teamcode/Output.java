@@ -87,7 +87,7 @@ public class Output {
 
         Servo gripperServo = hardwareMap.get(Servo.class, "outputGripper");
         gripperServo.setDirection(Servo.Direction.REVERSE);
-        gripper = new Gripper(gripperServo, 0.5, 0.14, "Output Gripper");//0.22
+        gripper = new Gripper(gripperServo, 0.5, 0.19, "Output Gripper");//0.14
 
 
         //put saved positions
@@ -198,7 +198,7 @@ public class Output {
     }
 
     public void firstFrameOfTransfer() {
-        setComponentPositionsFromSavedPosition("transfer");
+        setOnlySpecifiedValues("transfer", true, true, true, true);
     }
 
     //TRANSFERRING

@@ -198,9 +198,9 @@ class AutoActions {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             bart.output.sendVerticalSlidesToTarget();
-            //if (!isTransfering) {
+            if (!isTransfering) {
                 bart.intake.horizontalSlide.goToTargetAsync();
-            //}
+            }
             return !endProgram;
         }
     }
@@ -251,6 +251,7 @@ class AutoActions {
             //we are done
             if (bart.isTransferDone()) {
                 isTransfering = false;
+                bart.intake.horizontalSlide.setTargetInches(0.5);
                 return false;
             }
             return true;
@@ -465,9 +466,37 @@ class AutoActions {
             }
         }
 
+        public LineUpWithLimelight(AutoSamplePose inputtedPoseParameter, int maxHuntingTimeMS, double[] desiredAngleArray) {
+            this.inputtedPose = inputtedPoseParameter;
+            this.maxHuntingTimeMS = maxHuntingTimeMS;
+            this.horizTarget = bart.intake.horizontalSlide.currentInches();
+
+            //send down the angle that we want to look for
+            if (limelight.limelightPipeline == 4) {
+                limelight.limelight.updatePythonInputs(desiredAngleArray);
+            }
+            if (inputtedPose.getRoll() == 0) {
+                desiredDistance = 4.3;
+                desiredTy = -6;
+            } else if (inputtedPose.getRoll() == -45) {
+                desiredDistance = 4;
+                desiredTy = -9;//-5
+            } else if (inputtedPose.getRoll() == 45) {
+                desiredDistance = 4;
+                desiredTy = -1;//5
+            } else {
+                desiredDistance = 4;
+                desiredTy = -1;//7
+            }
+        }
+
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            limelight.updateLastLimelightResult(desiredDistance);
+            if (limelight.limelightPipeline == 4) {
+                limelight.updateLastLimelightResultEdgeDetection();
+            } else {
+                limelight.updateLastLimelightResult(desiredDistance);
+            }
 
             if (!initialized) {
                 if (limelight.getPipeline() == 7) {
@@ -484,7 +513,7 @@ class AutoActions {
 
             if (limelight.resultExists) {
                 if (limelight.getPipeline() != 7) {
-                    double distanceError = limelight.getLastResultDistanceInches()-desiredDistance;
+                    double distanceError = limelight.getLastResultDistanceInches() - desiredDistance;
                     horizTarget = bart.intake.horizontalSlide.currentInches() + distanceError;
                 }
             } else {
@@ -504,11 +533,17 @@ class AutoActions {
 
             double errorTy = desiredTy - limelight.returnLastResultTY();
             double horizPower;
+            double closePower = -0.25;
+            double farPower = -0.35;
+            if (limelight.limelightPipeline == 4) {
+                closePower = -0.15;
+                farPower = -0.35;
+            }
             //if we're close, we want to have a slower speed, but allow for faster movement when far away
             if (RobotMath.isAbsDiffWithinRange(errorTy, 0, 6)) {
-                horizPower = -0.25 * Math.signum(errorTy);
+                horizPower = closePower * Math.signum(errorTy);
             } else {
-                horizPower = -0.35 * Math.signum(errorTy);
+                horizPower = farPower * Math.signum(errorTy);
             }
             drive.setDrivePowers(new PoseVelocity2d(
                     new Vector2d(
@@ -555,6 +590,7 @@ class AutoActions {
     }
 
     public Action lineUpWithLimelight(AutoSamplePose inputtedPose, int maxHuntingTimeMS) {return new LineUpWithLimelight(inputtedPose, maxHuntingTimeMS);}
+    public Action lineUpWithLimelight(AutoSamplePose inputtedPose, int maxHuntingTimeMS, double[] desiredAngleArray) {return new LineUpWithLimelight(inputtedPose, maxHuntingTimeMS, desiredAngleArray);}
 
 
     class SwitchLimelightPipeline implements Action {
@@ -871,7 +907,7 @@ class AutoActions {
     class RaiseToHighBucket implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            bart.output.setComponentPositionsFromSavedPosition("highBucket");
+            bart.output.setOnlySpecifiedValues("highBucket", true, true, true, true);
 
             //return !bart.output.isAtPosition();
             return false;
@@ -950,7 +986,7 @@ class AutoActions {
     class LowerToTransfer implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            bart.output.setComponentPositionsFromSavedPosition("transfer");
+            bart.output.setOnlySpecifiedValues("transfer", true, true, true, true);
             return false;
         }
     }
