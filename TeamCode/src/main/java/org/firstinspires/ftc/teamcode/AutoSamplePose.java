@@ -144,7 +144,7 @@ public class AutoSamplePose {
     @Override
     public String toString() {
         String colorString = "BLANK";
-        if (color == 7) {
+        if (color == 0) {
             colorString = "YELLOW";
         } else if (color == 1) {
             colorString = "BLUE";

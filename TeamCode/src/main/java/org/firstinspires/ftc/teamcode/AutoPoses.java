@@ -29,15 +29,15 @@ public class AutoPoses {
 
     static Pose2d dropSpark1ClipsPose = new Pose2d(grabSpark2ClipsPose.position.x, 43, Math.toRadians(120));
 
-    static Pose2d dropSpark1ClipsPoseSpecial = new Pose2d(grabSpark2ClipsPose.position.x, 46, Math.toRadians(120));
+    static Pose2d dropSpark1ClipsPoseSpecial = new Pose2d(grabSpark2ClipsPose.position.x, 44, Math.toRadians(130));
 
-    static Pose2d dropSpark2ClipsPose = new Pose2d(-43, 42, Math.toRadians(140));
+    static Pose2d dropSpark2ClipsPose = new Pose2d(-42, 44, Math.toRadians(150));
 
     static Pose2d dropSpark2ClipsPoseSpecial = new Pose2d(-31, 42, Math.toRadians(120));
 
     static Pose2d grabFrSpark1ClipsPose = new Pose2d(-31, 45, Math.toRadians(225));//-36,36
     static Pose2d grabFrSpark2ClipsPose = new Pose2d(-41, 45, Math.toRadians(225));//-41, 40
-    static Pose2d grabFrSpark3ClipsPose = new Pose2d(-52, 45, Math.toRadians(225));//24
+    static Pose2d grabFrSpark3ClipsPose = new Pose2d(-52.5, 45, Math.toRadians(225));//24
 
     //static Pose2d grabFrSpark3ClipsPoseFirst = new Pose2d(-45, 32, Math.toRadians(225));//235
 
@@ -55,6 +55,9 @@ public class AutoPoses {
 
     static Pose2d clipsParkPose = shiftPoseByInputs(grabWallClipsPose, -6, -14, 0);
 
+    static Pose2d spike1Short = new Pose2d(53, 52.75, Math.toRadians(252));//53.5x
+    static Pose2d spike2Short = new Pose2d(57.5, 52, Math.toRadians(270));//53.25, 52.75
+    static Pose2d spike3Short = new Pose2d(53.5, 49, Math.toRadians(300));
 
 
     static double preloadMinAccel = -70;
@@ -83,7 +86,7 @@ public class AutoPoses {
 
     static Pose2d scoreBucketPose = new Pose2d(55, 57.5, Math.toRadians(225));//55.5, 57
 
-    static Pose2d scoreBucketCyclePose = new Pose2d(58, 43, Math.toRadians(250));//59, 50, 250
+    static Pose2d scoreBucketCyclePose = new Pose2d(59, 42, Math.toRadians(250));//59, 50, 250
 
     static Pose2d scoreBucketCycleForThirdSpikePose = new Pose2d(58, 51.5, Math.toRadians(250));
 
@@ -238,20 +241,13 @@ public class AutoPoses {
         Pose2d intakePose = new Pose2d(intakeX, samplePose.getY(), Math.toRadians(180));
 
         return drive.actionBuilder(intakePose)
-                .splineToLinearHeading(intakePose, Math.toRadians(0),
+                .splineToLinearHeading(shiftPoseByInputs(intakePose, 1, 0, 0), Math.toRadians(0),
                         new MinVelConstraint(Arrays.asList(
                                 drive.kinematics.new WheelVelConstraint(bucketMaxWheelVel),
                                 new AngularVelConstraint(Math.PI * 1.5)
                         )),
                         new ProfileAccelConstraint(bucketMinAccel, bucketMaxAccel)
                 )
-                /*.splineToSplineHeading(new Pose2d(50, 25, Math.toRadians(250)), Math.toRadians(70),
-                        new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(bucketMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
-                        )),
-                        new ProfileAccelConstraint(bucketMinAccel, bucketMaxAccel)
-                )*/
                 .splineToSplineHeading(scoreBucketCyclePose, Math.toRadians(70),
                         new MinVelConstraint(Arrays.asList(
                                 drive.kinematics.new WheelVelConstraint(bucketMaxWheelVel),

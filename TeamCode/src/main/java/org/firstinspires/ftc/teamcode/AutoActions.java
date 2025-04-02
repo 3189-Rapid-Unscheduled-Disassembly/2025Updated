@@ -173,7 +173,6 @@ class AutoActions {
 
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-
             //ACTION
             bart.output.gripper.setPosition(0.22);
             return actionIsRunning;
@@ -186,7 +185,7 @@ class AutoActions {
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             //ACTION
             if (drive.pose.position.y < 55) {
-                bart.output.gripper.close();
+                bart.output.gripper.setPosition(0.14);
                 return false;
             }
             return true;
@@ -227,14 +226,29 @@ class AutoActions {
 
     class SetIntakeArmPosition implements Action {
         String key;
+        boolean intialized = false;
 
         public SetIntakeArmPosition(String key) {
             this.key = key;
         }
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            bart.intake.intakeArm.setToSavedIntakeArmPosition(key);
-            return false;
+            //special thing for grabbing
+            //need the delay
+            if (key.equals("grab")) {
+                if (!intialized) {
+                    //NEEDS to be at "preGrab" already
+                    bart.intake.intakeArm.cycle();
+                    intialized = true;
+                    return true;
+                } else {
+                    bart.intake.intakeArm.delayClosingGrabber();
+                    return bart.intake.intakeArm.intakeGripper.isOpen();
+                }
+            } else {
+                bart.intake.intakeArm.setToSavedIntakeArmPosition(key);
+                return false;
+            }
         }
     }
     class Transfer implements Action {
@@ -445,155 +459,121 @@ class AutoActions {
         double desiredDistance;
         double desiredTy;
 
-
         public LineUpWithLimelight(AutoSamplePose inputtedPoseParameter, int maxHuntingTimeMS) {
-            this.inputtedPose = inputtedPoseParameter;
-            this.maxHuntingTimeMS = maxHuntingTimeMS;
-            this.horizTarget = bart.intake.horizontalSlide.currentInches();
+        this.inputtedPose = inputtedPoseParameter;
+        this.maxHuntingTimeMS = maxHuntingTimeMS;
+        this.horizTarget = bart.intake.horizontalSlide.currentInches();
 
-            if (inputtedPose.getRoll() == 0) {
-                desiredDistance = 4.3;
-                desiredTy = -6;
-            } else if (inputtedPose.getRoll() == -45) {
-                desiredDistance = 4;
-                desiredTy = -9;//-5
-            } else if (inputtedPose.getRoll() == 45) {
-                desiredDistance = 4;
-                desiredTy = -1;//5
-            } else {
-                desiredDistance = 4;
-                desiredTy = -1;//7
-            }
-        }
-
-        public LineUpWithLimelight(AutoSamplePose inputtedPoseParameter, int maxHuntingTimeMS, double[] desiredAngleArray) {
-            this.inputtedPose = inputtedPoseParameter;
-            this.maxHuntingTimeMS = maxHuntingTimeMS;
-            this.horizTarget = bart.intake.horizontalSlide.currentInches();
-
-            //send down the angle that we want to look for
-            if (limelight.limelightPipeline == 4) {
-                limelight.limelight.updatePythonInputs(desiredAngleArray);
-            }
-            if (inputtedPose.getRoll() == 0) {
-                desiredDistance = 4.3;
-                desiredTy = -6;
-            } else if (inputtedPose.getRoll() == -45) {
-                desiredDistance = 4;
-                desiredTy = -9;//-5
-            } else if (inputtedPose.getRoll() == 45) {
-                desiredDistance = 4;
-                desiredTy = -1;//5
-            } else {
-                desiredDistance = 4;
-                desiredTy = -1;//7
-            }
-        }
-
-        @Override
-        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            if (limelight.limelightPipeline == 4) {
-                limelight.updateLastLimelightResultEdgeDetection();
-            } else {
-                limelight.updateLastLimelightResult(desiredDistance);
-            }
-
-            if (!initialized) {
-                if (limelight.getPipeline() == 7) {
-                    if (limelight.resultExists) {
-                        double distanceError = limelight.getLastResultDistanceInches() - desiredDistance;
-                        horizTarget = bart.intake.horizontalSlide.currentInches() + distanceError;
-                    }
-                }
-                llTimer.reset();
-                initialized = true;
-                limelight.limelight.captureSnapshot("init");
-            }
-
-
-            if (limelight.resultExists) {
-                if (limelight.getPipeline() != 7) {
-                    double distanceError = limelight.getLastResultDistanceInches() - desiredDistance;
-                    horizTarget = bart.intake.horizontalSlide.currentInches() + distanceError;
-                }
-            } else {
-                horizTarget = bart.intake.horizontalSlide.currentInches();
-            }
-            bart.intake.horizontalSlide.setTargetInches(horizTarget);
-
-
-
-            //drive if the slides can't reach it
-            double forwardPower = 0;
-            if (horizTarget > 14) {
-                forwardPower = 0.1;
-            } else if (horizTarget < 0) {
-                forwardPower = -0.1;
-            }
-
-            double errorTy = desiredTy - limelight.returnLastResultTY();
-            double horizPower;
-            double closePower = -0.25;
-            double farPower = -0.35;
-            if (limelight.limelightPipeline == 4) {
-                closePower = -0.15;
-                farPower = -0.35;
-            }
-            //if we're close, we want to have a slower speed, but allow for faster movement when far away
-            if (RobotMath.isAbsDiffWithinRange(errorTy, 0, 6)) {
-                horizPower = closePower * Math.signum(errorTy);
-            } else {
-                horizPower = farPower * Math.signum(errorTy);
-            }
-            drive.setDrivePowers(new PoseVelocity2d(
-                    new Vector2d(
-                            forwardPower,
-                            horizPower
-                    ),
-                    0
-            ));
-            drive.updatePoseEstimate();
-
-            if (limelight.getPipeline() == 7) {
-                if (bart.intake.horizontalSlide.isAtTarget() &&
-                        RobotMath.isAbsDiffWithinRange(errorTy,0,2)) {
-                    isLinedUp = true;
-                }
-            } else {
-                if (RobotMath.isAbsDiffWithinRange(limelight.getLastResultDistanceInches(),desiredDistance,0.25) &&
-                        RobotMath.isAbsDiffWithinRange(errorTy,0,2)) {
-                    isLinedUp = true;
-                }
-            }
-
-            if (llTimer.milliseconds() > maxHuntingTimeMS) {
-                isLinedUp = true;
-            }
-
-
-            if (isLinedUp) {
-                drive.setDrivePowers(new PoseVelocity2d(
-                        new Vector2d(
-                                0,
-                                0
-                        ),
-                        0
-                ));
-                bart.intake.horizontalSlide.setTargetToCurrentPosition();
-                //limelight.limelight.captureSnapshot("end");
-                return false;
-            }
-            return true;
-
-            //telemetryPacket.put("Result Exists?", limelight.isSeeingResult());
+        if (inputtedPose.getRoll() == 0) {
+            desiredDistance = 4.3;
+            desiredTy = -6;
+        } else if (inputtedPose.getRoll() == -45) {
+            desiredDistance = 4;
+            desiredTy = -9;//-5
+        } else if (inputtedPose.getRoll() == 45) {
+            desiredDistance = 4;
+            desiredTy = -1;//5
+        } else {
+            desiredDistance = 4;
+            desiredTy = -1;//7
         }
     }
 
-    public Action lineUpWithLimelight(AutoSamplePose inputtedPose, int maxHuntingTimeMS) {return new LineUpWithLimelight(inputtedPose, maxHuntingTimeMS);}
-    public Action lineUpWithLimelight(AutoSamplePose inputtedPose, int maxHuntingTimeMS, double[] desiredAngleArray) {return new LineUpWithLimelight(inputtedPose, maxHuntingTimeMS, desiredAngleArray);}
+    @Override
+    public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+        limelight.updateLastLimelightResult(desiredDistance);
+
+        if (!initialized) {
+            if (limelight.getPipeline() == 7) {
+                if (limelight.resultExists) {
+                    double distanceError = limelight.getLastResultDistanceInches() - desiredDistance;
+                    horizTarget = bart.intake.horizontalSlide.currentInches() + distanceError;
+                }
+            }
+            llTimer.reset();
+            initialized = true;
+            limelight.limelight.captureSnapshot("init");
+        }
 
 
-    class SwitchLimelightPipeline implements Action {
+        if (limelight.resultExists) {
+            if (limelight.getPipeline() != 7) {
+                double distanceError = limelight.getLastResultDistanceInches()-desiredDistance;
+                horizTarget = bart.intake.horizontalSlide.currentInches() + distanceError;
+            }
+        } else {
+            horizTarget = bart.intake.horizontalSlide.currentInches();
+        }
+        bart.intake.horizontalSlide.setTargetInches(horizTarget);
+
+
+
+        //drive if the slides can't reach it
+        double forwardPower = 0;
+        //if (horizTarget > 14) {
+            //forwardPower = 0.1;
+        //} else
+        if (horizTarget < 0) {
+            forwardPower = -0.25;
+        }
+
+        double errorTy = desiredTy - limelight.returnLastResultTY();
+        double horizPower;
+        //if we're close, we want to have a slower speed, but allow for faster movement when far away
+        if (RobotMath.isAbsDiffWithinRange(errorTy, 0, 6)) {
+            horizPower = -0.25 * Math.signum(errorTy);
+        } else {
+            horizPower = -0.35 * Math.signum(errorTy);
+        }
+        drive.setDrivePowers(new PoseVelocity2d(
+                new Vector2d(
+                        forwardPower,
+                        horizPower
+                ),
+                0
+        ));
+        drive.updatePoseEstimate();
+
+        if (limelight.getPipeline() == 7) {
+            if (bart.intake.horizontalSlide.isAtTarget() &&
+                    RobotMath.isAbsDiffWithinRange(errorTy,0,2)) {
+                isLinedUp = true;
+            }
+        } else {
+            if (RobotMath.isAbsDiffWithinRange(limelight.getLastResultDistanceInches(),desiredDistance,0.25) &&
+                    RobotMath.isAbsDiffWithinRange(errorTy,0,2)) {
+                isLinedUp = true;
+            }
+        }
+
+        if (llTimer.milliseconds() > maxHuntingTimeMS) {
+            isLinedUp = true;
+        }
+
+
+        if (isLinedUp) {
+            drive.setDrivePowers(new PoseVelocity2d(
+                    new Vector2d(
+                            0,
+                            0
+                    ),
+                    0
+            ));
+            bart.intake.horizontalSlide.setTargetToCurrentPosition();
+            //limelight.limelight.captureSnapshot("end");
+            return false;
+        }
+        return true;
+
+        //telemetryPacket.put("Result Exists?", limelight.isSeeingResult());
+    }
+}
+
+public Action lineUpWithLimelight(AutoSamplePose inputtedPose, int maxHuntingTimeMS) {return new LineUpWithLimelight(inputtedPose, maxHuntingTimeMS);}
+
+
+
+class SwitchLimelightPipeline implements Action {
         int pipelineNumber;
 
         public SwitchLimelightPipeline(int pipelineNumber) {

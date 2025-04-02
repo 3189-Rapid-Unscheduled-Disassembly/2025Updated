@@ -7,7 +7,6 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.ProfileAccelConstraint;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
-import com.acmerobotics.roadrunner.TurnConstraints;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
@@ -16,8 +15,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import java.util.Arrays;
 
-@Autonomous(name = "Blue 6+0 Park Sweep Grab")
-public class Blue6Plus0ParkSweepGrab extends LinearOpMode {
+@Autonomous(name = "Blue 6+0 Sweep Grab Park")
+public class Blue6Plus0SweepGrabPark extends LinearOpMode {
     RobotMain bart;
     MecanumDrive drive;
     Limelight limelight;
@@ -341,14 +340,14 @@ public class Blue6Plus0ParkSweepGrab extends LinearOpMode {
                                                 //SPIKE 2
                                                 autoActions.waitTillPastAngle(140, false),
                                                 autoActions.setGateOncePastAngle(140, true, 1),
-                                                autoActions.setGateOncePastAngle(220, true, 0),
+                                                autoActions.setGateOncePastAngle(200, true, 0),//220
                                                 //SPIKE 3
-                                                autoActions.waitTillPastAngle(140, false),
+                                                autoActions.waitTillPastAngle(160, false),
                                                 autoActions.fullyOpenGate(),
                                                 autoActions.setIntakeArmPosition("limelight"),
                                                 autoActions.setIntakeRoll(45),
 
-                                                autoActions.waitTillPastAngle(140, true),
+                                                autoActions.waitTillPastAngle(160, true),
                                                 autoActions.extendHoriz(4),
                                                 autoActions.waitTillPastAngle(200, true),
                                                 autoActions.extendHoriz(11)
@@ -362,7 +361,7 @@ public class Blue6Plus0ParkSweepGrab extends LinearOpMode {
                                 sleeper.sleep(200),//200,150
                                 autoActions.setIntakeArmPosition("grab"),
                                 autoActions.setIntakeRoll(45),
-                                sleeper.sleep(300),//500,200
+                                sleeper.sleep(200),//500,200
                                 autoActions.setIntakeArmPosition("postGrab"),
 
                                 new ParallelAction(

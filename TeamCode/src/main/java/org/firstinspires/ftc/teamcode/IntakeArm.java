@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,6 +11,9 @@ import java.util.List;
 //this holds the pitches, roll, and gripper for the intake
 public class IntakeArm {
 
+
+    boolean currentlyAttemptingGrab = false;
+    ElapsedTime grabTimer;
 
     Joint intakeArm;
     Joint intakeWristPitch;
@@ -40,7 +44,7 @@ public class IntakeArm {
 
         Servo gripperServo = hardwareMap.get(Servo.class, "intakeGripper");
         gripperServo.setDirection(Servo.Direction.REVERSE);
-        intakeGripper = new Gripper(gripperServo, 0.85, 0.47, "Intake Gripper");//0.245
+        intakeGripper = new Gripper(gripperServo, 0.90, 0.47, "Intake Gripper");//0.85
 
         //SAVED POSITIONS
         savedPositions.put("rest", new IntakeArmPosition(125, 180, 0, true));
@@ -62,7 +66,8 @@ public class IntakeArm {
         savedPositions.put("park", new IntakeArmPosition(80, 125, 0, true));
         savedPositions.put("parkClips", new IntakeArmPosition(60, 100, 0, true));
 
-
+        grabTimer = new ElapsedTime();
+        grabTimer.reset();
     }
 
 
@@ -106,9 +111,11 @@ public class IntakeArm {
     //this cycles between transfer, preGrab, grab, and then back to transfer
     //this allows us to quickly cycle to the desired pitch
     public void cycle() {
-
         if (isPitchEqualToSavedIntakePosition("preGrab")) {
-            setOnlySpecifiedValuesToSavedIntakeArmPosition("grab", true, true, false, true);
+            currentlyAttemptingGrab = true;
+            grabTimer.reset();
+            setOnlySpecifiedValuesToSavedIntakeArmPosition("grab", true, true, false, false);
+
         } else if (isPitchEqualToSavedIntakePosition("grab")){
             setOnlySpecifiedValuesToSavedIntakeArmPosition("grabCheck", true, true, false, true);
         } else if (isPitchEqualToSavedIntakePosition("grabCheck")){
@@ -120,6 +127,17 @@ public class IntakeArm {
             } else {
                 //this is for going from preTransfer or whatever
                 setToSavedIntakeArmPosition("preGrab");
+            }
+        }
+    }
+
+    //use this if currently attempting a grab
+    //we wanna delay the closing
+    public void delayClosingGrabber() {
+        if (currentlyAttemptingGrab) {
+            if (grabTimer.milliseconds() > 100) {
+                intakeGripper.close();
+                currentlyAttemptingGrab = false;
             }
         }
     }

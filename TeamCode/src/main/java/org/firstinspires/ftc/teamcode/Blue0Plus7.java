@@ -76,13 +76,13 @@ public class Blue0Plus7 extends LinearOpMode {
         double xMax = 10;//12
         double xMin = -2;//-2
         //previous yMax16, yMin
-        inputtedPose = new AutoSamplePose(4, 0, 12, 0,
+        inputtedPose = new AutoSamplePose(0, 0, 12, 0,
                 true, true, true, xMax, xMin, yMax, yMin, 90, -45);
 
-        inputtedPose2 = new AutoSamplePose(4, 0, 12, 0,
+        inputtedPose2 = new AutoSamplePose(0, 0, 12, 0,
                 true, true, true, xMax, xMin, yMax, yMin, 90, -45);
 
-        inputtedPose3 = new AutoSamplePose(4, 0, 12, 0,
+        inputtedPose3 = new AutoSamplePose(0, 0, 12, 0,
                 true, true, true, xMax, xMin, yMax, yMin, 90, -45);
 
         while (inputtedPose.stillInputting && opModeInInit() && !isStopRequested()) {
@@ -138,7 +138,7 @@ public class Blue0Plus7 extends LinearOpMode {
 
         autoActions = new AutoActions(bart, drive, limelight);
 
-        int maxHuntingTimeMS = 750;
+        int maxHuntingTimeMS = 500;
         int timeToDropMS = 0;
         int timeToDropCycleMS = 100;
 
@@ -229,9 +229,9 @@ public class Blue0Plus7 extends LinearOpMode {
 
 
         //static Pose2d scoreBucketPose = new Pose2d(55.5, 57, Math.toRadians(225));
-        Pose2d spike1Short = new Pose2d(53, 52.75, Math.toRadians(252));//53.5x
-        Pose2d spike2Short = new Pose2d(57.5, 52, Math.toRadians(270));//53.25, 52.75
-        Pose2d spike3Short = new Pose2d(53.5, 49, Math.toRadians(300));
+        //Pose2d spike1Short = new Pose2d(53, 52.75, Math.toRadians(252));//53.5x
+        //Pose2d spike2Short = new Pose2d(57.5, 52, Math.toRadians(270));//53.25, 52.75
+        //Pose2d spike3Short = new Pose2d(53.5, 49, Math.toRadians(300));
 
 
         //SCORE POSES
@@ -245,21 +245,21 @@ public class Blue0Plus7 extends LinearOpMode {
                 );
 
         TrajectoryActionBuilder fromScoreToFirstSample = drive.actionBuilder(AutoPoses.scoreBucketPose)
-                .strafeToLinearHeading(spike1Short.position, spike1Short.heading);
-        TrajectoryActionBuilder fromFirstSampleToScore = drive.actionBuilder(spike1Short)
+                .strafeToLinearHeading(AutoPoses.spike1Short.position, AutoPoses.spike1Short.heading);
+        TrajectoryActionBuilder fromFirstSampleToScore = drive.actionBuilder(AutoPoses.spike1Short)
                 .strafeToLinearHeading(AutoPoses.scoreBucketPose.position, AutoPoses.scoreBucketPose.heading);
         //.turnTo(AutoPoses.scoreBucketPose.heading);
 
         TrajectoryActionBuilder fromScoreToSecondSample = drive.actionBuilder(AutoPoses.scoreBucketPose)
                 //.strafeToLinearHeading(spike2Short.position, spike2Short.heading)
-                .turnTo(spike2Short.heading)
-                .strafeToConstantHeading(spike2Short.position);
-        TrajectoryActionBuilder fromSecondSampleToScore = drive.actionBuilder(spike2Short)
+                .turnTo(AutoPoses.spike2Short.heading)
+                .strafeToConstantHeading(AutoPoses.spike2Short.position);
+        TrajectoryActionBuilder fromSecondSampleToScore = drive.actionBuilder(AutoPoses.spike2Short)
                 .strafeToLinearHeading(AutoPoses.scoreBucketPose.position, AutoPoses.scoreBucketPose.heading);
 
         TrajectoryActionBuilder fromScoreToThirdSample = drive.actionBuilder(AutoPoses.scoreBucketPose)
-                .strafeToLinearHeading(spike3Short.position, spike3Short.heading);
-        TrajectoryActionBuilder fromThirdSampleToScoreCycle = drive.actionBuilder(spike3Short)
+                .strafeToLinearHeading(AutoPoses.spike3Short.position, AutoPoses.spike3Short.heading);
+        TrajectoryActionBuilder fromThirdSampleToScoreCycle = drive.actionBuilder(AutoPoses.spike3Short)
                 //.strafeToConstantHeading(AutoPoses.shiftPoseByInputs(AutoPoses.thirdSpikeBucketPose, -12, 0, 0).position)
                 .strafeToLinearHeading(AutoPoses.scoreBucketCycleForThirdSpikePose.position, AutoPoses.scoreBucketCycleForThirdSpikePose.heading);
 

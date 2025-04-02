@@ -42,6 +42,7 @@ public class ATeleop extends LinearOpMode {
 
 
     boolean isVoltageResettingEncoders = true;
+    boolean isReadyForVoltageResetting = true;
 
     boolean doesHorizNeedVoltageResetEncoders = false;
 
@@ -166,24 +167,14 @@ public class ATeleop extends LinearOpMode {
             telemetry.update();
         }
 
+
         waitForStart();
         bart.readHubs();
 
-        if (!isOutputArmJank) {
-            //bart.output.setComponentPositionsFromSavedPosition("grab");
-
-//            if (bart.output.verticalSlides.isAbovePositionInches(2)) {
-//                bart.output.setTargetToCurrentPosition();
-//            }
-        } else {
-            //bart.output.setTargetToCurrentPosition();
-        }
-
-        if (!isIntakeArmJank) {
-            //bart.intake.intakeArm.setToSavedIntakeArmPosition("preGrab");
-            //bart.intake.intakeArm.intakeGripper.close();
-        } else {
-            //bart.intake.intakeArm.intakeGripper.close();
+        if (bart.output.verticalSlides.isAbovePositionInches(10)) {
+            bart.output.setOnlySpecifiedValues(new OutputEndPoint(0, 60, 60, false),
+                    false, true, false, true);
+            isReadyForVoltageResetting = false;
         }
 
         bart.writeAllComponents();
@@ -218,8 +209,13 @@ public class ATeleop extends LinearOpMode {
 
             wasp1ltDownLastFrame = isp1ltDownThisFrame;
 
-
-            if (isVoltageResettingEncoders) {
+            //only need this for when the gripper ends in the bucket,
+            //tell it to go once the arm is out of the way
+            if (!isReadyForVoltageResetting) {
+                if(playerTwo.wasJustPressed(GamepadKeys.Button.A)) {
+                    isReadyForVoltageResetting = true;
+                }
+            } else if (isVoltageResettingEncoders) {
                 boolean isVerticalDone = bart.output.verticalSlides.voltageResetEncoder();
                 if (doesHorizNeedVoltageResetEncoders) {
                     boolean isHorizDone = bart.intake.horizontalSlide.voltageResetEncoder();
@@ -232,7 +228,10 @@ public class ATeleop extends LinearOpMode {
                 //we are done, so we can set the servos
                 if (!isVoltageResettingEncoders) {
                     bart.output.setComponentPositionsFromSavedPosition("grab");
-                    bart.intake.intakeArm.setToSavedIntakeArmPosition("preGrab");
+                    bart.output.gripper.close();
+                    if (!isIntakeArmJank) {
+                        bart.intake.intakeArm.setToSavedIntakeArmPosition("preGrab");
+                    }
                 }
 
                 //EMERGENCY ESCAPE
@@ -240,6 +239,8 @@ public class ATeleop extends LinearOpMode {
                 if (playerTwo.wasJustPressed(GamepadKeys.Button.RIGHT_STICK_BUTTON)) {
                     isVoltageResettingEncoders = false;
                 }
+
+                manualDriving();
 
             } else if (playerOne.isDown(GamepadKeys.Button.LEFT_BUMPER)) {
                 autoControl(packet);
@@ -362,6 +363,7 @@ public class ATeleop extends LinearOpMode {
             );
         }
 
+
         // update running actions
         List<Action> newActions = new ArrayList<>();
         for (Action action : runningActions) {
@@ -397,10 +399,9 @@ public class ATeleop extends LinearOpMode {
         dash.sendTelemetryPacket(packet);
 
     }
-    public void manualControl() {
 
+    public void manualDriving() {
         double turnSpeed;
-        //if (playerOne.getRightX() != 0) targetAngle -= gamepad1.right_stick_x*5;
 
         double p1rsx = -playerOne.getRightX() * 1;//MAX_TURN_VELOCITY_MULTIPLIER;
         boolean turnSpeedIsPositive = p1rsx >= 0;
@@ -425,6 +426,11 @@ public class ATeleop extends LinearOpMode {
                 turnSpeed
         ));
 
+    }
+
+    public void manualControl() {
+
+        manualDriving();
 
         alternateControl = playerTwo.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) >= 0.8;
         stupidControl = playerTwo.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) >= 0.8;
@@ -566,6 +572,7 @@ public class ATeleop extends LinearOpMode {
                 bart.intake.intakeArm.cycle();
             }
         }
+        bart.intake.intakeArm.delayClosingGrabber();
 
         if (playerTwo.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) {
             bart.intake.intakeArm.moveRollPositive45();
@@ -626,6 +633,7 @@ public class ATeleop extends LinearOpMode {
                         } else {
                             bart.output.setComponentPositionsFromSavedPosition("highBarBack");
                         }
+                        bart.output.gripper.setPosition(0.14);//close tighter for the clips
                     } else {
                         bart.intake.intakeArm.setToSavedIntakeArmPosition("lowBar");
                         bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, 20, 0, true));
