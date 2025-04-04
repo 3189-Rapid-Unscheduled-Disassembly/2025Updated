@@ -177,6 +177,9 @@ public class ATeleop extends LinearOpMode {
             isReadyForVoltageResetting = false;
         }
 
+        if (!isIntakeArmJank) {
+            bart.intake.intakeArm.setToSavedIntakeArmPosition("preGrab");
+        }
         bart.writeAllComponents();
 
 
@@ -470,7 +473,8 @@ public class ATeleop extends LinearOpMode {
                             if (alternateControl) {
                                 bart.output.setComponentPositionsFromSavedPosition("lowBucket");
                             } else if (playerOne.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) >= 0.8) {
-                                bart.output.setComponentPositionsFromSavedPosition("highBucketFlat");
+                                bart.output.setOnlySpecifiedValues("highBucketFlat",
+                                        true, true, false,  true);
                             } else {
                                 bart.output.setComponentPositionsFromSavedPosition("highBucket");
                             }
@@ -480,13 +484,16 @@ public class ATeleop extends LinearOpMode {
                             //bart.intake.intakeArm.setToSavedIntakeArmPosition("preGrab");
                         }
                     } else {
+                        //tighten the grabber once we are there
+                        //also allow p1 to open the grabber
+                        if (!bart.output.gripper.isOpen() && bart.output.verticalSlides.isAbovePositionInches(15)) {
+                            bart.output.gripper.setPosition(0.14);
+                        }
                         if (alternateControl) {
                             bart.output.setComponentPositionsFromSavedPosition("lowBucket");
                         } else if (playerOne.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) >= 0.8) {
-                            //keep the slides in the same spot
-                            double currentSlideInches = bart.output.verticalSlides.currentInches();
-                            bart.output.setComponentPositionsFromSavedPosition("highBucketFlat");
-                            bart.output.verticalSlides.setTargetInches(currentSlideInches);
+                            bart.output.setOnlySpecifiedValues("highBucketFlat",
+                                    false, true, false,  true);
                         } else if (wasp1ltJustPressed) {
                             if (bart.output.verticalSlides.isAbovePositionInches(bart.output.savedPositions.get("highBucket").slideInches-1)) {
                                 bart.output.verticalSlides.setTargetInches(bart.output.verticalSlides.currentInches()+2);
@@ -746,7 +753,7 @@ public class ATeleop extends LinearOpMode {
         }
 
         if (playerOne.wasJustReleased(GamepadKeys.Button.A)) {
-            bart.output.verticalSlides.setTargetToCurrentPosition();
+            bart.output.verticalSlides.setTargetInches(0.5);
         }
         /*if (playerOne.wasJustPressed(GamepadKeys.Button.A)) {
             bart.hooks.setTarget(0);

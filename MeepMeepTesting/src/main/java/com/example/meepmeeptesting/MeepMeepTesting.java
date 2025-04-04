@@ -43,7 +43,7 @@ public class MeepMeepTesting {
 
         Pose2d grabSpark3ClipsPoseFirst = new Pose2d(-40, 32, Math.toRadians(225));
 
-        Pose2d scoreBucketCyclePose = new Pose2d(58, 44, Math.toRadians(250));//59, 50, 250
+        Pose2d scoreBucketCyclePose = new Pose2d(59, 42, Math.toRadians(240));//59, 50, 250
 
         Pose2d intakePose = new Pose2d(23, 12, Math.toRadians(180));
 
@@ -52,7 +52,7 @@ public class MeepMeepTesting {
         Pose2d grabFrSpark3ClipsPose = new Pose2d(-52, 45, Math.toRadians(225));//24
 
 
-        myBot.runAction(myBot.getDrive().actionBuilder(dropSpark2ClipsPose)
+        myBot.runAction(myBot.getDrive().actionBuilder(scoreBucketCyclePose)
                         /*.strafeToConstantHeading(shiftPoseByInputs(scoreCycleClipsPose, 0, 6, 0).position)
                                 .strafeToConstantHeading(clipsParkPose.position)(/
                 //.splineToLinearHeading(grabSpark3Pose, Math.toRadians(180)
@@ -152,9 +152,10 @@ public class MeepMeepTesting {
                 //)
 
 
-                .splineToSplineHeading(new Pose2d(-45, 45, grabFrSpark3ClipsPose.heading.toDouble()), Math.toRadians(180))
-
-                .splineToSplineHeading(grabFrSpark3ClipsPose, Math.toRadians(180))
+                //.splineToSplineHeading(new Pose2d(-45, 45, grabFrSpark3ClipsPose.heading.toDouble()), Math.toRadians(180))
+                .splineToLinearHeading(shiftPoseByInputs(intakePose, 12, 0, 0), Math.toRadians(180))
+                .splineToSplineHeading(shiftPoseByInputs(intakePose, 1, 0, 0), Math.toRadians(180))
+                //.splineToSplineHeading(scoreBucketCyclePose, scoreBucketCyclePose.heading.toDouble() - Math.PI)
 
                 .build());
 

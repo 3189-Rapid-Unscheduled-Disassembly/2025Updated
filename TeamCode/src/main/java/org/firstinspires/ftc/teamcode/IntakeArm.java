@@ -44,7 +44,7 @@ public class IntakeArm {
 
         Servo gripperServo = hardwareMap.get(Servo.class, "intakeGripper");
         gripperServo.setDirection(Servo.Direction.REVERSE);
-        intakeGripper = new Gripper(gripperServo, 0.90, 0.47, "Intake Gripper");//0.85
+        intakeGripper = new Gripper(gripperServo, 0.90, 0.495, "Intake Gripper");//0.85, 0.47
 
         //SAVED POSITIONS
         savedPositions.put("rest", new IntakeArmPosition(125, 180, 0, true));

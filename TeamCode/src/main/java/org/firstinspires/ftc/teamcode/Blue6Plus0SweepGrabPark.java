@@ -344,7 +344,8 @@ public class Blue6Plus0SweepGrabPark extends LinearOpMode {
                                                 //SPIKE 3
                                                 autoActions.waitTillPastAngle(160, false),
                                                 autoActions.fullyOpenGate(),
-                                                autoActions.setIntakeArmPosition("limelight"),
+                                                //autoActions.setIntakeArmPosition("limelight"),
+                                                autoActions.setIntakeArmPosition("preGrab"),
                                                 autoActions.setIntakeRoll(45),
 
                                                 autoActions.waitTillPastAngle(160, true),
@@ -355,9 +356,9 @@ public class Blue6Plus0SweepGrabPark extends LinearOpMode {
                                 ),
 
                                 //GRAB SPIKE 3
-                                autoActions.lineUpWithLimelight(inputtedPose, 250),
-                                autoActions.setIntakeArmPosition("preGrab"),
-                                autoActions.setIntakeRoll(45),
+                                //autoActions.lineUpWithLimelight(inputtedPose, 250),
+                                //autoActions.setIntakeArmPosition("preGrab"),
+                                //autoActions.setIntakeRoll(45),
                                 sleeper.sleep(200),//200,150
                                 autoActions.setIntakeArmPosition("grab"),
                                 autoActions.setIntakeRoll(45),

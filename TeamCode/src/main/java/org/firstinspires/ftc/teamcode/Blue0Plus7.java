@@ -138,9 +138,9 @@ public class Blue0Plus7 extends LinearOpMode {
 
         autoActions = new AutoActions(bart, drive, limelight);
 
-        int maxHuntingTimeMS = 500;
+        int maxHuntingTimeMS = 400;
         int timeToDropMS = 0;
-        int timeToDropCycleMS = 100;
+        int timeToDropCycleMS = 50;//100 peggy
 
         double intakeX = 23;
 
@@ -263,7 +263,7 @@ public class Blue0Plus7 extends LinearOpMode {
                 //.strafeToConstantHeading(AutoPoses.shiftPoseByInputs(AutoPoses.thirdSpikeBucketPose, -12, 0, 0).position)
                 .strafeToLinearHeading(AutoPoses.scoreBucketCycleForThirdSpikePose.position, AutoPoses.scoreBucketCycleForThirdSpikePose.heading);
 
-        int timeToGrabSampleMS = 300;
+        int timeToGrabSampleMS = 250;//300
 
         telemetry.addLine("READY TO START!");
         telemetry.addData("SAMPLE 1", inputtedPose.toString());
@@ -512,7 +512,7 @@ public class Blue0Plus7 extends LinearOpMode {
                                 autoActions.waitTillSlidesAreAllTheWayUp(),
                                 autoActions.openGripper(),
                                 sleeper.sleep(timeToDropCycleMS),
-                                autoActions.setIntakeArmPosition("park"),
+                                autoActions.setIntakeArmPosition("parkClips"),
 
                                 //PARK
                                 new ParallelAction(

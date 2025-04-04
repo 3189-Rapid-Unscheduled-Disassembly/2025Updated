@@ -887,8 +887,7 @@ class SwitchLimelightPipeline implements Action {
     class RaiseToHighBucket implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            bart.output.setOnlySpecifiedValues("highBucket", true, true, true, true);
-
+            bart.output.setComponentPositionsFromSavedPosition("highBucket");
             //return !bart.output.isAtPosition();
             return false;
         }

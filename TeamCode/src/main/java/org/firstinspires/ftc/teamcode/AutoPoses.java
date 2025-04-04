@@ -33,11 +33,11 @@ public class AutoPoses {
 
     static Pose2d dropSpark2ClipsPose = new Pose2d(-42, 44, Math.toRadians(150));
 
-    static Pose2d dropSpark2ClipsPoseSpecial = new Pose2d(-31, 42, Math.toRadians(120));
+    static Pose2d dropSpark2ClipsPoseSpecial = new Pose2d(-31, 44, Math.toRadians(130));
 
     static Pose2d grabFrSpark1ClipsPose = new Pose2d(-31, 45, Math.toRadians(225));//-36,36
     static Pose2d grabFrSpark2ClipsPose = new Pose2d(-41, 45, Math.toRadians(225));//-41, 40
-    static Pose2d grabFrSpark3ClipsPose = new Pose2d(-52.5, 45, Math.toRadians(225));//24
+    static Pose2d grabFrSpark3ClipsPose = new Pose2d(-51.5, 44.25, Math.toRadians(225));//24
 
     //static Pose2d grabFrSpark3ClipsPoseFirst = new Pose2d(-45, 32, Math.toRadians(225));//235
 
@@ -56,7 +56,7 @@ public class AutoPoses {
     static Pose2d clipsParkPose = shiftPoseByInputs(grabWallClipsPose, -6, -14, 0);
 
     static Pose2d spike1Short = new Pose2d(53, 52.75, Math.toRadians(252));//53.5x
-    static Pose2d spike2Short = new Pose2d(57.5, 52, Math.toRadians(270));//53.25, 52.75
+    static Pose2d spike2Short = new Pose2d(57, 52.5, Math.toRadians(270));//53.25, 52.75
     static Pose2d spike3Short = new Pose2d(53.5, 49, Math.toRadians(300));
 
 
@@ -86,7 +86,7 @@ public class AutoPoses {
 
     static Pose2d scoreBucketPose = new Pose2d(55, 57.5, Math.toRadians(225));//55.5, 57
 
-    static Pose2d scoreBucketCyclePose = new Pose2d(59, 42, Math.toRadians(250));//59, 50, 250
+    static Pose2d scoreBucketCyclePose = new Pose2d(55, 46, Math.toRadians(240));//59, 50, 250
 
     static Pose2d scoreBucketCycleForThirdSpikePose = new Pose2d(58, 51.5, Math.toRadians(250));
 
@@ -174,7 +174,7 @@ public class AutoPoses {
 
     public static TrajectoryActionBuilder fromBucketToIntake(MecanumDrive drive, Pose2d bucketPose, Pose2d intakePose) {
         return drive.actionBuilder(bucketPose)
-                /*.splineToSplineHeading(new Pose2d(49, 23, Math.toRadians(180)), Math.toRadians(225),
+                /*.splineToLinearHeading(shiftPoseByInputs(intakePose, 6, 1, 0), Math.toRadians(180),
                         new MinVelConstraint(Arrays.asList(
                                 drive.kinematics.new WheelVelConstraint(intakeMaxWheelVel),
                                 new AngularVelConstraint(Math.PI * 1.5)
@@ -228,7 +228,7 @@ public class AutoPoses {
                         )),
                         new ProfileAccelConstraint(bucketMinAccel, bucketMaxAccel)
                 )*/
-                .splineToSplineHeading(scoreBucketCyclePose, Math.toRadians(70),
+                .splineToSplineHeading(scoreBucketCyclePose, Math.toRadians(60),
                         new MinVelConstraint(Arrays.asList(
                                 drive.kinematics.new WheelVelConstraint(bucketMaxWheelVel),
                                 new AngularVelConstraint(Math.PI * 1.5)

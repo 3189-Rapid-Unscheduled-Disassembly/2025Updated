@@ -110,10 +110,10 @@ public class Intake {
 
         //we haven't reached the location, so we need to keep pulling back
         if (!hasAmpsTriggered) {
-            if (horizontalSlide.isAbovePositionInches(3)) {
+            if (horizontalSlide.isAbovePositionInches(2)) {
                 horizontalSlide.setPower(-1);
             } else {
-                horizontalSlide.setPower(-0.6);
+                horizontalSlide.setPower(-0.8);
                 if (horizontalSlide.currentAmps() > 4) {
                     hasAmpsTriggered = true;
                     horizontalSlide.setPower(-0.2);
@@ -129,8 +129,6 @@ public class Intake {
             //we are ready to open intake and get out of way
             if (timer.milliseconds() > 200) {//200
                 if (timer.milliseconds() > 300) {//300
-                    //intakeArm.setOnlySpecifiedValuesToSavedIntakeArmPosition("preTransfer",
-                      //      false, true, false, false);
                     intakeArm.setToSavedIntakeArmPosition("preTransfer");
                     horizontalSlide.setTargetInches(1);
                 }
@@ -141,42 +139,20 @@ public class Intake {
             if (!outputIsReady) {
                 intakeArm.setToSavedIntakeArmPosition("preTransfer");
             } else {
-                //intakeArm.setOnlySpecifiedValuesToSavedIntakeArmPosition("transfer",
-                  //      false, true, false, false);
                 intakeArm.setToSavedIntakeArmPosition("transfer");
 
-                //if (!isHorizontalSlideAtSavedPos("transfer", 0.5)) {
                 if (!hasAmpsTriggered) {
                     timer.reset();
                 } else {
                     if (timer.milliseconds() > waitTimeMS) {
                         timer.reset();
-                        //horizontalSlide.setPower(0);
                         return true;
                     }
                 }
             }
             return false;
-            /*if (!isHorizontalSlideAtSavedPos("transfer", 0.5)) {
-                intakeArm.setToSavedIntakeArmPosition("transfer");
-                timer.reset();
-            } else {
-                if (!outputIsReady) {
-                    intakeArm.setToSavedIntakeArmPosition("preTransfer");
-                    timer.reset();
-                } else {
-                    intakeArm.setToSavedIntakeArmPosition("transfer");
-
-                    if (timer.milliseconds() > waitTimeMS) {//500
-                        timer.reset();
-                        return true;
-                    }
-
-                }
-            }*/
         }
 
-        //return false;
     }
 
     public boolean transferAuto(boolean outputIsReady, boolean outputGripperIsOpen) {
