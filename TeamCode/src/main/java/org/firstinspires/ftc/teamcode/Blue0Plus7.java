@@ -71,7 +71,7 @@ public class Blue0Plus7 extends LinearOpMode {
 
 
         double yMax = 12;
-        double yMin = 0;
+        double yMin = -12;
 
         double xMax = 10;//12
         double xMin = -2;//-2
@@ -138,9 +138,9 @@ public class Blue0Plus7 extends LinearOpMode {
 
         autoActions = new AutoActions(bart, drive, limelight);
 
-        int maxHuntingTimeMS = 400;
+        int maxHuntingTimeMS = 600;
         int timeToDropMS = 0;
-        int timeToDropCycleMS = 50;//100 peggy
+        int timeToDropCycleMS = 0;//100
 
         double intakeX = 23;
 
@@ -162,77 +162,7 @@ public class Blue0Plus7 extends LinearOpMode {
         TrajectoryActionBuilder fromBucketToPark = AutoPoses.fromBucketToIntake(drive,  AutoPoses.scoreBucketCyclePose, parkPose);
 
 
-/*
-        TrajectoryActionBuilder fromScoreToIntake = drive.actionBuilder(AutoPoses.scoreBucketPose)
-                .strafeToLinearHeading(AutoPoses.shiftPoseByInputs(intakePose, 20, 0, 0).position, intakePose.heading,
-                        new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(AutoPoses.intakeMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
-                        )),
-                        new ProfileAccelConstraint(AutoPoses.intakeMinAccel, AutoPoses.intakeMaxAccel)
-                )
-                .strafeToConstantHeading(intakePose.position,
-                        new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(AutoPoses.intakeMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
-                        )),
-                        new ProfileAccelConstraint(AutoPoses.intakeMinAccel, AutoPoses.intakeMaxAccel)
-                );
-
-        TrajectoryActionBuilder fromIntakeToScore = drive.actionBuilder(intakePose)
-                .strafeToLinearHeading(AutoPoses.shiftPoseByInputs(intakePose, 20, 0, 0).position, AutoPoses.scoreBucketPose.heading,
-                        new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(AutoPoses.intakeMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
-                        )),
-                        new ProfileAccelConstraint(AutoPoses.intakeMinAccel, AutoPoses.intakeMaxAccel)
-                )
-                .strafeToConstantHeading(AutoPoses.scoreBucketPose.position,
-                        new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(AutoPoses.intakeMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
-                        )),
-                        new ProfileAccelConstraint(AutoPoses.intakeMinAccel, AutoPoses.intakeMaxAccel)
-                );
-
-        TrajectoryActionBuilder fromScoreToIntake2 = drive.actionBuilder(AutoPoses.scoreBucketPose)
-                .strafeToLinearHeading(AutoPoses.shiftPoseByInputs(intakePose2, 20, 0, 0).position, intakePose2.heading,
-                        new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(AutoPoses.intakeMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
-                        )),
-                        new ProfileAccelConstraint(AutoPoses.intakeMinAccel, AutoPoses.intakeMaxAccel)
-                )
-                .strafeToConstantHeading(intakePose2.position,
-                        new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(AutoPoses.intakeMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
-                        )),
-                        new ProfileAccelConstraint(AutoPoses.intakeMinAccel, AutoPoses.intakeMaxAccel)
-                );
-
-        TrajectoryActionBuilder fromIntake2ToScore = drive.actionBuilder(intakePose2)
-                .strafeToLinearHeading(AutoPoses.shiftPoseByInputs(intakePose2, 20, 0, 0).position, AutoPoses.scoreBucketPose.heading,
-                        new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(AutoPoses.intakeMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
-                        )),
-                        new ProfileAccelConstraint(AutoPoses.intakeMinAccel, AutoPoses.intakeMaxAccel)
-                )
-                .strafeToConstantHeading(AutoPoses.scoreBucketPose.position,
-                        new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(AutoPoses.intakeMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
-                        )),
-                        new ProfileAccelConstraint(AutoPoses.intakeMinAccel, AutoPoses.intakeMaxAccel)
-                );*/
-
-
-        //static Pose2d scoreBucketPose = new Pose2d(55.5, 57, Math.toRadians(225));
-        //Pose2d spike1Short = new Pose2d(53, 52.75, Math.toRadians(252));//53.5x
-        //Pose2d spike2Short = new Pose2d(57.5, 52, Math.toRadians(270));//53.25, 52.75
-        //Pose2d spike3Short = new Pose2d(53.5, 49, Math.toRadians(300));
-
+        double startExtendingSlideAtExit = 30;
 
         //SCORE POSES
         TrajectoryActionBuilder fromStartToScore = drive.actionBuilder(AutoPoses.beginBucketPose)
@@ -263,7 +193,7 @@ public class Blue0Plus7 extends LinearOpMode {
                 //.strafeToConstantHeading(AutoPoses.shiftPoseByInputs(AutoPoses.thirdSpikeBucketPose, -12, 0, 0).position)
                 .strafeToLinearHeading(AutoPoses.scoreBucketCycleForThirdSpikePose.position, AutoPoses.scoreBucketCycleForThirdSpikePose.heading);
 
-        int timeToGrabSampleMS = 250;//300
+        int timeToGrabSampleMS = 200;//300, 250
 
         telemetry.addLine("READY TO START!");
         telemetry.addData("SAMPLE 1", inputtedPose.toString());
@@ -414,7 +344,7 @@ public class Blue0Plus7 extends LinearOpMode {
                                         new SequentialAction(
                                                 autoActions.waitTillPastY(44, false),
                                                 autoActions.lowerToTransfer(),
-                                                autoActions.waitTillPastY(36, false),//16
+                                                autoActions.waitTillPastX(startExtendingSlideAtExit, false),//16
                                                 autoActions.extendHoriz(horizTargetSub),
                                                 autoActions.setIntakeRoll(inputtedPose.getRoll())
                                         )
@@ -449,7 +379,7 @@ public class Blue0Plus7 extends LinearOpMode {
                                         new SequentialAction(
                                                 autoActions.waitTillPastY(44, false),
                                                 autoActions.lowerToTransfer(),
-                                                autoActions.waitTillPastY(16, false),
+                                                autoActions.waitTillPastX(startExtendingSlideAtExit, false),
                                                 autoActions.extendHoriz(horizTargetSub2),
                                                 autoActions.setIntakeRoll(inputtedPose2.getRoll())
                                         )
@@ -485,7 +415,7 @@ public class Blue0Plus7 extends LinearOpMode {
                                         new SequentialAction(
                                                 autoActions.waitTillPastY(44, false),
                                                 autoActions.lowerToTransfer(),
-                                                autoActions.waitTillPastY(16, false),
+                                                autoActions.waitTillPastX(startExtendingSlideAtExit, false),
                                                 autoActions.extendHoriz(horizTargetSub3),
                                                 autoActions.setIntakeRoll(inputtedPose3.getRoll())
                                         )

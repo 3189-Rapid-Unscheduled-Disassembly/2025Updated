@@ -78,7 +78,7 @@ public class Intake {
     }
 
     public void fullyOpenGate() {
-        gate.setAngleDegrees(150);
+        gate.setAngleDegrees(165);
     }
     public void readAllComponents() {
        horizontalSlide.readCurrentPosition();
@@ -116,12 +116,12 @@ public class Intake {
                 horizontalSlide.setPower(-0.8);
                 if (horizontalSlide.currentAmps() > 4) {
                     hasAmpsTriggered = true;
-                    horizontalSlide.setPower(-0.2);
+                    horizontalSlide.setPower(-0.3);
                 }
             }
 
         } else {
-            horizontalSlide.setPower(-0.2);
+            horizontalSlide.setPower(-0.3);
         }
 
         //this is what happens after the output closes, making us open the intake gripper

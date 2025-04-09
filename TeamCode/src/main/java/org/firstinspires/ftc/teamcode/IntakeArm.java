@@ -54,9 +54,9 @@ public class IntakeArm {
         savedPositions.put("preTransfer", new IntakeArmPosition(30, 110, transferRollDeg, false));
         savedPositions.put("transfer", new IntakeArmPosition(48, 180, transferRollDeg, false));//43
         savedPositions.put("drop", new IntakeArmPosition(0, -60,45, false));
-        savedPositions.put("preGrab", new IntakeArmPosition(0, -80, 0, true));
+        savedPositions.put("preGrab", new IntakeArmPosition(5, -80, 0, true));
         savedPositions.put("grab", new IntakeArmPosition(-15, -90, 0, false));
-        savedPositions.put("grabCheck", new IntakeArmPosition(15, -90, 0, false));
+        savedPositions.put("grabCheck", new IntakeArmPosition(30, -60, 0, false));
         savedPositions.put("postGrab", new IntakeArmPosition(30, 0, 0, false));
         savedPositions.put("stupidGrab", new IntakeArmPosition(38, 0, 90, true));
         savedPositions.put("lowBar", new IntakeArmPosition(18, 80, 90, false));
@@ -118,7 +118,8 @@ public class IntakeArm {
 
         } else if (isPitchEqualToSavedIntakePosition("grab")){
             setOnlySpecifiedValuesToSavedIntakeArmPosition("grabCheck", true, true, false, true);
-        } else if (isPitchEqualToSavedIntakePosition("grabCheck")){
+        } else if (isPitchEqualToSavedIntakePosition("grabCheck") ||
+                    isPitchEqualToSavedIntakePosition("postGrab")){
             setOnlySpecifiedValuesToSavedIntakeArmPosition("preGrab", true, true, false, true);
         } else {
             //used only for the start of teleop when we started with a sample already in grabber

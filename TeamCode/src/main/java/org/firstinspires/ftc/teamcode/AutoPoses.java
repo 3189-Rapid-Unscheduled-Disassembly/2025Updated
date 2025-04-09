@@ -37,7 +37,7 @@ public class AutoPoses {
 
     static Pose2d grabFrSpark1ClipsPose = new Pose2d(-31, 45, Math.toRadians(225));//-36,36
     static Pose2d grabFrSpark2ClipsPose = new Pose2d(-41, 45, Math.toRadians(225));//-41, 40
-    static Pose2d grabFrSpark3ClipsPose = new Pose2d(-51.5, 44.25, Math.toRadians(225));//24
+    static Pose2d grabFrSpark3ClipsPose = new Pose2d(-51.5, 44.25, Math.toRadians(225));//225
 
     //static Pose2d grabFrSpark3ClipsPoseFirst = new Pose2d(-45, 32, Math.toRadians(225));//235
 
@@ -174,7 +174,7 @@ public class AutoPoses {
 
     public static TrajectoryActionBuilder fromBucketToIntake(MecanumDrive drive, Pose2d bucketPose, Pose2d intakePose) {
         return drive.actionBuilder(bucketPose)
-                /*.splineToLinearHeading(shiftPoseByInputs(intakePose, 6, 1, 0), Math.toRadians(180),
+                /*.splineToLinearHeading(shiftPoseByInputs(intakePose, 18, 6, 0), Math.toRadians(210),
                         new MinVelConstraint(Arrays.asList(
                                 drive.kinematics.new WheelVelConstraint(intakeMaxWheelVel),
                                 new AngularVelConstraint(Math.PI * 1.5)

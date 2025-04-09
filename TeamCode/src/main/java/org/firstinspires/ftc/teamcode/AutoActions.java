@@ -184,7 +184,7 @@ class AutoActions {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             //ACTION
-            if (drive.pose.position.y < 55) {
+            if (drive.pose.position.y < 55) {//55
                 bart.output.gripper.setPosition(0.14);
                 return false;
             }
@@ -497,10 +497,8 @@ class AutoActions {
 
 
         if (limelight.resultExists) {
-            if (limelight.getPipeline() != 7) {
-                double distanceError = limelight.getLastResultDistanceInches()-desiredDistance;
-                horizTarget = bart.intake.horizontalSlide.currentInches() + distanceError;
-            }
+            double distanceError = limelight.getLastResultDistanceInches()-desiredDistance;
+            horizTarget = bart.intake.horizontalSlide.currentInches() + distanceError;
         } else {
             horizTarget = bart.intake.horizontalSlide.currentInches();
         }

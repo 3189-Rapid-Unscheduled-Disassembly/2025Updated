@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.ParallelAction;
+import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
@@ -161,6 +162,11 @@ public class ATeleop extends LinearOpMode {
             if (gamepad2.left_stick_button) {
                 doesHorizNeedVoltageResetEncoders = true;
             }
+
+            if (gamepad2.right_stick_button) {
+                bucketDrivingMode = false;
+            }
+
             telemetry.addData("isIntakeArmJank", isIntakeArmJank);
             telemetry.addData("isOutputArmJank", isOutputArmJank);
             telemetry.addData("doesHorizNeedVoltageResetEncoders", doesHorizNeedVoltageResetEncoders);
@@ -218,6 +224,8 @@ public class ATeleop extends LinearOpMode {
                 if(playerTwo.wasJustPressed(GamepadKeys.Button.A)) {
                     isReadyForVoltageResetting = true;
                 }
+                manualDriving();
+                dpadAngleReset();
             } else if (isVoltageResettingEncoders) {
                 boolean isVerticalDone = bart.output.verticalSlides.voltageResetEncoder();
                 if (doesHorizNeedVoltageResetEncoders) {
@@ -230,7 +238,11 @@ public class ATeleop extends LinearOpMode {
 
                 //we are done, so we can set the servos
                 if (!isVoltageResettingEncoders) {
-                    bart.output.setComponentPositionsFromSavedPosition("grab");
+                    if (bucketDrivingMode) {
+                        bart.output.setComponentPositionsFromSavedPosition("grab");
+                    } else {
+                        bart.output.setComponentPositionsFromSavedPosition("straightOut");
+                    }
                     bart.output.gripper.close();
                     if (!isIntakeArmJank) {
                         bart.intake.intakeArm.setToSavedIntakeArmPosition("preGrab");
@@ -239,12 +251,12 @@ public class ATeleop extends LinearOpMode {
 
                 //EMERGENCY ESCAPE
                 //used if the voltages aren't triggering for some reason
-                if (playerTwo.wasJustPressed(GamepadKeys.Button.RIGHT_STICK_BUTTON)) {
+                if (playerTwo.wasJustPressed(GamepadKeys.Button.LEFT_STICK_BUTTON)) {
                     isVoltageResettingEncoders = false;
                 }
 
                 manualDriving();
-
+                dpadAngleReset();
             } else if (playerOne.isDown(GamepadKeys.Button.LEFT_BUMPER)) {
                 autoControl(packet);
             } else {
@@ -255,7 +267,7 @@ public class ATeleop extends LinearOpMode {
                 runningActions.clear();
             }
             if (playerOne.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) {
-                bart.mecanaDruve.setPosFromOutside(AutoPoses.grabWallClipsPose);
+                bart.mecanaDruve.setPosFromOutside(new Pose2d(AutoPoses.grabWallClipsPose.position, bart.mecanaDruve.pose.heading));
             }
 
 
@@ -279,6 +291,10 @@ public class ATeleop extends LinearOpMode {
             telemetry.addData("hoirzIsAboveMax", bart.intake.horizontalSlide.isAboveMax());
 
             telemetry.addData("\nxShift", clipsWallGrabXShift);
+
+            telemetry.addData("\nrobotAngle", Math.toDegrees(bart.mecanaDruve.pose.heading.toDouble()));
+            //telemetry.addLine(bart.output.wrist.toStringServoPos());
+            //telemetry.addData("slidePower", bart.output.verticalSlides.motors.get(0).getPower());
 
             //telemetry.addData("transferVertInches", bart.output.savedPositions.get("transfer").slideInches);
             //telemetry.addData("transferHorizInches", bart.intake.savedPositions.get("transfer"));
@@ -431,9 +447,24 @@ public class ATeleop extends LinearOpMode {
 
     }
 
+    public void dpadAngleReset() {
+        //this can reset the robot's angle against the submersible
+        //assume we are BLUE
+        if (playerOne.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) {
+            bart.mecanaDruve.setPosFromOutside(new Pose2d(bart.mecanaDruve.pose.position, Math.toRadians(0)));
+        } else if (playerOne.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) {
+            bart.mecanaDruve.setPosFromOutside(new Pose2d(bart.mecanaDruve.pose.position, Math.toRadians(90)));
+        } else if (playerOne.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) {
+            bart.mecanaDruve.setPosFromOutside(new Pose2d(bart.mecanaDruve.pose.position, Math.toRadians(180)));
+        } else if (playerOne.wasJustPressed(GamepadKeys.Button.DPAD_UP)) {
+            bart.mecanaDruve.setPosFromOutside(new Pose2d(bart.mecanaDruve.pose.position, Math.toRadians(270)));
+        }
+    }
+
     public void manualControl() {
 
         manualDriving();
+        dpadAngleReset();
 
         alternateControl = playerTwo.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) >= 0.8;
         stupidControl = playerTwo.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) >= 0.8;
@@ -475,6 +506,9 @@ public class ATeleop extends LinearOpMode {
                             } else if (playerOne.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) >= 0.8) {
                                 bart.output.setOnlySpecifiedValues("highBucketFlat",
                                         true, true, false,  true);
+                            } else if (playerOne.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) >= 0.8) {
+                                bart.output.setComponentPositionsFromSavedPosition("highBucket");
+                                bart.output.verticalSlides.setTargetInches(bart.output.savedPositions.get("highBucket").slideInches+2);
                             } else {
                                 bart.output.setComponentPositionsFromSavedPosition("highBucket");
                             }
@@ -493,7 +527,7 @@ public class ATeleop extends LinearOpMode {
                             bart.output.setComponentPositionsFromSavedPosition("lowBucket");
                         } else if (playerOne.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) >= 0.8) {
                             bart.output.setOnlySpecifiedValues("highBucketFlat",
-                                    false, true, false,  true);
+                                    false, true, true,  true);
                         } else if (wasp1ltJustPressed) {
                             if (bart.output.verticalSlides.isAbovePositionInches(bart.output.savedPositions.get("highBucket").slideInches-1)) {
                                 bart.output.verticalSlides.setTargetInches(bart.output.verticalSlides.currentInches()+2);
@@ -540,9 +574,16 @@ public class ATeleop extends LinearOpMode {
         //not transfer control
         if (playerTwo.getRightY() != 0) {
             //up on right y is negative, for some reason
-            if (bart.intake.horizontalSlide.isAboveMax() && playerTwo.getRightY() < 0) {
-                bart.intake.setHorizontalSlideToSavedPosition("max");
-                bart.intake.horizontalSlide.goToTargetAsync();
+            //allow for override
+            boolean isAboveMaxAndTryingToGoForward = bart.intake.horizontalSlide.isAboveMax() && playerTwo.getRightY() < 0;
+            if (isAboveMaxAndTryingToGoForward) {
+                if (!alternateControl) {
+                    bart.intake.setHorizontalSlideToSavedPosition("max");
+                    bart.intake.horizontalSlide.goToTargetAsync();
+                } else {
+                    bart.intake.horizontalSlide.setPower(-playerTwo.getRightY() * 0.75);
+                    bart.intake.horizontalSlide.setTargetToCurrentPosition();
+                }
             } else {
                 bart.intake.horizontalSlide.setPower(-playerTwo.getRightY() * 0.75);
                 bart.intake.horizontalSlide.setTargetToCurrentPosition();
@@ -556,9 +597,14 @@ public class ATeleop extends LinearOpMode {
                 }
             //P2 is inputting nothing
             } else if (!isTransferring){
-                bart.intake.horizontalSlide.setTargetToCurrentPosition();
+                //only do this if we are not holding A in clip mode
+                if (!(playerTwo.isDown(GamepadKeys.Button.A) && !bucketDrivingMode)) {
+                    bart.intake.horizontalSlide.setTargetToCurrentPosition();
+                }
                 if (bart.intake.horizontalSlide.isAboveMax()) {
-                    bart.intake.setHorizontalSlideToSavedPosition("max");
+                    if (!alternateControl) {
+                        bart.intake.setHorizontalSlideToSavedPosition("max");
+                    }
                 }
             }
 
@@ -570,9 +616,7 @@ public class ATeleop extends LinearOpMode {
 
         //INTAKE CONTROL
         if (playerTwo.wasJustPressed(GamepadKeys.Button.DPAD_UP)) {
-            if (alternateControl) {
-                bart.intake.changeSavedPositionByInches("transfer", 0.25);
-            } else if (stupidControl) {
+            if (stupidControl) {
                 //move the transfer pose up quickly
                 Objects.requireNonNull(bart.output.savedPositions.get("transfer")).changeSlideTargetByInches(0.25);
             } else {
@@ -589,9 +633,8 @@ public class ATeleop extends LinearOpMode {
         }
 
         if (playerTwo.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) {
-            if (alternateControl) {
-                bart.intake.changeSavedPositionByInches("transfer", -0.25);
-            } else if (stupidControl) {
+            if (stupidControl) {
+                //move the transfer pose down quickly
                 Objects.requireNonNull(bart.output.savedPositions.get("transfer")).changeSlideTargetByInches(-0.25);
             }
         }
@@ -606,8 +649,11 @@ public class ATeleop extends LinearOpMode {
             bart.output.verticalSlides.setPower(0.5 * playerTwo.getLeftY());
             bart.output.setTargetToCurrentPosition();
         } else if (playerOne.isDown(GamepadKeys.Button.A)) {
-            //bart.output.setComponentPositionsFromSavedPosition("hangLevel3");
-            bart.output.level3Hang();
+            if (playerOne.isDown(GamepadKeys.Button.LEFT_STICK_BUTTON)) {
+                bart.output.level3HangSetDown();
+            } else {
+                bart.output.level3Hang();
+            }
             if (!bart.output.verticalSlides.isAbovePositionInches(10)) {
                 bart.hooks.depower();
             }
@@ -681,23 +727,13 @@ public class ATeleop extends LinearOpMode {
                 hasSentComponentsToBucket = false;
             }
 
-            //ADJUST HIGH BUCKET SCORING
-            /*if (playerOne.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) >= 0.8) {
-                if (bucketDrivingMode) {
-                    if (bart.output.verticalSlides.isAbovePositionInches(10)) {
-                        bart.output.setComponentPositionsFromSavedPosition("highBucketVertical");
-                    }
-                }
-            }*/
-            if (bucketDrivingMode) {
-                if (playerOne.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) >= 0.8) {
-                    if (bucketDrivingMode) {
-                        if (bart.output.verticalSlides.isAbovePositionInches(10)) {
-                            //bart.output.setComponentPositionsFromSavedPosition("highBucketFlat");
-                        }
-                    }
+
+            if (playerOne.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) >= 0.8) {
+                if (!bucketDrivingMode) {
+                    bart.mecanaDruve.setPosFromOutside(new Pose2d(bart.mecanaDruve.pose.position, Math.toRadians(0)));
                 }
             }
+
 
 
             bart.output.sendVerticalSlidesToTarget();
@@ -738,13 +774,13 @@ public class ATeleop extends LinearOpMode {
             bart.intake.intakeArm.setToSavedIntakeArmPosition("rest");
             bart.hooks.setTargetToPreHang();
         }
-        if (playerOne.wasJustPressed(GamepadKeys.Button.B)) {
+        if (playerOne.wasJustPressed(GamepadKeys.Button.X)) {
             //bart.output.setComponentPositionsFromSavedPosition("hang");
             //bart.intake.intakeArm.setToSavedIntakeArmPosition("rest");
             bart.hooks.setTargetToHang();
         }
 
-        if (playerOne.isDown(GamepadKeys.Button.X)) {
+        if (playerOne.isDown(GamepadKeys.Button.B)) {
             if (!bart.output.verticalSlides.isAbovePositionInches(18)) {
                 bart.output.setComponentPositionsFromSavedPosition("preHangArmBackLevel3");
             } else {

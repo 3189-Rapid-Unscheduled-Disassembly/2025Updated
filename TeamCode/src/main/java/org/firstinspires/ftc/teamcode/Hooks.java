@@ -52,7 +52,7 @@ public class Hooks {
     }
 
     public void setTargetToHang() {
-        setTarget(400);
+        setTarget(300);
         currentP = HANG_P;
     }
 

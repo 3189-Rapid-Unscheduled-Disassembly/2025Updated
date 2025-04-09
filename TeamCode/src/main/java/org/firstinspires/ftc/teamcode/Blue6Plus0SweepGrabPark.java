@@ -242,7 +242,7 @@ public class Blue6Plus0SweepGrabPark extends LinearOpMode {
                         )),
                         new ProfileAccelConstraint(AutoPoses.scoreCycleMinAccel-20, AutoPoses.scoreCycleMaxAccel+20)
                 )
-                .splineToSplineHeading(new Pose2d(-29, 52, Math.toRadians(135)), Math.toRadians(135),
+                .splineToSplineHeading(new Pose2d(-26, 50, Math.toRadians(135)), Math.toRadians(135),
                         new MinVelConstraint(Arrays.asList(
                                 drive.kinematics.new WheelVelConstraint(AutoPoses.scoreCycleMaxWheelVel+20),
                                 new AngularVelConstraint(Math.PI * 1.5*3)
@@ -344,21 +344,21 @@ public class Blue6Plus0SweepGrabPark extends LinearOpMode {
                                                 //SPIKE 3
                                                 autoActions.waitTillPastAngle(160, false),
                                                 autoActions.fullyOpenGate(),
-                                                //autoActions.setIntakeArmPosition("limelight"),
-                                                autoActions.setIntakeArmPosition("preGrab"),
-                                                autoActions.setIntakeRoll(45),
 
                                                 autoActions.waitTillPastAngle(160, true),
                                                 autoActions.extendHoriz(4),
+                                                autoActions.waitTillPastAngle(180, true),
+                                                autoActions.setIntakeArmPosition("preGrab"),
+                                                autoActions.setIntakeRoll(45),
                                                 autoActions.waitTillPastAngle(200, true),
                                                 autoActions.extendHoriz(11)
                                         )
                                 ),
 
                                 //GRAB SPIKE 3
-                                //autoActions.lineUpWithLimelight(inputtedPose, 250),
-                                //autoActions.setIntakeArmPosition("preGrab"),
-                                //autoActions.setIntakeRoll(45),
+                                autoActions.lineUpWithLimelight(inputtedPose, 250),
+                                autoActions.setIntakeArmPosition("preGrab"),
+                                autoActions.setIntakeRoll(45),
                                 sleeper.sleep(200),//200,150
                                 autoActions.setIntakeArmPosition("grab"),
                                 autoActions.setIntakeRoll(45),
