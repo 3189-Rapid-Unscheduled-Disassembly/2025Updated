@@ -127,6 +127,7 @@ public class AutoSamplePose {
     public double getRoll() {
         return roll;
     }
+    public void setRoll(double roll) {this.roll = roll;}
     public void changeRollLeft() {
         this.roll += rollIncrement;
     }

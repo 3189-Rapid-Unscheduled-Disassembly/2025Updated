@@ -22,8 +22,9 @@ public class AutoPoses {
     static Pose2d dropSubClipsPose = new Pose2d(-31, 45, Math.toRadians(140));
 
     static Pose2d grabSpark1ClipsPose = new Pose2d(-31, 40, Math.toRadians(220));//-36,36
-    static Pose2d grabSpark2ClipsPose = new Pose2d(-42, 40, Math.toRadians(220));//-41, 40
-    static Pose2d grabSpark3ClipsPose = new Pose2d(-46, 26, Math.toRadians(180));//24
+    static Pose2d grabSpark2ClipsPose = new Pose2d(-45, 39, Math.toRadians(230));//-42, 40
+    //DO NOT USE
+    static Pose2d grabSpark3ClipsPose = new Pose2d(-46.5, 26, Math.toRadians(180));
 
     static Pose2d grabSpark3ClipsPoseFirst = new Pose2d(-45, 32, Math.toRadians(225));//235
 
@@ -31,13 +32,13 @@ public class AutoPoses {
 
     static Pose2d dropSpark1ClipsPoseSpecial = new Pose2d(grabSpark2ClipsPose.position.x, 44, Math.toRadians(130));
 
-    static Pose2d dropSpark2ClipsPose = new Pose2d(-42, 44, Math.toRadians(150));
+    static Pose2d dropSpark2ClipsPose = new Pose2d(-42, 47, Math.toRadians(150));//-42x, 44y
 
     static Pose2d dropSpark2ClipsPoseSpecial = new Pose2d(-31, 44, Math.toRadians(130));
 
     static Pose2d grabFrSpark1ClipsPose = new Pose2d(-31, 45, Math.toRadians(225));//-36,36
     static Pose2d grabFrSpark2ClipsPose = new Pose2d(-41, 45, Math.toRadians(225));//-41, 40
-    static Pose2d grabFrSpark3ClipsPose = new Pose2d(-51.5, 44.25, Math.toRadians(225));//225
+    static Pose2d grabFrSpark3ClipsPose = new Pose2d(-52, 44.25, Math.toRadians(225));//-51.5, 44.25, 225
 
     //static Pose2d grabFrSpark3ClipsPoseFirst = new Pose2d(-45, 32, Math.toRadians(225));//235
 
@@ -72,9 +73,9 @@ public class AutoPoses {
     static double scoreCycleMaxWheelVel = 80;
     static double spinnyMaxAngVel = Math.PI * 3.5;
 
-    static double sweepMaxWheelVel = 50;
-    static double sweepMinAccel = -40;
-    static double sweepMaxAccel = 40;
+    static double sweepMaxWheelVel = 45;//50
+    static double sweepMinAccel = -40;//-40
+    static double sweepMaxAccel = 40;//40
 
     static double grabSpikeClipsMaxWheelVel = 40;
     static double grabSpikeClipsMinAccel = -40;
