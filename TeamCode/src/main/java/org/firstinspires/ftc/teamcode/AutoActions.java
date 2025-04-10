@@ -465,7 +465,7 @@ class AutoActions {
         this.horizTarget = bart.intake.horizontalSlide.currentInches();
 
         if (inputtedPose.getRoll() == 0) {
-            desiredDistance = 4.3;
+            desiredDistance = 4.3;//4.3
             desiredTy = -6;
         } else if (inputtedPose.getRoll() == -45) {
             desiredDistance = 4;
@@ -493,6 +493,7 @@ class AutoActions {
             llTimer.reset();
             initialized = true;
             limelight.limelight.captureSnapshot("init");
+            //limelight.limelight.deleteSnapshots();
         }
 
 

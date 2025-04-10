@@ -106,7 +106,7 @@ public class LimelightSampleTracking extends LinearOpMode {
             } else {
                 horizTarget = currentInches;
             }
-            horizTarget = RobotMath.maxAndMin(horizTarget, currentInches+3, currentInches-3);
+           //horizTarget = RobotMath.maxAndMin(horizTarget, currentInches+3, currentInches-3);
             bart.intake.horizontalSlide.setTargetInches(horizTarget);
 
             bart.intake.horizontalSlide.goToTargetAsync();

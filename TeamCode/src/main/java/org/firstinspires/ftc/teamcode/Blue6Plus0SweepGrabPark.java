@@ -165,10 +165,8 @@ public class Blue6Plus0SweepGrabPark extends LinearOpMode {
                         )),
                         new ProfileAccelConstraint(AutoPoses.sweepMinAccel, AutoPoses.sweepMaxAccel)
                 )
-                /*.turnTo(grabSpark1Pose.heading.toDouble(),
-                        new TurnConstraints(Math.PI*1.5, -Math.PI*1.8, Math.PI*1.8)
-                )*/
-                .strafeToLinearHeading(AutoPoses.dropSpark1ClipsPoseSpecial.position, AutoPoses.dropSpark1ClipsPoseSpecial.heading,
+                //changed from special to normal drop
+                .strafeToLinearHeading(AutoPoses.dropSpark1ClipsPose.position, AutoPoses.dropSpark1ClipsPose.heading,
                         new MinVelConstraint(Arrays.asList(
                                 drive.kinematics.new WheelVelConstraint(AutoPoses.sweepMaxWheelVel),
                                 new AngularVelConstraint(Math.PI * 1.5)
@@ -273,12 +271,6 @@ public class Blue6Plus0SweepGrabPark extends LinearOpMode {
         telemetry.addData("horizTargetSub", horizTargetSub);
         telemetry.update();
 
-
-        //just need this for grabbing the third spike, only care about the angle
-        //only roll matters
-        AutoSamplePose spike3 = new AutoSamplePose(inputtedPose.getColor(), 0, 0, 45, false, false, false, 0, 0, 0, 0, 0, 0);
-        spike3.setRoll(45);
-
         waitForStart();
 
         if (isStopRequested()) return;
@@ -346,7 +338,7 @@ public class Blue6Plus0SweepGrabPark extends LinearOpMode {
                                                 //SPIKE 2
                                                 autoActions.waitTillPastAngle(140, false),
                                                 autoActions.setGateOncePastAngle(140, true, 1),
-                                                autoActions.setGateOncePastAngle(210, true, 0),//220
+                                                autoActions.setGateOncePastAngle(200, true, 0),//220
                                                 //SPIKE 3
                                                 autoActions.waitTillPastAngle(160, false),
                                                 autoActions.fullyOpenGate(),
@@ -354,7 +346,7 @@ public class Blue6Plus0SweepGrabPark extends LinearOpMode {
                                                 autoActions.waitTillPastAngle(160, true),
                                                 autoActions.extendHoriz(4),
                                                 autoActions.waitTillPastAngle(180, true),
-                                                autoActions.setIntakeArmPosition("limelight"),
+                                                autoActions.setIntakeArmPosition("preGrab"),
                                                 autoActions.setIntakeRoll(45),
                                                 autoActions.waitTillPastAngle(200, true),
                                                 autoActions.extendHoriz(11)
@@ -362,9 +354,9 @@ public class Blue6Plus0SweepGrabPark extends LinearOpMode {
                                 ),
 
                                 //GRAB SPIKE 3
-                                autoActions.lineUpWithLimelight(spike3, 500),//250
+                                /*autoActions.lineUpWithLimelight(inputtedPose, 250),
                                 autoActions.setIntakeArmPosition("preGrab"),
-                                autoActions.setIntakeRoll(45),
+                                autoActions.setIntakeRoll(45),*/
                                 sleeper.sleep(200),//200,150
                                 autoActions.setIntakeArmPosition("grab"),
                                 autoActions.setIntakeRoll(45),
@@ -481,12 +473,11 @@ public class Blue6Plus0SweepGrabPark extends LinearOpMode {
                                 //sleeper.sleep(timeToDropClipMilliseconds),
 
 
-                                //autoActions.lowerToGrab(),
+                                autoActions.lowerToGrab(),
                                 sleeper.sleep(timeToDropClipMilliseconds),
-                                //autoActions.lowerToPrePark(),
+                                autoActions.lowerToPrePark(),
 
-                                //autoActions.extendHoriz(12),
-
+                                autoActions.extendHoriz(12),
 
                                 fromScoreCycleToPark.build(),
 
