@@ -258,8 +258,9 @@ public class Limelight {
 
     public double distanceToTx(double tx) {
         //Estimate Distance
+        // tan-1(-5.5 / 4) + 65 = x
         double distFromCameraToSample = (SAMPLE_HEIGHT - CAMERA_HEIGHT) / (Math.tan(MOUNTING_ANGLE_RADIANS + Math.toRadians(tx)));
-        distFromCameraToSample = RobotMath.maxAndMin(distFromCameraToSample, 10, 0);
+        distFromCameraToSample = RobotMath.maxAndMin(distFromCameraToSample, 10, -5);
         return distFromCameraToSample;
     }
 

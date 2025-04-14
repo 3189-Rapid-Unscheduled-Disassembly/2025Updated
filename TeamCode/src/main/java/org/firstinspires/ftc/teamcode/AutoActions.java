@@ -180,6 +180,19 @@ class AutoActions {
 
     }
 
+    class CloseGripperTight implements Action {
+
+        boolean actionIsRunning = false;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            //ACTION
+            bart.output.gripper.setPosition(0.14);
+            return actionIsRunning;
+        }
+
+    }
+
     class CloseGripperTightAfterDelay implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
@@ -465,16 +478,16 @@ class AutoActions {
         this.horizTarget = bart.intake.horizontalSlide.currentInches();
 
         if (inputtedPose.getRoll() == 0) {
-            desiredDistance = 4.3;//4.3
+            desiredDistance = 4.3;//4.3, 2.3
             desiredTy = -6;
         } else if (inputtedPose.getRoll() == -45) {
-            desiredDistance = 4;
+            desiredDistance = 4;//4
             desiredTy = -9;//-5
         } else if (inputtedPose.getRoll() == 45) {
-            desiredDistance = 4;
+            desiredDistance = 4;//4
             desiredTy = -1;//5
         } else {
-            desiredDistance = 4;
+            desiredDistance = 4;//4
             desiredTy = -1;//7
         }
     }
@@ -533,17 +546,17 @@ class AutoActions {
         ));
         drive.updatePoseEstimate();
 
-        if (limelight.getPipeline() == 7) {
+        /*if (limelight.getPipeline() == 7) {
             if (bart.intake.horizontalSlide.isAtTarget() &&
                     RobotMath.isAbsDiffWithinRange(errorTy,0,2)) {
                 isLinedUp = true;
             }
-        } else {
-            if (RobotMath.isAbsDiffWithinRange(limelight.getLastResultDistanceInches(),desiredDistance,0.25) &&
-                    RobotMath.isAbsDiffWithinRange(errorTy,0,2)) {
-                isLinedUp = true;
-            }
+        } else {*/
+        if (RobotMath.isAbsDiffWithinRange(limelight.getLastResultDistanceInches(),desiredDistance,0.25) &&
+                RobotMath.isAbsDiffWithinRange(errorTy,0,2)) {
+            isLinedUp = true;
         }
+        //}
 
         if (llTimer.milliseconds() > maxHuntingTimeMS) {
             isLinedUp = true;
@@ -649,6 +662,10 @@ class SwitchLimelightPipeline implements Action {
     public Action closeGripperLoose() {
         return new CloseGripperLoose();
     }
+    public Action closeGripperTight() {
+        return new CloseGripperTight();
+    }
+
 
     public Action closeGripperTightAfterDelay() {
         return new CloseGripperTightAfterDelay();

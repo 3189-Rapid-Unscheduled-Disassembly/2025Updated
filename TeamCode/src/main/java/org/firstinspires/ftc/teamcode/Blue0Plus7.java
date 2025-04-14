@@ -162,7 +162,7 @@ public class Blue0Plus7 extends LinearOpMode {
         TrajectoryActionBuilder fromBucketToPark = AutoPoses.fromBucketToIntake(drive,  AutoPoses.scoreBucketCyclePose, parkPose);
 
 
-        double startExtendingSlideAtExit = 30;
+        double startExtendingSlideAtExit = 35;
 
         //SCORE POSES
         TrajectoryActionBuilder fromStartToScore = drive.actionBuilder(AutoPoses.beginBucketPose)
@@ -193,7 +193,7 @@ public class Blue0Plus7 extends LinearOpMode {
                 //.strafeToConstantHeading(AutoPoses.shiftPoseByInputs(AutoPoses.thirdSpikeBucketPose, -12, 0, 0).position)
                 .strafeToLinearHeading(AutoPoses.scoreBucketCycleForThirdSpikePose.position, AutoPoses.scoreBucketCycleForThirdSpikePose.heading);
 
-        int timeToGrabSampleMS = 200;//300, 250
+        int timeToGrabSampleMS = 250;//300, 250
 
         telemetry.addLine("READY TO START!");
         telemetry.addData("SAMPLE 1", inputtedPose.toString());
@@ -217,14 +217,20 @@ public class Blue0Plus7 extends LinearOpMode {
                         autoActions.writeComponents(),
                         new SequentialAction(
                                 //preload
-                                autoActions.setIntakeArmPosition("preGrab"),
-                                autoActions.setIntakeRoll(20),
                                 autoActions.raiseToHighBucket(),
 
                                 autoActions.waitTillVerticalPastInches(4, true),
-                                autoActions.extendHoriz(12),
 
-                                fromStartToScore.build(),
+                                new ParallelAction(
+                                        fromStartToScore.build(),
+                                        //just make sure that the output gets out of the way before we extend
+                                        new SequentialAction(
+                                                autoActions.waitTillVerticalPastInches(10, true),
+                                                autoActions.setIntakeArmPosition("preGrab"),
+                                                autoActions.setIntakeRoll(20)
+//                                                autoActions.extendHoriz(11)
+                                        )
+                                ),
                                 autoActions.openGripper(),
                                 sleeper.sleep(timeToDropMS),
 
@@ -234,7 +240,8 @@ public class Blue0Plus7 extends LinearOpMode {
                                         fromScoreToFirstSample.build(),
                                         new SequentialAction(
                                                 autoActions.waitTillPastY(55, false),
-                                                autoActions.lowerToTransfer()
+                                                autoActions.lowerToTransfer(),
+                                                autoActions.extendHoriz(11)
                                         )
                                 ),
 
@@ -250,10 +257,6 @@ public class Blue0Plus7 extends LinearOpMode {
                                 //score spike 1
                                 autoActions.waitTillVerticalPastInches(14, true),
 
-                                /*new ParallelAction(
-                                        new SequentialAction(
-                                        )
-                                ),*/
 
                                 fromFirstSampleToScore.build(),
                                 autoActions.waitTillSlidesAreAllTheWayUp(),
@@ -261,7 +264,6 @@ public class Blue0Plus7 extends LinearOpMode {
                                 autoActions.openGripper(),
                                 sleeper.sleep(timeToDropMS),
                                 autoActions.setIntakeRoll(0),
-                                autoActions.extendHoriz(11),
                                 autoActions.setIntakeArmPosition("preGrab"),
 
 
@@ -270,7 +272,8 @@ public class Blue0Plus7 extends LinearOpMode {
                                         fromScoreToSecondSample.build(),
                                         new SequentialAction(
                                                 autoActions.waitTillPastY(55, false),
-                                                autoActions.lowerToTransfer()
+                                                autoActions.lowerToTransfer(),
+                                                autoActions.extendHoriz(11)
                                         )
                                 ),
 
@@ -286,40 +289,29 @@ public class Blue0Plus7 extends LinearOpMode {
                                 //score spike 2
                                 autoActions.waitTillVerticalPastInches(14, true),
 
-
-                                /*new ParallelAction(
-                                        new SequentialAction(
-                                        )
-                                ),*/
-
                                 fromSecondSampleToScore.build(),
                                 autoActions.waitTillSlidesAreAllTheWayUp(),
 
                                 autoActions.openGripper(),
                                 sleeper.sleep(timeToDropMS),
                                 autoActions.setIntakeArmPosition("preGrab"),
-                                autoActions.setIntakeRoll(-30),
-                                autoActions.extendHoriz(12),
+                                autoActions.setIntakeRoll(-20),
+                                //autoActions.extendHoriz(11.5),//12
 
-
-                                /*fromSecondSampleToScore.build(),
-                                autoActions.waitTillSlidesAreAllTheWayUp(),
-                                autoActions.openGripper(),
-
-                                sleeper.sleep(timeToDropMS),*/
 
                                 //spike 3
                                 new ParallelAction(
                                         fromScoreToThirdSample.build(),
                                         new SequentialAction(
                                                 autoActions.waitTillPastY(55, false),
-                                                autoActions.lowerToTransfer()
+                                                autoActions.lowerToTransfer(),
+                                                autoActions.extendHoriz(11)//12, 11.5
                                         )
                                 ),
 
                                 sleeper.sleep(200),
                                 autoActions.setIntakeArmPosition("grab"),
-                                autoActions.setIntakeRoll(-30),
+                                autoActions.setIntakeRoll(-20),
                                 sleeper.sleep(timeToGrabSampleMS),
                                 new ParallelAction(
                                         fromThirdSampleToScoreCycle.build(),

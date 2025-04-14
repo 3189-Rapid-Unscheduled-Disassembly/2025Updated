@@ -107,7 +107,7 @@ public class Output {
                 new OutputEndPoint(0, 10, 10,true)
         );
         savedPositions.put("grab",
-                new OutputEndPoint(0, -12, -110, true)
+                new OutputEndPoint(0, -11, -110, true)//-12
         );//-11
         savedPositions.put("aboveGrab",
                 new OutputEndPoint(0, -3, -90, false)
@@ -249,7 +249,7 @@ public class Output {
             verticalSlides.setPower(-1);
     }
     public void level3HangSetDown() {
-        verticalSlides.setPower(-0.6);
+        verticalSlides.setPower(-0.4);
     }
     public void setComponentPositionsFromSavedPosition(String key) {
         setComponentPositionsFromOutputEndPoint(savedPositions.get(key));

@@ -238,10 +238,13 @@ public class ATeleop extends LinearOpMode {
 
                 //we are done, so we can set the servos
                 if (!isVoltageResettingEncoders) {
-                    if (bucketDrivingMode) {
-                        bart.output.setComponentPositionsFromSavedPosition("grab");
-                    } else {
-                        bart.output.setComponentPositionsFromSavedPosition("straightOut");
+                    //if it's jank, we just don't set the arm and stuff
+                    if (!isOutputArmJank) {
+                        if (bucketDrivingMode) {
+                            bart.output.setComponentPositionsFromSavedPosition("grab");
+                        } else {
+                            bart.output.setComponentPositionsFromSavedPosition("straightOut");
+                        }
                     }
                     bart.output.gripper.close();
                     if (!isIntakeArmJank) {
@@ -789,7 +792,7 @@ public class ATeleop extends LinearOpMode {
         }
 
         if (playerOne.wasJustReleased(GamepadKeys.Button.A)) {
-            bart.output.verticalSlides.setTargetInches(0.5);
+            bart.output.verticalSlides.setTargetInches(0);
         }
         /*if (playerOne.wasJustPressed(GamepadKeys.Button.A)) {
             bart.hooks.setTarget(0);

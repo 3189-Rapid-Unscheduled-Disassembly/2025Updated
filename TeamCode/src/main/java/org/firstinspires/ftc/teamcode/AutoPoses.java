@@ -22,7 +22,7 @@ public class AutoPoses {
     static Pose2d dropSubClipsPose = new Pose2d(-31, 45, Math.toRadians(140));
 
     static Pose2d grabSpark1ClipsPose = new Pose2d(-31, 40, Math.toRadians(220));//-36,36
-    static Pose2d grabSpark2ClipsPose = new Pose2d(-42, 40, Math.toRadians(220));//-41, 40
+    static Pose2d grabSpark2ClipsPose = new Pose2d(-44, 40, Math.toRadians(230));//-42, 40
     static Pose2d grabSpark3ClipsPose = new Pose2d(-46, 26, Math.toRadians(180));//24
 
     static Pose2d grabSpark3ClipsPoseFirst = new Pose2d(-45, 32, Math.toRadians(225));//235
@@ -31,7 +31,7 @@ public class AutoPoses {
 
     static Pose2d dropSpark1ClipsPoseSpecial = new Pose2d(grabSpark2ClipsPose.position.x, 44, Math.toRadians(130));
 
-    static Pose2d dropSpark2ClipsPose = new Pose2d(-42, 44, Math.toRadians(150));
+    static Pose2d dropSpark2ClipsPose = new Pose2d(-44, 44, Math.toRadians(150));//-42
 
     static Pose2d dropSpark2ClipsPoseSpecial = new Pose2d(-31, 44, Math.toRadians(130));
 
@@ -44,10 +44,10 @@ public class AutoPoses {
     static Pose2d dropFrSpark1ClipsPose = new Pose2d(grabFrSpark2ClipsPose.position, Math.toRadians(140));
     static Pose2d dropFrSpark2ClipsPose = new Pose2d(-31, 45, Math.toRadians(140));
 
-    static Pose2d grabWallClipsPose = new Pose2d(-41, 61.5, Math.toRadians(90));//61
-    static Pose2d scoreCycleClipsPose = new Pose2d(-5, 30.25, Math.toRadians(90));
+    static Pose2d grabWallClipsPose = new Pose2d(-41, 61, Math.toRadians(90));//61.5
+    static Pose2d scoreCycleClipsPose = new Pose2d(-5, 30.25, Math.toRadians(90));//30.25
 
-    static Pose2d scoreCycleClipsPoseSpecial = new Pose2d(-5, 31, Math.toRadians(90));
+    static Pose2d scoreCycleClipsPoseSpecial = new Pose2d(-5, 30, Math.toRadians(90));//30.25, 29, 28.5, -5x
 
     static Pose2d grabWallClipsTeleopPose = shiftPoseByInputs(grabWallClipsPose, -1, 1, 0);
     static Pose2d scoreCycleClipsTeleopPose = shiftPoseByInputs(scoreCycleClipsPose, 0, 0, 0);
@@ -55,17 +55,17 @@ public class AutoPoses {
 
     static Pose2d clipsParkPose = shiftPoseByInputs(grabWallClipsPose, -6, -14, 0);
 
-    static Pose2d spike1Short = new Pose2d(53, 52.75, Math.toRadians(252));//53.5x
-    static Pose2d spike2Short = new Pose2d(57, 52.5, Math.toRadians(270));//53.25, 52.75
-    static Pose2d spike3Short = new Pose2d(53.5, 49, Math.toRadians(300));
+    static Pose2d spike1Short = new Pose2d(53.5, 52, Math.toRadians(252));//53.5x, 52.75
+    static Pose2d spike2Short = new Pose2d(57.25, 52, Math.toRadians(270));//57, 52.5
+    static Pose2d spike3Short = new Pose2d(53.75, 49, Math.toRadians(290));//300
 
 
     static double preloadMinAccel = -70;
     static double preloadMaxAccel = 70;
     static double preloadMaxWheelVel = 70;
 
-    static double scoreCycleMinAccel = -75;
-    static double scoreCycleMaxAccel = 70;
+    static double scoreCycleMinAccel = -85;//-75
+    static double scoreCycleMaxAccel = 85;//70
     static double scoreCycleGrabMinAccel = -60;
     static double scoreCycleGrabMaxAccel = 60;
     static double scoreCycleGrabMaxWheelVel = 70;
@@ -125,7 +125,7 @@ public class AutoPoses {
     }
     public static TrajectoryActionBuilder fromGrabToScoreCycle(MecanumDrive drive, double grabWallClipsXShift) {
         Pose2d grabWallClipsNow = shiftPoseByInputs(grabWallClipsPose, grabWallClipsXShift, 0, 0);
-        Pose2d scoreCycleClipsPoseNow = shiftPoseByInputs(scoreCycleClipsPose, grabWallClipsXShift, 0, 0);
+        Pose2d scoreCycleClipsPoseNow = shiftPoseByInputs(scoreCycleClipsPoseSpecial, grabWallClipsXShift, 0, 0);
         return drive.actionBuilder(grabWallClipsNow)
                 .strafeToConstantHeading(scoreCycleClipsPoseNow.position,
                         new MinVelConstraint(Arrays.asList(
@@ -151,7 +151,7 @@ public class AutoPoses {
     }
     public static TrajectoryActionBuilder fromScoreCycleToGrab(MecanumDrive drive, double grabWallClipsXShift) {
         Pose2d grabWallClipsNow = shiftPoseByInputs(grabWallClipsPose, grabWallClipsXShift, 0, 0);
-        Pose2d scoreCycleClipsPoseNow = shiftPoseByInputs(scoreCycleClipsPose, grabWallClipsXShift, 0, 0);
+        Pose2d scoreCycleClipsPoseNow = shiftPoseByInputs(scoreCycleClipsPoseSpecial, grabWallClipsXShift, 0, 0);
         return drive.actionBuilder(scoreCycleClipsPoseNow)
                 .strafeToConstantHeading(grabWallClipsNow.position,
                         new MinVelConstraint(Arrays.asList(

@@ -36,7 +36,7 @@ public class IntakeArm {
 
         Servo intakeWristPitchServo = hardwareMap.get(Servo.class, "intakeWristPitch");
         intakeWristPitchServo.setDirection(Servo.Direction.FORWARD);
-        intakeWristPitch = new Joint(intakeWristPitchServo, 637.5, 0.489, "Intake Wrist Pitch");
+        intakeWristPitch = new Joint(intakeWristPitchServo, 637.5, 0.458, "Intake Wrist Pitch");
 
         Servo intakeRollServo = hardwareMap.get(Servo.class, "intakeRoll");
         intakeRollServo.setDirection(Servo.Direction.FORWARD);
