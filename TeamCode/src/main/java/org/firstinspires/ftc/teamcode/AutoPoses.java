@@ -37,17 +37,20 @@ public class AutoPoses {
 
     static Pose2d grabFrSpark1ClipsPose = new Pose2d(-31, 45, Math.toRadians(225));//-36,36
     static Pose2d grabFrSpark2ClipsPose = new Pose2d(-41, 45, Math.toRadians(225));//-41, 40
-    static Pose2d grabFrSpark3ClipsPose = new Pose2d(-51.5, 43.75, Math.toRadians(225));// 43.5y, 225
+    static Pose2d grabFrSpark3ClipsPose = new Pose2d(-51.75, 43.75, Math.toRadians(225));//-51.5, 43.5y, 225
 
     //static Pose2d grabFrSpark3ClipsPoseFirst = new Pose2d(-45, 32, Math.toRadians(225));//235
 
     static Pose2d dropFrSpark1ClipsPose = new Pose2d(grabFrSpark2ClipsPose.position, Math.toRadians(140));
     static Pose2d dropFrSpark2ClipsPose = new Pose2d(-31, 45, Math.toRadians(140));
 
-    static Pose2d grabWallClipsPose = new Pose2d(-41, 61, Math.toRadians(90));//61.5
-    static Pose2d scoreCycleClipsPose = new Pose2d(-5, 30.25, Math.toRadians(90));//30.25
+    static Pose2d grabWallClipsPose = new Pose2d(-41, 60, Math.toRadians(90));//61
 
-    static Pose2d scoreCycleClipsPoseSpecial = new Pose2d(-5, 30, Math.toRadians(90));//30.25, 29, 28.5, -5x
+    //DO NOT USE
+    static Pose2d scoreCycleClipsPose = new Pose2d(-2, 30.25, Math.toRadians(90));//30.25, -5
+    //DO NOT USE
+
+    static Pose2d scoreCycleClipsPoseSpecial = new Pose2d(-2, 28, Math.toRadians(90));//30.25, 29, 28.5, -5x
 
     static Pose2d grabWallClipsTeleopPose = shiftPoseByInputs(grabWallClipsPose, -1, 1, 0);
     static Pose2d scoreCycleClipsTeleopPose = shiftPoseByInputs(scoreCycleClipsPose, 0, 0, 0);
@@ -56,8 +59,8 @@ public class AutoPoses {
     static Pose2d clipsParkPose = shiftPoseByInputs(grabWallClipsPose, -6, -14, 0);
 
     static Pose2d spike1Short = new Pose2d(53.5, 52, Math.toRadians(252));//53.5x, 52.75
-    static Pose2d spike2Short = new Pose2d(57.25, 52, Math.toRadians(270));//57, 52.5
-    static Pose2d spike3Short = new Pose2d(53.75, 49, Math.toRadians(290));//300
+    static Pose2d spike2Short = new Pose2d(57.25+0.25, 52, Math.toRadians(270));//57, 52.5
+    static Pose2d spike3Short = new Pose2d(54.25, 49, Math.toRadians(290));//300, 53.75
 
 
     static double preloadMinAccel = -70;
@@ -86,7 +89,7 @@ public class AutoPoses {
 
     static Pose2d scoreBucketPose = new Pose2d(55, 57.5, Math.toRadians(225));//55.5, 57
 
-    static Pose2d scoreBucketCyclePose = new Pose2d(55, 46, Math.toRadians(240));//59, 50, 250
+    static Pose2d scoreBucketCyclePose = new Pose2d(55+1, 46-1, Math.toRadians(240));//59, 50, 250
 
     static Pose2d scoreBucketCycleForThirdSpikePose = new Pose2d(58, 51.5, Math.toRadians(250));
 

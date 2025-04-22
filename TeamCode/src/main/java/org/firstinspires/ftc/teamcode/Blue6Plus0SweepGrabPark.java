@@ -204,10 +204,10 @@ public class Blue6Plus0SweepGrabPark extends LinearOpMode {
                 );*/
                 .strafeToLinearHeading(AutoPoses.grabFrSpark3ClipsPose.position, AutoPoses.grabFrSpark3ClipsPose.heading,
                         new MinVelConstraint(Arrays.asList(
-                                drive.kinematics.new WheelVelConstraint(AutoPoses.grabSpikeClipsMaxWheelVel),
-                                new AngularVelConstraint(Math.PI * 1.5)
+                                drive.kinematics.new WheelVelConstraint(AutoPoses.grabSpikeClipsMaxWheelVel-5),
+                                new AngularVelConstraint(Math.PI * 1.13)
                         )),
-                        new ProfileAccelConstraint(AutoPoses.grabSpikeClipsMinAccel, AutoPoses.grabSpikeClipsMaxAccel)
+                        new ProfileAccelConstraint(AutoPoses.grabSpikeClipsMinAccel+10, AutoPoses.grabSpikeClipsMaxAccel-10)
                 );
 
         TrajectoryActionBuilder fromSpike3ToWallGrab = drive.actionBuilder(AutoPoses.grabFrSpark3ClipsPose)
@@ -233,7 +233,7 @@ public class Blue6Plus0SweepGrabPark extends LinearOpMode {
                         )),
                         new ProfileAccelConstraint(AutoPoses.sweepMinAccel, AutoPoses.sweepMaxAccel)
                 )
-                .strafeToConstantHeading(AutoPoses.grabWallClipsPose.position,
+                .strafeToConstantHeading(AutoPoses.shiftPoseByInputs(AutoPoses.grabWallClipsPose, 0, 0.25, 0).position,
                         new MinVelConstraint(Arrays.asList(
                                 drive.kinematics.new WheelVelConstraint(AutoPoses.sweepMaxWheelVel),
                                 new AngularVelConstraint(Math.PI * 1.5)
@@ -331,7 +331,10 @@ public class Blue6Plus0SweepGrabPark extends LinearOpMode {
                                                 autoActions.setIntakeArmPosition("limelight"),
                                                 autoActions.setIntakeRoll(inputtedPose.getRoll()),
                                                 autoActions.extendHoriz(horizTargetSub),
-                                                autoActions.closeGripperTightAfterDelay()
+                                                autoActions.closeGripperTight(),
+                                                //autoActions.closeGripperTightAfterDelay(),
+                                                autoActions.waitTillPastY(36, false),
+                                                autoActions.raiseToHighBarFrontWristDown()
                                         )
                                 ),
 
@@ -390,7 +393,7 @@ public class Blue6Plus0SweepGrabPark extends LinearOpMode {
                                 ),
 
                                 //GRAB SPIKE 3
-                                autoActions.lineUpWithLimelight(spike3, 300),//500
+                                autoActions.lineUpWithLimelight(spike3, 500),//500
                                 autoActions.setIntakeArmPosition("preGrab"),
                                 autoActions.setIntakeRoll(45),
                                 sleeper.sleep(200),//200,150
@@ -427,9 +430,13 @@ public class Blue6Plus0SweepGrabPark extends LinearOpMode {
 
                                 //SCORE THE CLIP
                                 new ParallelAction(
-                                        autoActions.raiseToHighBarBackOnceAwayFromWall(),
+                                        new SequentialAction(
+                                                autoActions.raiseToHighBarBackOnceAwayFromWall(),
+                                                autoActions.closeGripperTight()
+                                        ),
                                         //autoActions.closeGripperTightAfterDelay(),
-                                        fromGrabToScoreCycle1.build()
+                                        //fromGrabToScoreCycle1.build()
+                                        fromGrabToScoreCycle.build()
                                 ),
 
                                 //CYCLE CLIP 3
@@ -446,7 +453,10 @@ public class Blue6Plus0SweepGrabPark extends LinearOpMode {
                                 sleeper.sleep(timeToGrabClipMilliseconds),
                                 //score
                                 new ParallelAction(
-                                        autoActions.raiseToHighBarBackOnceAwayFromWall(),
+                                        new SequentialAction(
+                                                autoActions.raiseToHighBarBackOnceAwayFromWall(),
+                                                autoActions.closeGripperTight()
+                                        ),
                                         //autoActions.closeGripperTightAfterDelay(),
                                         fromGrabToScoreCycle.build()
                                 ),
@@ -465,7 +475,10 @@ public class Blue6Plus0SweepGrabPark extends LinearOpMode {
                                 sleeper.sleep(timeToGrabClipMilliseconds),
                                 //score
                                 new ParallelAction(
-                                        autoActions.raiseToHighBarBackOnceAwayFromWall(),
+                                        new SequentialAction(
+                                                autoActions.raiseToHighBarBackOnceAwayFromWall(),
+                                                autoActions.closeGripperTight()
+                                        ),
                                         //autoActions.closeGripperTightAfterDelay(),
                                         fromGrabToScoreCycle.build()
                                 ),
@@ -483,7 +496,10 @@ public class Blue6Plus0SweepGrabPark extends LinearOpMode {
                                 sleeper.sleep(timeToGrabClipMilliseconds),
                                 //score
                                 new ParallelAction(
-                                        autoActions.raiseToHighBarBackOnceAwayFromWall(),
+                                        new SequentialAction(
+                                                autoActions.raiseToHighBarBackOnceAwayFromWall(),
+                                                autoActions.closeGripperTight()
+                                        ),
                                         //autoActions.closeGripperTightAfterDelay(),
                                         fromGrabToScoreCycle.build()
                                 ),
@@ -501,7 +517,10 @@ public class Blue6Plus0SweepGrabPark extends LinearOpMode {
                                 sleeper.sleep(timeToGrabClipMilliseconds),
                                 //score
                                 new ParallelAction(
-                                        autoActions.raiseToHighBarBackOnceAwayFromWall(),
+                                        new SequentialAction(
+                                                autoActions.raiseToHighBarBackOnceAwayFromWall(),
+                                                autoActions.closeGripperTight()
+                                        ),
                                         //autoActions.closeGripperTightAfterDelay(),
                                         new SequentialAction(
                                                 autoActions.waitTillPastY(52, false),

@@ -56,6 +56,31 @@ class AutoActions {
         }
 
     }
+
+    class RaiseToHighBarFrontWristDown implements Action {
+
+        boolean actionIsRunning = true;
+        boolean initialized = false;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+
+            //ACTION
+            if (!initialized) {
+                bart.output.setComponentPositionsFromSavedPosition("highBarFrontWristDown");
+                initialized = true;
+            }
+
+            //EXIT CONDITIONS
+            actionIsRunning = !bart.output.verticalSlides.isAtTarget();
+            if (!actionIsRunning) {
+                initialized = false;
+            }
+            return false;//actionIsRunning;
+        }
+
+    }
+
     class RaiseToHighBarBack implements Action {
 
         boolean actionIsRunning = true;
@@ -79,12 +104,38 @@ class AutoActions {
 
             //ACTION
             if (drive.pose.position.y < 61.5) {//62.1
-                bart.output.setComponentPositionsFromSavedPosition("highBarBack");
-                bart.output.gripper.setPosition(0.22);
-                actionIsRunning = false;
+                //get away before raising
+                bart.output.setComponentPositionsFromSavedPosition("highBarBackNoSlides");
+
+                //raise the slides once away
+                if (drive.pose.position.y < 55) {
+                    bart.output.setComponentPositionsFromSavedPosition("highBarBack");
+                    bart.output.gripper.setPosition(0.12);
+                    actionIsRunning = false;
+                }
             }
 
             return actionIsRunning;
+        }
+
+    }
+
+    class RaiseToHighBarWithSlides implements Action {
+
+        boolean actionIsRunning = true;
+        boolean initialized = false;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+
+            //ACTION
+            //if (drive.pose.position.y < 61.5) {//62.1
+                bart.output.setComponentPositionsFromSavedPosition("highBarBack");
+                //bart.output.gripper.setPosition(0.22);
+                //actionIsRunning = false;
+            //}
+
+            return false;
         }
 
     }
@@ -109,7 +160,7 @@ class AutoActions {
     class LowerOutOfWay implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, 20, 20, true));
+            bart.output.setComponentPositionsFromOutputEndPoint(new OutputEndPoint(0, 20, -60, true));
             return false;
         }
     }
@@ -187,7 +238,7 @@ class AutoActions {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             //ACTION
-            bart.output.gripper.setPosition(0.14);
+            bart.output.gripper.setPosition(0.12);//0.14
             return actionIsRunning;
         }
 
@@ -679,9 +730,16 @@ class SwitchLimelightPipeline implements Action {
     public Action raiseToHighBarFront() {
         return new RaiseToHighBarFront();
     }
+
+
+    public Action raiseToHighBarFrontWristDown() {
+        return new RaiseToHighBarFrontWristDown();
+    }
     public Action raiseToHighBarBack() {
         return new RaiseToHighBarBack();
     }
+
+
     public Action raiseToHighBarBackOnceAwayFromWall() {
         return new RaiseToHighBarBackOnceAwayFromWall();
     }
@@ -904,6 +962,18 @@ class SwitchLimelightPipeline implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             bart.output.setComponentPositionsFromSavedPosition("highBucket");
+            //return !bart.output.isAtPosition();
+            return false;
+        }
+    }
+    public Action raiseToHighBucketHigh() {
+        return new RaiseToHighBucketHigh();
+    }
+
+    class RaiseToHighBucketHigh implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            bart.output.setComponentPositionsFromSavedPosition("highBucketHigh");
             //return !bart.output.isAtPosition();
             return false;
         }

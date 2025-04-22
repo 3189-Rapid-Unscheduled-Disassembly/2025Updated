@@ -140,7 +140,7 @@ public class Blue0Plus7 extends LinearOpMode {
 
         int maxHuntingTimeMS = 600;
         int timeToDropMS = 0;
-        int timeToDropCycleMS = 0;//100
+        int timeToDropCycleMS = 100;//100
 
         double intakeX = 23;
 
@@ -252,7 +252,7 @@ public class Blue0Plus7 extends LinearOpMode {
 
                                 sleeper.sleep(timeToGrabSampleMS),
                                 autoActions.transfer(),
-                                autoActions.raiseToHighBucket(),
+                                autoActions.raiseToHighBucketHigh(),
 
                                 //score spike 1
                                 autoActions.waitTillVerticalPastInches(14, true),
@@ -273,7 +273,7 @@ public class Blue0Plus7 extends LinearOpMode {
                                         new SequentialAction(
                                                 autoActions.waitTillPastY(55, false),
                                                 autoActions.lowerToTransfer(),
-                                                autoActions.extendHoriz(11)
+                                                autoActions.extendHoriz(11-0.5)
                                         )
                                 ),
 
@@ -283,7 +283,7 @@ public class Blue0Plus7 extends LinearOpMode {
                                 sleeper.sleep(timeToGrabSampleMS),
                                 autoActions.transfer(),
 
-                                autoActions.raiseToHighBucket(),
+                                autoActions.raiseToHighBucketHigh(),
 
 
                                 //score spike 2
@@ -319,7 +319,7 @@ public class Blue0Plus7 extends LinearOpMode {
                                                 //autoActions.extendHoriz(0),
                                                 //autoActions.waitTillHorizPastInches(10, false),
                                                 autoActions.transfer(),
-                                                autoActions.raiseToHighBucket()
+                                                autoActions.raiseToHighBucket()//High()
                                         )
                                 ),
 

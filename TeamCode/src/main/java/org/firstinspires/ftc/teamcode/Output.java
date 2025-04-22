@@ -107,7 +107,9 @@ public class Output {
                 new OutputEndPoint(0, 10, 10,true)
         );
         savedPositions.put("grab",
-                new OutputEndPoint(0, -11, -110, true)//-12
+                //new OutputEndPoint(0, -11, -115, true)//-12, -110
+                new OutputEndPoint(0, -10, -110, true)//-12, -110
+
         );//-11
         savedPositions.put("aboveGrab",
                 new OutputEndPoint(0, -3, -90, false)
@@ -115,8 +117,25 @@ public class Output {
         savedPositions.put("highBarFront",
                 new OutputEndPoint(7.75, 10, -10, false)
         );
-        savedPositions.put("highBarBack",
-                new OutputEndPoint(0, 140, 165, false)
+        savedPositions.put("highBarFrontWristDown",
+                OutputEndPoint.createNewBasedOffOldEndPoint(savedPositions.get("highBarFront"),
+                        0, true,
+                        0, true,
+                        -60, false,
+                        false
+                )
+        );
+        savedPositions.put("highBarBack",//0,140,165
+                new OutputEndPoint(1.25, 170, 200, false)
+        );
+
+        savedPositions.put("highBarBackNoSlides",//0,140,165
+                OutputEndPoint.createNewBasedOffOldEndPoint(savedPositions.get("highBarBack"),
+                        0, false,
+                        0, true,
+                        0, true,
+                        false
+                )
         );
         savedPositions.put("highBarBackMoveWrist",
                 new OutputEndPoint(0, 140, 140, true)
@@ -137,6 +156,10 @@ public class Output {
 
         savedPositions.put("highBucket",
                 new OutputEndPoint(17.5, 110, 150, false)
+        );
+
+        savedPositions.put("highBucketHigh",
+                new OutputEndPoint(18.5, 110, 150, false)
         );
         savedPositions.put("highBucketFlat",
                 OutputEndPoint.createNewBasedOffOldEndPoint(savedPositions.get("highBucket"),

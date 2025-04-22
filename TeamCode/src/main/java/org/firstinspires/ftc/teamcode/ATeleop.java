@@ -275,9 +275,9 @@ public class ATeleop extends LinearOpMode {
 
 
             //WRITE
-            bart.hooks.goToTarget();
-            bart.writeAllComponents();
             if (!playerOne.isDown(GamepadKeys.Button.LEFT_BUMPER)) {
+                bart.hooks.goToTarget();
+                bart.writeAllComponents();
                 bart.mecanaDruve.updatePoseEstimate();
             }
 
@@ -344,7 +344,7 @@ public class ATeleop extends LinearOpMode {
             dashboardTelemetry.update();
 //            telemetry.addData("Left X", playerOne.getLeftX());
 
-
+            telemetry.addLine(bart.output.gripper.toString());
             telemetry.update();
 
         }
@@ -354,6 +354,10 @@ public class ATeleop extends LinearOpMode {
 
 
     public void autoControl(TelemetryPacket packet) {
+
+        bart.output.sendVerticalSlidesToTarget();
+        bart.writeAllComponents();
+
         if (playerOne.wasJustPressed(GamepadKeys.Button.A)) {
             //drive.setPosFromOutside(grabPose);
 
@@ -362,13 +366,18 @@ public class ATeleop extends LinearOpMode {
 
             runningActions.add(
                     new SequentialAction(
-                            autoActions.closeGripperLoose(),
+                            //autoActions.closeGripperLoose(),
+                            autoActions.closeGripperTight(),
+
                             sleeper.sleep(AutoPoses.timeToGrabClipMilliseconds),
 
                             //SCORE THE CLIP
                             new ParallelAction(
-                                    autoActions.raiseToHighBarBackOnceAwayFromWall(),
-                                    autoActions.closeGripperTightAfterDelay(),
+                                    new SequentialAction(
+                                            autoActions.raiseToHighBarBackOnceAwayFromWall(),
+                                            autoActions.closeGripperTight()
+                                    ),
+                                    //autoActions.closeGripperTightAfterDelay(),
                                     fromGrabToScoreCycle.build()
                             ),
 
@@ -550,27 +559,30 @@ public class ATeleop extends LinearOpMode {
         //this will allow for easier control of the output. (only needs one button for p2)
         // and p2 can instantly send the slides back if we have a bad transfer
         if (playerTwo.wasJustReleased(GamepadKeys.Button.A)) {
-            if (bucketDrivingMode) {
-                //if we early cancel, we don't wanna cook the wrist servo
-                //avoid whiplash
-                if (!bart.output.gripper.isOpen() &&
-                        !bart.output.verticalSlides.isAbovePositionInches(15)) {
+            //if the hang has begun, do nothing, so we don't mess with that
+            if (bart.hooks.currentTicks() < 50) {
+                if (bucketDrivingMode) {
+                    //if we early cancel, we don't wanna cook the wrist servo
+                    //avoid whiplash
+                    if (!bart.output.gripper.isOpen() &&
+                            !bart.output.verticalSlides.isAbovePositionInches(15)) {
                         bart.output.setOnlySpecifiedValues("transfer", true,
                                 false, false, false);
-                } else {
-                    bart.output.setComponentPositionsFromSavedPosition("transfer");
-                }
-                //this allows for early rolling,
-                if (bart.intake.intakeArm.intakeWristRoll.isAngleEqualToGivenAngle(185)) {
-                    bart.intake.intakeArm.setToSavedIntakeArmPosition("preGrab");
-                } else {
-                    bart.intake.intakeArm.setOnlySpecifiedValuesToSavedIntakeArmPosition("preGrab",
-                            true, true, false, true);
-                }
+                    } else {
+                        bart.output.setComponentPositionsFromSavedPosition("transfer");
+                    }
+                    //this allows for early rolling,
+                    if (bart.intake.intakeArm.intakeWristRoll.isAngleEqualToGivenAngle(185)) {
+                        bart.intake.intakeArm.setToSavedIntakeArmPosition("preGrab");
+                    } else {
+                        bart.intake.intakeArm.setOnlySpecifiedValuesToSavedIntakeArmPosition("preGrab",
+                                true, true, false, true);
+                    }
 
-                isTransferring = false;
-                weirdDoubleCheck = true;
-                hasSentComponentsToBucket = true;
+                    isTransferring = false;
+                    weirdDoubleCheck = true;
+                    hasSentComponentsToBucket = true;
+                }
             }
         }
 
@@ -792,7 +804,13 @@ public class ATeleop extends LinearOpMode {
         }
 
         if (playerOne.wasJustReleased(GamepadKeys.Button.A)) {
-            bart.output.verticalSlides.setTargetInches(0);
+            //doing a full level 3
+            if (bart.output.verticalSlides.currentInches() < 3) {
+                bart.output.verticalSlides.setTargetInches(0);
+            } else {
+                //only level 2
+                bart.output.verticalSlides.setTargetToCurrentPosition();
+            }
         }
         /*if (playerOne.wasJustPressed(GamepadKeys.Button.A)) {
             bart.hooks.setTarget(0);
